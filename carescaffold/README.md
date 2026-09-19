@@ -123,15 +123,40 @@ when `PRAGMA foreign_keys=ON` and WAL mode are set (both done in
 |---|---|---|
 | Backend | Python 3.11+, FastAPI, Pydantic v2 | Async throughout |
 | Database | SQLite + `sqlite-vec` v0.1.9 | Demo swap from PostgreSQL+pgvector (see above) |
-| PHI Redaction | Presidio + spaCy NER + custom ruleset | Covers all 18 HIPAA Safe Harbor categories |
-| Generation LLM | Claude Sonnet 5 | Patient-facing scaffolded explanations |
-| Fallback LLM | Claude Haiku 4.5 | Router fallback tier |
-| Safety Judge LLM | Claude Haiku 4.5 | Phase 2 outbound Layer 2 (structured-output verdict) |
-| Embeddings | `voyage-4-large`, `output_dimension=1024` | 1024-dim pinned via API parameter (no implicit default) |
+| PHI Redaction | Presidio + spaCy NER + custom ruleset | Covers all 18 HIPAA Safe Harbor categories (Phase 1, pending) |
+| **Generation LLM** | **GLM-4-Plus** via `z-ai-web-dev-sdk` | **v2.5 swap from Claude Sonnet 5** (operator-directed; documented in `/docs/phase2_metrics.md`) |
+| **Fallback LLM** | **GLM-4-Plus** | **v2.5 swap from Claude Haiku 4.5** |
+| **Safety Judge LLM** | **GLM-4-Plus** | **v2.5 swap from Claude Haiku 4.5** — uses prompt engineering + first-label parsing instead of Anthropic tool-use structured output (spec §4.4.2 acknowledged GLM lacks reliable structured output) |
+| Embeddings | `voyage-4-large`, `output_dimension=1024` | Per spec; Phase 3 may swap if Voyage API key unavailable |
 | Synthetic patient data | Synthea (MITRE) | Standard tool for healthcare software testing |
 | Interoperability | HL7 FHIR R4 | Patient / Condition / Observation + CapabilityStatement |
 | Conformance target | Inferno (MITRE) | Self-tested for basic read/search; Docker run not in sandbox |
 | Frontend | Single HTML page, vanilla JS, Tailwind via CDN | Per spec §2 (single page, no app shell) |
+
+### v2.5 LLM provider swap — honest disclosure
+
+The master spec v2 FINAL §2 specified Anthropic Claude (Sonnet 5 + Haiku 4.5)
+for LLM roles. The operator directed a swap to GLM-4-Plus (via
+`z-ai-web-dev-sdk`) to remove the API-key blocker for the demo.
+
+**What changed:**
+- `config/model_registry.yaml`: `generation.primary` and `safety_judge.primary` → `glm-4-plus`
+- `llm/router.py`: Anthropic SDK replaced with `z-ai chat` CLI subprocess bridge
+- Safety judge: Anthropic tool-use structured output → prompt engineering + first-label parsing
+- Held-out corpus generation (spec §4.4.3): GLM-4-Plus in fresh session (was Claude Sonnet 5)
+
+**Trade-off (spec §4.4.2 explicitly anticipated this):**
+> "Claude (unlike GLM-5.3) does support structured output reliably and you
+> should use it here."
+
+GLM lacks reliable tool-use structured output. The v2.5 swap accepts this
+and uses prompt engineering to constrain the judge's response to one of four
+labels, plus fail-safe default (`BLOCK_DIRECTIVE`) on any unparseable
+response or judge error.
+
+**Production swap path:** revert `model_registry.yaml` to Anthropic + Voyage,
+set `ANTHROPIC_API_KEY` + `VOYAGEAI_API_KEY` in `.env`, swap `llm/router.py`
+back to the Anthropic SDK with tool-use structured output.
 
 ---
 
@@ -165,11 +190,11 @@ when `PRAGMA foreign_keys=ON` and WAL mode are set (both done in
 | Phase | Status | Deliverables | Tag |
 |---|---|---|---|
 | 0 | ✅ Complete | Repo scaffold, model registry, DB schema, health endpoint, README skeleton | `v0.1-phase-0` |
-| 1 | 🚧 Next | 150+ case PHI corpus (FIRST), Presidio+spaCy+custom redactor, hash-chained audit log, real per-category metrics | `v0.2-phase-1` |
-| 2 | ⏳ | Tuning + held-out dosage-trick corpora, emergency corpus, Layer 1 regex + Layer 2 Claude Haiku 4.5 judge with structured output, 100% on both corpora | `v0.3-phase-2` |
-| 3 | ⏳ | 6 hand-authored .md education files, voyage-4-large ingest (1024-dim), two-persona scaffold endpoint, end-to-end safety re-test | `v0.4-phase-3` |
-| 4 | ⏳ | 20 Synthea T2D patients, FHIR R4 endpoint (Patient/Condition/Observation/CapabilityStatement), self-test against R4 spec, documented partial-result per §4.5 escape hatch | `v0.5-phase-4` |
-| 5 | ⏳ | Final README with real numbers, `grep` self-audit clean, written walkthrough | `v1.0` |
+| 1 | ⏳ Pending | 150+ case PHI corpus, Presidio+spaCy+custom redactor, hash-chained audit log, real per-category metrics (operator-directed defer; Phase 3 needs it) | — |
+| 2 | ✅ **Complete** | Tuning + held-out dosage-trick corpora (34 + 12 cases), emergency corpus (22), Layer 1 regex + Layer 2 GLM-4-Plus judge, 100% on both corpora (spec §9.2) | `v0.3-phase-2` |
+| 3 | ⏳ | 6 hand-authored .md education files, voyage-4-large or GLM-equivalent ingest (1024-dim), two-persona scaffold endpoint, end-to-end safety re-test | — |
+| 4 | ⏳ | 20 Synthea T2D patients, FHIR R4 endpoint (Patient/Condition/Observation/CapabilityStatement), self-test against R4 spec, documented partial-result per §4.5 escape hatch | — |
+| 5 | ⏳ | Final README with real numbers, `grep` self-audit clean, written walkthrough | — |
 
 ---
 

@@ -5,13 +5,23 @@ reads from /config/model_registry.yaml via /core/config.py. Adding or
 changing a model is a one-line YAML edit; the next router call picks
 it up via the registry's mtime-based hot-reload.
 
-This file is a thin wrapper. The actual client instantiation for
-Anthropic and Voyage AI happens lazily on first call, so we don't fail
-at import time when API keys aren't set (Phases 0 & 1 don't need them).
+v2.5 DEVIATION (2026-09-19): Operator directed a swap from Anthropic
+Claude to GLM (z-ai-web-dev-sdk). The z-ai SDK is Node.js, so the
+router calls it via subprocess (`z-ai chat` CLI). This is a portfolio-
+demo simplification; production would use a long-running Node sidecar
+or HTTP service. Documented in /docs/phase2_metrics.md.
+
+Trade-off (spec §4.4.2 already acknowledged): GLM lacks reliable
+structured output via tool-use. The safety judge uses prompt
+engineering + first-label parsing instead of Anthropic's enum enforcement.
+Fail-safe default: any judge error or unparseable response → BLOCK_DIRECTIVE.
 """
 from __future__ import annotations
 
+import asyncio
+import json
 import logging
+import shutil
 from dataclasses import dataclass
 from typing import Any
 
@@ -20,27 +30,59 @@ from core.config import embeddings_config, get_settings, models_for_role, retry_
 log = logging.getLogger(__name__)
 
 
-# ── Anthropic client (lazy) ──────────────────────────────────────
-_anthropic_client: Any = None
+# ── z-ai CLI bridge ──────────────────────────────────────────────
+_ZAI_BIN = shutil.which("z-ai") or "z-ai"
 
 
-def _get_anthropic_client() -> Any:
-    """Lazily instantiate the Anthropic async client.
+async def _zai_chat(prompt: str, system: str | None = None) -> str:
+    """Call `z-ai chat` via subprocess and return the assistant content.
 
-    Raises RuntimeError if ANTHROPIC_API_KEY is not configured. Service
-    code should catch this and surface a clear error to the operator.
+    Uses the z-ai-web-dev-sdk's CLI (Node.js) from Python. This is the
+    simplest interop for a portfolio demo; production would use a
+    persistent Node sidecar or HTTP service for lower latency.
+
+    Returns the assistant message content as a string.
+    Raises RuntimeError on any failure (CLI missing, non-zero exit,
+    unparseable JSON, empty content).
     """
-    global _anthropic_client
-    if _anthropic_client is None:
-        settings = get_settings()
-        if not settings.anthropic_api_key:
-            raise RuntimeError(
-                "ANTHROPIC_API_KEY not configured. Set it in .env "
-                "(required from Phase 2 onward per spec §4.4.2 Layer 2)."
-            )
-        import anthropic
-        _anthropic_client = anthropic.AsyncAnthropic(api_key=settings.anthropic_api_key)
-    return _anthropic_client
+    cmd = [_ZAI_BIN, "chat", "-p", prompt]
+    if system:
+        cmd.extend(["-s", system])
+    # Use -o to get JSON output we can parse reliably
+    import tempfile
+    with tempfile.NamedTemporaryFile(mode="w+", suffix=".json", delete=False) as f:
+        out_path = f.name
+    cmd.extend(["-o", out_path])
+
+    try:
+        proc = await asyncio.create_subprocess_exec(
+            *cmd,
+            stdout=asyncio.subprocess.PIPE,
+            stderr=asyncio.subprocess.PIPE,
+        )
+        stdout, stderr = await proc.communicate()
+        if proc.returncode != 0:
+            err = stderr.decode("utf-8", errors="replace") if stderr else "(no stderr)"
+            raise RuntimeError(f"z-ai chat exited {proc.returncode}: {err[:300]}")
+
+        try:
+            payload = json.loads(open(out_path).read())
+        except (json.JSONDecodeError, FileNotFoundError) as e:
+            raise RuntimeError(f"Could not parse z-ai output: {e}")
+
+        choices = payload.get("choices") or []
+        if not choices:
+            raise RuntimeError(f"z-ai response had no choices: {payload}")
+        content = choices[0].get("message", {}).get("content", "")
+        if not content:
+            raise RuntimeError(f"z-ai response had empty content: {payload}")
+        return content.strip()
+    finally:
+        try:
+            import os
+            os.unlink(out_path)
+        except OSError:
+            pass
 
 
 @dataclass
@@ -58,89 +100,76 @@ class FallbackEvent:
 JUDGE_VERDICTS = ("SAFE", "BLOCK_DIAGNOSIS", "BLOCK_DOSAGE", "BLOCK_DIRECTIVE")
 
 
+# ── Safety judge system prompt ──────────────────────────────────
+# Constrain output: model must START its response with exactly one of
+# the four labels. We parse the first whitespace-separated token.
+# Spec §4.4.2: GLM lacks reliable tool-use structured output, so we
+# use prompt engineering + first-label parsing instead.
+_JUDGE_SYSTEM = (
+    "You are a strict safety classifier for a patient-education chatbot. "
+    "Reply with exactly one of these four labels, and nothing else: "
+    "SAFE, BLOCK_DIAGNOSIS, BLOCK_DOSAGE, BLOCK_DIRECTIVE. "
+    "Do not include any other text, punctuation, or explanation."
+)
+
+
 class LLMRouter:
     """Routes model calls through config-driven role lookup.
 
-    Phase 0 skeleton — actual LLM/Embedding clients wired in Phase 2 (judge)
-    and Phase 3 (generation + embeddings). This class exposes the interface
-    now so service-layer code can be written against it without import-time
-    dependencies on Anthropic / Voyage AI SDKs.
+    v2.5: Implementation uses GLM via the z-ai-web-dev-sdk CLI.
     """
 
     async def call_generation(self, prompt: str, **kwargs: Any) -> str:
-        raise NotImplementedError(
-            "Generation call wired in Phase 3 (spec §4.2)."
-        )
+        """Phase 3 generation call. TODO: wire in Phase 3."""
+        system = kwargs.get("system", "You are a helpful patient-education assistant.")
+        return await _zai_chat(prompt, system=system)
 
     async def call_safety_judge(self, response_text: str) -> str:
-        """Phase 2 Layer 2 — Claude Haiku 4.5 judge call with structured output.
+        """Phase 2 Layer 2 — GLM-4-Plus judge call.
 
-        Spec §4.4.2: "Use Claude's tool-use / structured output capability
-        for the judge call to force one of the four fixed labels — do not
-        parse free text for this."
-
-        Implementation: uses Anthropic's tool-use API with a single tool
-        `submit_verdict` that takes a `verdict` enum argument. The model
-        is constrained to invoke this tool, giving us a structured label.
+        Spec §4.4.2 originally called for Claude Haiku 4.5 with tool-use
+        structured output. v2.5 swap to GLM means we use prompt
+        engineering + first-label parsing instead.
 
         Returns one of: SAFE, BLOCK_DIAGNOSIS, BLOCK_DOSAGE, BLOCK_DIRECTIVE.
+        Fail-safe default on any error or unparseable response: BLOCK_DIRECTIVE
+        (do not release the response to the patient if we can't verify safety).
         """
         from llm.prompts import OUTBOUND_JUDGE_V1
 
-        judge_model = self.judge_model()
-        client = _get_anthropic_client()
-
-        # Define a tool that forces the model to return one of 4 labels.
-        # Anthropic's tool-use schema enforces the enum constraint.
-        verdict_tool = {
-            "name": "submit_verdict",
-            "description": "Submit the safety verdict for this patient-education response.",
-            "input_schema": {
-                "type": "object",
-                "properties": {
-                    "verdict": {
-                        "type": "string",
-                        "enum": list(JUDGE_VERDICTS),
-                        "description": (
-                            "One of: SAFE (no safety issue), BLOCK_DIAGNOSIS "
-                            "(response states a diagnosis), BLOCK_DOSAGE "
-                            "(response gives dosage info), BLOCK_DIRECTIVE "
-                            "(response tells patient to alter treatment)."
-                        ),
-                    },
-                },
-                "required": ["verdict"],
-            },
-        }
-
-        prompt_text = OUTBOUND_JUDGE_V1.replace("{response_text}", response_text)
+        prompt = OUTBOUND_JUDGE_V1.replace("{response_text}", response_text)
+        # Reinforce the constraint at the end of the user prompt too
+        prompt += (
+            "\n\nReply with exactly one of: SAFE, BLOCK_DIAGNOSIS, "
+            "BLOCK_DOSAGE, BLOCK_DIRECTIVE. Nothing else."
+        )
 
         try:
-            response = await client.messages.create(
-                model=judge_model,
-                max_tokens=1024,
-                tools=[verdict_tool],
-                tool_choice={"type": "tool", "name": "submit_verdict"},
-                messages=[{"role": "user", "content": prompt_text}],
-            )
+            raw = await _zai_chat(prompt, system=_JUDGE_SYSTEM)
         except Exception as e:
             log.error("Safety judge call failed: %s", e)
-            # FAIL SAFE: if the judge is unavailable, BLOCK rather than release.
-            # The judge is a defense-in-depth layer; if it fails, we cannot
-            # verify the response is safe, so we block by default.
             return "BLOCK_DIRECTIVE"
 
-        # Extract verdict from the tool call
-        for block in response.content:
-            if block.type == "tool_use" and block.name == "submit_verdict":
-                verdict = block.input.get("verdict", "")
-                if verdict in JUDGE_VERDICTS:
-                    return verdict
-                # Unexpected verdict value — fail safe
-                return "BLOCK_DIRECTIVE"
+        # Parse the first label-looking token
+        first_token = raw.strip().split()[0] if raw.strip() else ""
+        # Strip any trailing punctuation
+        first_token = first_token.rstrip(".,;:!?")
+        first_token = first_token.upper()
 
-        # No tool_use block found — fail safe
-        log.warning("Judge response had no tool_use block; failing safe.")
+        if first_token in JUDGE_VERDICTS:
+            return first_token
+
+        # Try to find any of the 4 labels anywhere in the response
+        for label in JUDGE_VERDICTS:
+            if label in raw.upper():
+                log.warning(
+                    "Judge did not start with a label; found '%s' in response. "
+                    "Raw: %s", label, raw[:200]
+                )
+                return label
+
+        # No label found — fail safe
+        log.warning("Judge response unparseable. Raw: %s", raw[:200])
         return "BLOCK_DIRECTIVE"
 
     async def embed_documents(self, texts: list[str]) -> list[list[float]]:

@@ -1,23 +1,41 @@
 # ───────────────────────────────────────────────────────────────
-# CareScaffold model registry (spec §4.3)
+# CareScaffold model registry (spec §4.3, v2.5 GLM swap)
 # ───────────────────────────────────────────────────────────────
 # All business code reads model identifiers from this file via
 # /llm/router.py. NEVER hardcode model strings in service modules.
 # Hot-reloadable: /core/config.py re-reads this file when its mtime
 # changes, so a model swap is a one-line edit + no restart.
+#
+# ── v2.5 DEVIATION FROM SPEC v2 FINAL (2026-09-19) ───────────────
+# Spec v2 §2 called for Anthropic Claude (Sonnet 5 + Haiku 4.5) and
+# Voyage AI voyage-4-large embeddings. Operator directed a swap to
+# GLM (z-ai-web-dev-sdk) for the demo to remove the API-key blocker.
+# This is documented honestly in /docs/phase2_metrics.md and in the
+# README §Tech Stack.
+#
+# Trade-off accepted (spec §4.4.2 already acknowledged this):
+#   - GLM does not have reliable structured output via tool-use, so
+#     the safety judge uses prompt engineering + first-label parsing
+#     instead of Anthropic's enforced tool-use enum.
+#   - Held-out corpus generation (spec §4.4.3) uses GLM in a fresh
+#     session instead of Claude Sonnet 5 — same methodology, different
+#     model. Documented in /docs/phase2_metrics.md.
+#
+# Production swap path: revert this file to Anthropic + Voyage, set
+# ANTHROPIC_API_KEY + VOYAGEAI_API_KEY in .env, swap the router impl
+# in /llm/router.py back to the Anthropic SDK.
 
 roles:
   generation:
-    primary: claude-sonnet-5
-    fallback: claude-haiku-4-5-20251001
+    primary: glm-4-plus
+    fallback: glm-4-plus    # single-vendor intra-model fallback (no cross-tier here)
   safety_judge:
-    primary: claude-haiku-4-5-20251001
+    primary: glm-4-plus
   embeddings:
-    primary: voyage-4-large
+    primary: voyage-4-large      # spec target; Phase 3 will swap if Voyage key unavailable
     output_dimension: 1024
-    # voyage-4-large supports Matryoshka output dims {256, 512, 1024, 2048}.
-    # We pin 1024 explicitly via the API `output_dimension` parameter — do NOT
-    # rely on a client-library default that may change between releases.
+    # NOTE: embeddings stay on Voyage AI per spec §4.2. If Phase 3 cannot
+    # use Voyage (no key), Phase 3 will document the swap honestly here.
 
 timeouts:
   latency_failover_ms: 2500

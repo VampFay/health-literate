@@ -17,7 +17,7 @@ async def test_health_returns_ok():
     assert body["name"] == "CareScaffold"
     assert "sqlite_version" in body["database"]
     assert "sqlite_vec_version" in body["database"]
-    assert body["model_registry"]["generation"]["primary"] == "claude-sonnet-5"
+    assert body["model_registry"]["generation"]["primary"] == "glm-4-plus"
     assert body["model_registry"]["embeddings"]["output_dimension"] == 1024
 
 
@@ -72,6 +72,8 @@ async def test_no_hardcoded_model_strings_in_services():
         r"'voyage-",
         r'"gpt-',               # any future OpenAI fall-in
         r"'gpt-",
+        r'"glm-',                # GLM models also must live in the registry only
+        r"'glm-",
     ]
     allowed_files = {
         "llm/router.py",         # explicitly reads from registry
