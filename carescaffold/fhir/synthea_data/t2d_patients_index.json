@@ -1,0 +1,102 @@
+[
+  {
+    "patient_id": "9e7b4d9e-a66e-3344-c102-fdb7e2b78116",
+    "file": "Antony83_Metz686_9e7b4d9e-a66e-3344-c102-fdb7e2b78116.json",
+    "a1c_count": 170
+  },
+  {
+    "patient_id": "f82a0ff5-3174-0e71-97e9-7e5cade288dd",
+    "file": "Audie868_Bailey598_f82a0ff5-3174-0e71-97e9-7e5cade288dd.json",
+    "a1c_count": 253
+  },
+  {
+    "patient_id": "d471e8cd-cec0-9b58-2982-2da5aea9c3b9",
+    "file": "Bobbie849_Hane680_d471e8cd-cec0-9b58-2982-2da5aea9c3b9.json",
+    "a1c_count": 126
+  },
+  {
+    "patient_id": "61ff0ff4-e483-1073-9992-8c0a101317d9",
+    "file": "Broderick767_Batz141_61ff0ff4-e483-1073-9992-8c0a101317d9.json",
+    "a1c_count": 14
+  },
+  {
+    "patient_id": "a8e2667b-5cfe-402d-44b8-6fb85427f488",
+    "file": "Cortez851_Orn563_a8e2667b-5cfe-402d-44b8-6fb85427f488.json",
+    "a1c_count": 125
+  },
+  {
+    "patient_id": "151cc19e-56ea-0ffa-512e-3d6f9dba5208",
+    "file": "Edmund685_Daniel959_151cc19e-56ea-0ffa-512e-3d6f9dba5208.json",
+    "a1c_count": 1
+  },
+  {
+    "patient_id": "4ac0111c-dcf7-590d-78c1-eb2cf2be59b0",
+    "file": "Elijah719_Toy286_4ac0111c-dcf7-590d-78c1-eb2cf2be59b0.json",
+    "a1c_count": 54
+  },
+  {
+    "patient_id": "fac2b75f-9ae9-0a53-c13c-7e31751c9c87",
+    "file": "Emil691_Miller503_fac2b75f-9ae9-0a53-c13c-7e31751c9c87.json",
+    "a1c_count": 0
+  },
+  {
+    "patient_id": "4fd74b1d-e702-f530-bd6d-c9cf8580a488",
+    "file": "Frederick289_Rowe323_4fd74b1d-e702-f530-bd6d-c9cf8580a488.json",
+    "a1c_count": 18
+  },
+  {
+    "patient_id": "6a891f1b-dda0-ce13-7504-611c888877ec",
+    "file": "Gertrud593_Swaniawski813_6a891f1b-dda0-ce13-7504-611c888877ec.json",
+    "a1c_count": 19
+  },
+  {
+    "patient_id": "5c750c8f-23b0-d6f3-1df6-85b7ce5a2298",
+    "file": "Guadalupe206_Kohler843_5c750c8f-23b0-d6f3-1df6-85b7ce5a2298.json",
+    "a1c_count": 25
+  },
+  {
+    "patient_id": "d318c1bc-5f07-e009-99e6-52cc209fa2f0",
+    "file": "Jarred626_Emard19_d318c1bc-5f07-e009-99e6-52cc209fa2f0.json",
+    "a1c_count": 74
+  },
+  {
+    "patient_id": "b0475841-dad0-fbf1-c20a-87ee57f5cb93",
+    "file": "Jasmin506_Mahalia897_Cummings51_b0475841-dad0-fbf1-c20a-87ee57f5cb93.json",
+    "a1c_count": 0
+  },
+  {
+    "patient_id": "96669550-dcbc-5656-960d-a971cb1dff6c",
+    "file": "Maryanna659_Steuber698_96669550-dcbc-5656-960d-a971cb1dff6c.json",
+    "a1c_count": 19
+  },
+  {
+    "patient_id": "47d4ceac-0d7c-45eb-4fa2-24c20647a2be",
+    "file": "Myron933_Zulauf375_47d4ceac-0d7c-45eb-4fa2-24c20647a2be.json",
+    "a1c_count": 1
+  },
+  {
+    "patient_id": "7acc26cc-45f2-7eca-63fc-29340449034d",
+    "file": "Peggy868_Pok428_Halvorson124_7acc26cc-45f2-7eca-63fc-29340449034d.json",
+    "a1c_count": 45
+  },
+  {
+    "patient_id": "7556a19e-9c9a-50db-0d80-047c885f7edf",
+    "file": "Rich940_Morissette863_7556a19e-9c9a-50db-0d80-047c885f7edf.json",
+    "a1c_count": 1
+  },
+  {
+    "patient_id": "560981fa-775a-a536-8c73-6cf75db1c067",
+    "file": "Ronny764_Kilback373_560981fa-775a-a536-8c73-6cf75db1c067.json",
+    "a1c_count": 96
+  },
+  {
+    "patient_id": "15d41e8d-fe79-8a90-f9a2-99b3370a5e62",
+    "file": "Rosaura15_Helga481_Towne435_15d41e8d-fe79-8a90-f9a2-99b3370a5e62.json",
+    "a1c_count": 18
+  },
+  {
+    "patient_id": "44a3b52c-2bf0-927b-118f-42fd5404c776",
+    "file": "Stanford577_Steuber698_44a3b52c-2bf0-927b-118f-42fd5404c776.json",
+    "a1c_count": 17
+  }
+]

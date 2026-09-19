@@ -131,3 +131,26 @@ Stage Summary:
 - v2.6 embeddings swap (TF-IDF for Voyage AI) is the third documented deviation, joining v2.5 (GLM for Anthropic) and the operator-directed phase skip.
 - Will commit + push + tag v0.4-phase-3.
 - Next: Phase 4 (Synthea + FHIR + Inferno self-test). Java 21 available; Synthea should run. Inferno will use documented-partial-result fallback per spec §4.5.
+
+---
+Task ID: p4-complete
+Agent: main (Super Z)
+Task: Phase 4 — Synthea + FHIR R4 + Inferno self-test. COMPLETE per spec §4.5 escape hatch (documented partial result; Docker unavailable). 20 T2D patients generated, FHIR R4 endpoint live, 9/9 self-tests pass.
+
+Work Log:
+- Downloaded Synthea (latest release, ~197MB jar) from github.com/synthetichealth/synthea
+- Java 21 already available; Synthea runs without issues
+- Generated 3 batches of Synthea patients (80 + 60 + 50 + initial 20 = 239 total) with different seeds to find 20 T2D patients; identified 22 T2D via SNOMED 44054006 ("Diabetes mellitus type 2 (disorder)"); kept first 20, deleted other 219 bundle files to save space
+- Wrote /services/fhir/client.py — FhirStore dataclass + load_all() reads 20 bundles, extracts Patient / Condition / A1C-Observation resources (A1C identified via LOINC 4548-4), records fhir_sync_log rows per spec §5, also creates patients table rows as FK targets
+- Discovered Synthea uses "urn:uuid:PatientID" subject reference format (not "Patient/ID"); added _resolve_patient_ref helper that handles both formats
+- Wrote /services/fhir/endpoint.py — FastAPI router with /fhir/metadata (CapabilityStatement), /fhir/Patient (list + by-id), /fhir/Condition (list + by-id + ?patient= search), /fhir/Observation (list + by-id + ?patient= search). All read-only. FHIR R4 CapabilityStatement correctly describes the 3 supported resource types with read + search-type interactions.
+- Updated /app.py — added FHIR bundle loading at lifespan startup, registered /fhir/* router
+- Wrote /tests/unit/test_phase4_fhir.py — 9 tests covering: CapabilityStatement R4 conformance, Patient resource shape (id/name/gender/birthDate), get_patient by id (and 404 for unknown), Condition R4 conformance (id/subject/code), Condition ?patient= search, Observation A1C R4 conformance (id/status/code=4548-4/subject), Observation ?patient= search, 20 T2D patients loaded, fhir_sync_log populated
+- All 9/9 Phase 4 tests pass + Phase 0 still 5/5 = 14/14 total. Verified live via uvicorn + curl: /fhir/metadata returns R4 CapabilityStatement, /fhir/Patient returns 20-patient Bundle, /fhir/Patient/{id} returns valid Patient, /fhir/Condition?patient=X returns 260 conditions, /fhir/Observation?patient=X returns 170 A1C observations (value=3.98 is valid A1C %), unknown ids return 404.
+- Wrote /docs/phase4_inferno_report.md per spec §4.5 escape hatch: documented the Inferno Docker-unavailable constraint, listed what Inferno would test (capability statement, read/search for 3 resource types), what we've verified (all 8 manual checks pass), what we haven't (OAuth SMART on FHIR, US Core IG, write ops, bulk data — all explicitly out of scope per §4.5), and the honest-language framing (no "Inferno passed" or "ONC certified" claims anywhere).
+
+Stage Summary:
+- Phase 4 ACCEPTANCE GATE CLOSED per spec §9.5 + §4.5 escape hatch. 20 T2D patients, R4 endpoint live, 9/9 self-tests pass with pasted output, live HTTP smoke test verified all endpoints, Phase 0 no regression.
+- The Inferno fallback is the 5th documented deviation: phase skip (operator), v2.5 GLM swap (operator), v2.6 TF-IDF swap (sandbox disk constraint), Phase 1 skip (operator), Inferno Docker unavailable (sandbox constraint).
+- Will commit + push + tag v0.5-phase-4.
+- Next: Phase 5 (final README + self-audit + walkthrough) is the last phase.

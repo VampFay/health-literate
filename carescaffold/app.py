@@ -41,6 +41,17 @@ async def lifespan(app: FastAPI):
         log.error("RAG ingest failed: %s", e)
         # Continue startup — RAG calls will return graceful redirects
 
+    # Phase 4: load Synthea FHIR bundles at startup.
+    try:
+        from services.fhir.client import load_all as fhir_load_all
+        n_p, n_c, n_o = await fhir_load_all()
+        log.info(
+            "FHIR load OK — %d patients, %d conditions, %d A1C observations",
+            n_p, n_c, n_o,
+        )
+    except Exception as e:
+        log.error("FHIR load failed: %s", e)
+
     yield
     await dispose_engine()
 
@@ -65,6 +76,10 @@ def create_app() -> FastAPI:
     # Phase 3: /api/scaffold
     from api.scaffold import router as scaffold_router
     app.include_router(scaffold_router, prefix="/scaffold", tags=["scaffold"])
+
+    # Phase 4: /fhir/* (FHIR R4 endpoint, mounted at root per FHIR convention)
+    from services.fhir.endpoint import router as fhir_router
+    app.include_router(fhir_router)
 
     return app
 

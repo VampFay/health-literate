@@ -24,6 +24,10 @@ node_modules/
 upload/
 download/
 
+# Synthea output — too large for GitHub (305MB, 30MB+ per file).
+# Regenerable via scripts/generate_synthea_patients.py (per Phase 4 docs).
+fhir/synthea_data/output/
+
 # Python type-checker caches
 .mypy_cache/
 .ruff_cache/

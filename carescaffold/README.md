@@ -193,7 +193,7 @@ back to the Anthropic SDK with tool-use structured output.
 | 1 | ⏳ Pending | 150+ case PHI corpus, Presidio+spaCy+custom redactor, hash-chained audit log, real per-category metrics (operator-directed defer; Phase 3 needs it) | — |
 | 2 | ✅ Complete | Tuning + held-out dosage-trick corpora (34 + 12 cases), emergency corpus (22), Layer 1 regex + Layer 2 GLM-4-Plus judge, 100% on both corpora (spec §9.2) | `v0.3-phase-2` |
 | 3 | ✅ **Complete** | 6 hand-authored .md education files, TF-IDF RAG (v2.6 swap from Voyage AI), two-persona scaffold endpoint (GLM-4-Plus), end-to-end safety re-test passed | `v0.4-phase-3` |
-| 4 | ⏳ | 20 Synthea T2D patients, FHIR R4 endpoint (Patient/Condition/Observation/CapabilityStatement), self-test against R4 spec, documented partial-result per §4.5 escape hatch | — |
+| 4 | ✅ **Complete** | 20 Synthea T2D patients, FHIR R4 endpoint (Patient/Condition/Observation/CapabilityStatement), self-test against R4 spec (9/9), documented partial-result per §4.5 escape hatch (Docker unavailable) | `v0.5-phase-4` |
 | 5 | ⏳ | Final README with real numbers, `grep` self-audit clean, written walkthrough | — |
 
 ---
