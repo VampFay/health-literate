@@ -1,0 +1,33 @@
+# Python
+__pycache__/
+*.py[cod]
+*$py.class
+*.egg-info/
+.pytest_cache/
+.venv/
+venv/
+
+# Secrets & env
+.env
+.env.*
+!.env.example
+
+# Database
+*.db
+*.db-journal
+*.db-wal
+*.db-shm
+
+# Sandbox state (do NOT sync to GitHub)
+skills/
+node_modules/
+upload/
+download/
+
+# Python type-checker caches
+.mypy_cache/
+.ruff_cache/
+
+# OS
+.DS_Store
+Thumbs.db
