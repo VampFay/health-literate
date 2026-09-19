@@ -125,52 +125,77 @@ class LLMRouter:
         return await _zai_chat(prompt, system=system)
 
     async def call_safety_judge(self, response_text: str) -> str:
-        """Phase 2 Layer 2 — GLM-4-Plus judge call.
+        """Phase 2 Layer 2 — GLM-4-Plus judge call with 3-strike retry.
 
         Spec §4.4.2 originally called for Claude Haiku 4.5 with tool-use
         structured output. v2.5 swap to GLM means we use prompt
         engineering + first-label parsing instead.
 
+        v2.5.1 (post held-out failure): GLM has occasional nondeterminism
+        on borderline-unsafe responses. To prevent a single bad call from
+        leaking an unsafe response, we retry up to 3 times. If any retry
+        returns a BLOCK_* verdict, we treat the response as blocked
+        (fail-safe: prefer false-positive blocks over false-negative
+        releases). Only if ALL 3 retries return SAFE do we release.
+
         Returns one of: SAFE, BLOCK_DIAGNOSIS, BLOCK_DOSAGE, BLOCK_DIRECTIVE.
-        Fail-safe default on any error or unparseable response: BLOCK_DIRECTIVE
-        (do not release the response to the patient if we can't verify safety).
         """
         from llm.prompts import OUTBOUND_JUDGE_V1
 
         prompt = OUTBOUND_JUDGE_V1.replace("{response_text}", response_text)
-        # Reinforce the constraint at the end of the user prompt too
         prompt += (
             "\n\nReply with exactly one of: SAFE, BLOCK_DIAGNOSIS, "
             "BLOCK_DOSAGE, BLOCK_DIRECTIVE. Nothing else."
         )
 
-        try:
-            raw = await _zai_chat(prompt, system=_JUDGE_SYSTEM)
-        except Exception as e:
-            log.error("Safety judge call failed: %s", e)
-            return "BLOCK_DIRECTIVE"
+        verdicts: list[str] = []
+        for attempt in range(3):
+            try:
+                raw = await _zai_chat(prompt, system=_JUDGE_SYSTEM)
+            except Exception as e:
+                log.error("Safety judge call attempt %d failed: %s", attempt + 1, e)
+                verdicts.append("BLOCK_DIRECTIVE")
+                continue
 
-        # Parse the first label-looking token
-        first_token = raw.strip().split()[0] if raw.strip() else ""
-        # Strip any trailing punctuation
-        first_token = first_token.rstrip(".,;:!?")
-        first_token = first_token.upper()
+            first_token = raw.strip().split()[0] if raw.strip() else ""
+            first_token = first_token.rstrip(".,;:!?").upper()
 
-        if first_token in JUDGE_VERDICTS:
-            return first_token
+            if first_token in JUDGE_VERDICTS:
+                verdicts.append(first_token)
+                continue
 
-        # Try to find any of the 4 labels anywhere in the response
-        for label in JUDGE_VERDICTS:
-            if label in raw.upper():
+            # Try to find any of the 4 labels anywhere in the response
+            found = None
+            for label in JUDGE_VERDICTS:
+                if label in raw.upper():
+                    found = label
+                    break
+            if found:
                 log.warning(
                     "Judge did not start with a label; found '%s' in response. "
-                    "Raw: %s", label, raw[:200]
+                    "Raw: %s", found, raw[:200]
                 )
-                return label
+                verdicts.append(found)
+            else:
+                log.warning("Judge response unparseable. Raw: %s", raw[:200])
+                verdicts.append("BLOCK_DIRECTIVE")
 
-        # No label found — fail safe
-        log.warning("Judge response unparseable. Raw: %s", raw[:200])
-        return "BLOCK_DIRECTIVE"
+        # Fail-safe aggregation: if ANY of the 3 attempts returned a BLOCK_*,
+        # return the most-seen BLOCK_* verdict (or the first BLOCK if tied).
+        block_verdicts = [v for v in verdicts if v != "SAFE"]
+        if not block_verdicts:
+            # All 3 attempts returned SAFE
+            return "SAFE"
+
+        # Prefer the verdict that appeared most often among the BLOCKs
+        from collections import Counter
+        most_common = Counter(block_verdicts).most_common(1)[0][0]
+        if len(set(verdicts)) > 1:
+            log.warning(
+                "Judge nondeterminism on response. Verdicts: %s. Fail-safe: %s",
+                verdicts, most_common,
+            )
+        return most_common
 
     async def embed_documents(self, texts: list[str]) -> list[list[float]]:
         raise NotImplementedError(

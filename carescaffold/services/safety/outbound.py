@@ -90,6 +90,7 @@ _DIRECTIVE_PATTERNS: List[Tuple[str, str]] = [
     ("dir_stop_taking",  r"\bstop taking\b"),
     ("dir_stop_all",     r"\bstop all\b.*\b(meds|medication|metformin|insulin|diabetes)\b"),
     ("dir_start_taking", r"\bstart taking\b"),
+    ("dir_start_therapy", r"\bstart (insulin|metformin|glipizide|jardiance|ozempic)\b.*\b(therapy|treatment|regimen)?\b"),
     ("dir_double",       r"\bdouble (your|the|this)?\s*\b(?!dose\b).{0,30}\bdose\b|\bdouble (your|the) (metformin|insulin|meds|medication|pill)\b"),
     ("dir_skip",         r"\bskip\b.*\b(your|the|tomorrow'?s|next)?\s*\b(dose|pill|metformin|insulin)\b"),
     ("dir_increase",     r"\bincrease (your|the) (dose|metformin|insulin)\b"),
@@ -102,6 +103,7 @@ _DIRECTIVE_PATTERNS: List[Tuple[str, str]] = [
     ("dir_add",          r"\badd (a |another )?\b.*\b(metformin|insulin|glipizide|jardiance|ozempic)\b.*\b(to|your regimen)\b"),
     ("dir_discontinue",  r"\bdiscontinue\b.*\b(metformin|insulin|glipizide|jardiance|ozempic)\b"),
     ("dir_take_timing",  r"\b(take|taking)\b.*\b(metformin|insulin)\b.*\b(at night|in the morning|before meals|after meals|with food|on an empty stomach)\b.*\b(instead|rather than|change|switch)\b"),
+    ("dir_threshold_start", r"\b(when|if) (your |my |a1c|glucose|sugar)\b.{0,30}\b(reach|reaches|hits|exceeds|is (over|above))\b.{0,30}\b(start|begin|stop|increase|decrease|switch)\b"),
 ]
 
 # Compile all diagnosis + directive patterns
