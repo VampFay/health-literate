@@ -127,7 +127,7 @@ when `PRAGMA foreign_keys=ON` and WAL mode are set (both done in
 | **Generation LLM** | **GLM-4-Plus** via `z-ai-web-dev-sdk` | **v2.5 swap from Claude Sonnet 5** (operator-directed; documented in `/docs/phase2_metrics.md`) |
 | **Fallback LLM** | **GLM-4-Plus** | **v2.5 swap from Claude Haiku 4.5** |
 | **Safety Judge LLM** | **GLM-4-Plus** | **v2.5 swap from Claude Haiku 4.5** — uses prompt engineering + first-label parsing instead of Anthropic tool-use structured output (spec §4.4.2 acknowledged GLM lacks reliable structured output) |
-| Embeddings | `voyage-4-large`, `output_dimension=1024` | Per spec; Phase 3 may swap if Voyage API key unavailable |
+| Embeddings | **TF-IDF + cosine similarity** (scikit-learn) | **v2.6 swap from Voyage AI `voyage-4-large`** — no API key needed; documented in `/docs/phase3_metrics.md` |
 | Synthetic patient data | Synthea (MITRE) | Standard tool for healthcare software testing |
 | Interoperability | HL7 FHIR R4 | Patient / Condition / Observation + CapabilityStatement |
 | Conformance target | Inferno (MITRE) | Self-tested for basic read/search; Docker run not in sandbox |
@@ -191,8 +191,8 @@ back to the Anthropic SDK with tool-use structured output.
 |---|---|---|---|
 | 0 | ✅ Complete | Repo scaffold, model registry, DB schema, health endpoint, README skeleton | `v0.1-phase-0` |
 | 1 | ⏳ Pending | 150+ case PHI corpus, Presidio+spaCy+custom redactor, hash-chained audit log, real per-category metrics (operator-directed defer; Phase 3 needs it) | — |
-| 2 | ✅ **Complete** | Tuning + held-out dosage-trick corpora (34 + 12 cases), emergency corpus (22), Layer 1 regex + Layer 2 GLM-4-Plus judge, 100% on both corpora (spec §9.2) | `v0.3-phase-2` |
-| 3 | ⏳ | 6 hand-authored .md education files, voyage-4-large or GLM-equivalent ingest (1024-dim), two-persona scaffold endpoint, end-to-end safety re-test | — |
+| 2 | ✅ Complete | Tuning + held-out dosage-trick corpora (34 + 12 cases), emergency corpus (22), Layer 1 regex + Layer 2 GLM-4-Plus judge, 100% on both corpora (spec §9.2) | `v0.3-phase-2` |
+| 3 | ✅ **Complete** | 6 hand-authored .md education files, TF-IDF RAG (v2.6 swap from Voyage AI), two-persona scaffold endpoint (GLM-4-Plus), end-to-end safety re-test passed | `v0.4-phase-3` |
 | 4 | ⏳ | 20 Synthea T2D patients, FHIR R4 endpoint (Patient/Condition/Observation/CapabilityStatement), self-test against R4 spec, documented partial-result per §4.5 escape hatch | — |
 | 5 | ⏳ | Final README with real numbers, `grep` self-audit clean, written walkthrough | — |
 

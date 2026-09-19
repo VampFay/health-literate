@@ -18,7 +18,9 @@ async def test_health_returns_ok():
     assert "sqlite_version" in body["database"]
     assert "sqlite_vec_version" in body["database"]
     assert body["model_registry"]["generation"]["primary"] == "glm-4-plus"
-    assert body["model_registry"]["embeddings"]["output_dimension"] == 1024
+    # v2.6 swap: embeddings output_dimension is "dynamic" for TF-IDF
+    # (was 1024 for Voyage AI voyage-4-large per spec §4.2)
+    assert body["model_registry"]["embeddings"]["output_dimension"] in (1024, "dynamic")
 
 
 @pytest.mark.asyncio

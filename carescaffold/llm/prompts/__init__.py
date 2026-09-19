@@ -30,5 +30,7 @@ def load(filename: str) -> str:
     return path.read_text(encoding="utf-8")
 
 
-# Pre-load the Phase 2 outbound judge prompt (used by Layer 2)
+# Pre-load the Phase 2 + Phase 3 prompt templates
 OUTBOUND_JUDGE_V1 = load("outbound_judge_v1.txt")
+SCAFFOLD_FOUNDATIONAL_V1 = load("scaffold_foundational_v1.txt")
+SCAFFOLD_HIGHER_V1 = load("scaffold_higher_v1.txt")

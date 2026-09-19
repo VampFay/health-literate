@@ -34,55 +34,78 @@ log = logging.getLogger(__name__)
 _ZAI_BIN = shutil.which("z-ai") or "z-ai"
 
 
-async def _zai_chat(prompt: str, system: str | None = None) -> str:
+async def _zai_chat(prompt: str, system: str | None = None, retries: int = 2) -> str:
     """Call `z-ai chat` via subprocess and return the assistant content.
 
     Uses the z-ai-web-dev-sdk's CLI (Node.js) from Python. This is the
     simplest interop for a portfolio demo; production would use a
     persistent Node sidecar or HTTP service for lower latency.
 
+    Retries up to `retries` times on transient CLI failures (non-zero
+    exit codes) with a 1s backoff between attempts. This handles
+    occasional API timeouts from the upstream provider.
+
     Returns the assistant message content as a string.
-    Raises RuntimeError on any failure (CLI missing, non-zero exit,
-    unparseable JSON, empty content).
+    Raises RuntimeError on persistent failure.
     """
-    cmd = [_ZAI_BIN, "chat", "-p", prompt]
-    if system:
-        cmd.extend(["-s", system])
-    # Use -o to get JSON output we can parse reliably
+    import asyncio as _asyncio
     import tempfile
-    with tempfile.NamedTemporaryFile(mode="w+", suffix=".json", delete=False) as f:
-        out_path = f.name
-    cmd.extend(["-o", out_path])
 
-    try:
-        proc = await asyncio.create_subprocess_exec(
-            *cmd,
-            stdout=asyncio.subprocess.PIPE,
-            stderr=asyncio.subprocess.PIPE,
-        )
-        stdout, stderr = await proc.communicate()
-        if proc.returncode != 0:
-            err = stderr.decode("utf-8", errors="replace") if stderr else "(no stderr)"
-            raise RuntimeError(f"z-ai chat exited {proc.returncode}: {err[:300]}")
+    last_err: str | None = None
+    for attempt in range(retries + 1):
+        cmd = [_ZAI_BIN, "chat", "-p", prompt]
+        if system:
+            cmd.extend(["-s", system])
+        with tempfile.NamedTemporaryFile(mode="w+", suffix=".json", delete=False) as f:
+            out_path = f.name
+        cmd.extend(["-o", out_path])
 
         try:
-            payload = json.loads(open(out_path).read())
-        except (json.JSONDecodeError, FileNotFoundError) as e:
-            raise RuntimeError(f"Could not parse z-ai output: {e}")
+            proc = await asyncio.create_subprocess_exec(
+                *cmd,
+                stdout=asyncio.subprocess.PIPE,
+                stderr=asyncio.subprocess.PIPE,
+            )
+            stdout, stderr = await proc.communicate()
+            if proc.returncode != 0:
+                err = stderr.decode("utf-8", errors="replace") if stderr else "(no stderr)"
+                last_err = f"z-ai chat exited {proc.returncode}: {err[:300]}"
+                if attempt < retries:
+                    await _asyncio.sleep(1.0 * (attempt + 1))
+                    continue
+                raise RuntimeError(last_err)
 
-        choices = payload.get("choices") or []
-        if not choices:
-            raise RuntimeError(f"z-ai response had no choices: {payload}")
-        content = choices[0].get("message", {}).get("content", "")
-        if not content:
-            raise RuntimeError(f"z-ai response had empty content: {payload}")
-        return content.strip()
-    finally:
-        try:
-            import os
-            os.unlink(out_path)
-        except OSError:
-            pass
+            try:
+                payload = json.loads(open(out_path).read())
+            except (json.JSONDecodeError, FileNotFoundError) as e:
+                last_err = f"Could not parse z-ai output: {e}"
+                if attempt < retries:
+                    await _asyncio.sleep(1.0 * (attempt + 1))
+                    continue
+                raise RuntimeError(last_err)
+
+            choices = payload.get("choices") or []
+            if not choices:
+                last_err = f"z-ai response had no choices: {payload}"
+                if attempt < retries:
+                    await _asyncio.sleep(1.0 * (attempt + 1))
+                    continue
+                raise RuntimeError(last_err)
+            content = choices[0].get("message", {}).get("content", "")
+            if not content:
+                last_err = f"z-ai response had empty content: {payload}"
+                if attempt < retries:
+                    await _asyncio.sleep(1.0 * (attempt + 1))
+                    continue
+                raise RuntimeError(last_err)
+            return content.strip()
+        finally:
+            try:
+                import os
+                os.unlink(out_path)
+            except OSError:
+                pass
+    raise RuntimeError(f"_zai_chat failed after {retries + 1} attempts: {last_err}")
 
 
 @dataclass
@@ -138,6 +161,12 @@ class LLMRouter:
         (fail-safe: prefer false-positive blocks over false-negative
         releases). Only if ALL 3 retries return SAFE do we release.
 
+        v2.5.2 (rate-limit handling): On 429 (rate limit) from the API,
+        retry with exponential backoff up to 30s. Don't fail-safe on
+        rate-limit (it's transient, not a real safety verdict); only
+        fail-safe to BLOCK_DIRECTIVE if all retries genuinely fail to
+        return a parseable verdict.
+
         Returns one of: SAFE, BLOCK_DIAGNOSIS, BLOCK_DOSAGE, BLOCK_DIRECTIVE.
         """
         from llm.prompts import OUTBOUND_JUDGE_V1
@@ -148,12 +177,16 @@ class LLMRouter:
             "BLOCK_DOSAGE, BLOCK_DIRECTIVE. Nothing else."
         )
 
+        # 3 verdict attempts + up to 30s backoff for 429s.
         verdicts: list[str] = []
-        for attempt in range(3):
-            try:
-                raw = await _zai_chat(prompt, system=_JUDGE_SYSTEM)
-            except Exception as e:
-                log.error("Safety judge call attempt %d failed: %s", attempt + 1, e)
+        max_judge_attempts = 3
+        for attempt in range(max_judge_attempts):
+            raw = await self._zai_chat_with_rate_limit(prompt, system=_JUDGE_SYSTEM)
+            if raw is None:
+                # Persistent rate limit after exponential backoff — give up
+                # and fail-safe. This branch is rare and indicates a
+                # sustained outage, not a verdict.
+                log.error("Judge unavailable after rate-limit backoff; failing safe.")
                 verdicts.append("BLOCK_DIRECTIVE")
                 continue
 
@@ -180,14 +213,12 @@ class LLMRouter:
                 log.warning("Judge response unparseable. Raw: %s", raw[:200])
                 verdicts.append("BLOCK_DIRECTIVE")
 
-        # Fail-safe aggregation: if ANY of the 3 attempts returned a BLOCK_*,
-        # return the most-seen BLOCK_* verdict (or the first BLOCK if tied).
+        # Fail-safe aggregation: if ANY of the attempts returned a BLOCK_*,
+        # return the most-seen BLOCK_* verdict.
         block_verdicts = [v for v in verdicts if v != "SAFE"]
         if not block_verdicts:
-            # All 3 attempts returned SAFE
             return "SAFE"
 
-        # Prefer the verdict that appeared most often among the BLOCKs
         from collections import Counter
         most_common = Counter(block_verdicts).most_common(1)[0][0]
         if len(set(verdicts)) > 1:
@@ -196,6 +227,30 @@ class LLMRouter:
                 verdicts, most_common,
             )
         return most_common
+
+    async def _zai_chat_with_rate_limit(self, prompt: str, system: str | None = None) -> str | None:
+        """Call _zai_chat with exponential backoff on 429 rate limits.
+
+        Returns the assistant content on success, or None if the API
+        remains rate-limited after 4 attempts (1s, 2s, 4s, 8s).
+        Distinguishes 429 from real API errors so the caller can decide
+        how to handle a sustained outage.
+        """
+        import asyncio as _asyncio
+        backoff = 1.0
+        for attempt in range(4):
+            try:
+                return await _zai_chat(prompt, system=system, retries=0)
+            except RuntimeError as e:
+                msg = str(e)
+                if "429" in msg or "Too many requests" in msg:
+                    log.info("z-ai 429 rate limit; backing off %.1fs", backoff)
+                    await _asyncio.sleep(backoff)
+                    backoff *= 2
+                    continue
+                # Non-429 error — re-raise (caller will fail-safe)
+                raise
+        return None
 
     async def embed_documents(self, texts: list[str]) -> list[list[float]]:
         raise NotImplementedError(

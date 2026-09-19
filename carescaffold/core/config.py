@@ -110,7 +110,7 @@ class RoleConfig(BaseModel):
 
 class EmbeddingsConfig(BaseModel):
     primary: str
-    output_dimension: int = 1024
+    output_dimension: int | str = 1024  # int for Voyage AI; "dynamic" for TF-IDF
 
 
 def models_for_role(role: str) -> tuple[str, str | None]:

@@ -16,7 +16,8 @@ from models import Base
 
 @asynccontextmanager
 async def lifespan(app: FastAPI):
-    """Startup: create tables + verify sqlite-vec. Shutdown: dispose engine."""
+    """Startup: create tables + verify sqlite-vec + ingest RAG content.
+    Shutdown: dispose engine."""
     engine = get_engine()
     async with engine.begin() as conn:
         await conn.run_sync(Base.metadata.create_all)
@@ -30,6 +31,16 @@ async def lifespan(app: FastAPI):
     log = logging.getLogger("carescaffold")
     sqlite_v, vec_v = await verify_sqlite_vec_loaded()
     log.info("CareScaffold startup OK — sqlite=%s sqlite_vec=%s", sqlite_v, vec_v)
+
+    # Phase 3: ingest RAG content (6 markdown files) at startup.
+    try:
+        from services.rag.ingest import ingest_all
+        n_chunks, source_files = await ingest_all()
+        log.info("RAG ingest OK — %d chunks: %s", n_chunks, source_files)
+    except Exception as e:
+        log.error("RAG ingest failed: %s", e)
+        # Continue startup — RAG calls will return graceful redirects
+
     yield
     await dispose_engine()
 
@@ -47,9 +58,13 @@ def create_app() -> FastAPI:
         lifespan=lifespan,
     )
 
-    # Phase 0: only /api/health is wired up.
+    # Phase 0: /api/health
     from api.health import router as health_router
     app.include_router(health_router, prefix="/health", tags=["health"])
+
+    # Phase 3: /api/scaffold
+    from api.scaffold import router as scaffold_router
+    app.include_router(scaffold_router, prefix="/scaffold", tags=["scaffold"])
 
     return app
 

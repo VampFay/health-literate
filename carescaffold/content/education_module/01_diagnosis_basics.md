@@ -1,0 +1,11 @@
+# Diagnosis Basics: Understanding Type 2 Diabetes
+
+When a doctor says you have Type 2 diabetes, they mean your body is having trouble moving sugar (glucose) from your bloodstream into your cells, where it's used for energy. Insulin is the hormone that opens that door. With Type 2 diabetes, your cells don't respond well to insulin anymore — this is called *insulin resistance* — and over time your pancreas may also make less insulin than it used to.
+
+It's worth knowing that Type 2 diabetes is different from Type 1. In Type 1, the pancreas makes essentially no insulin, usually because the immune system has attacked the cells that produce it. Type 1 is typically diagnosed in childhood or young adulthood and always requires insulin. Type 2 is far more common — about 9 out of 10 people with diabetes have Type 2 — and is usually diagnosed in adults, though it does appear in younger people too.
+
+A common and reasonable question is "why me?" Type 2 diabetes develops from a combination of factors, some within your influence and some not. Things that raise the likelihood include family history, age over 45, having had gestational diabetes during pregnancy, and being above a healthy weight — especially if that weight is carried around the middle. Physical inactivity and certain ethnic backgrounds also increase risk. None of these factors "caused" your diabetes on their own; they accumulate over time.
+
+What the diagnosis means in practical terms: your fasting blood sugar, your A1C, or both have crossed into a range that meets the definition doctors use. The diagnosis is not a verdict about how well you've lived or how careful you've been — it's a signal that your body is handling glucose differently than it used to, and that working with your care team on small, sustainable changes can meaningfully change how you feel and lower long-term risks to your eyes, kidneys, nerves, and heart.
+
+Two ideas are worth holding onto from the start. First, Type 2 diabetes is a manageable condition, not a sudden crisis; many people live full, active lives with it. Second, it tends to change over time, so what works for you this year may need adjusting in a few years — that's expected, not a sign of failure. Your care team will help you watch for those changes.

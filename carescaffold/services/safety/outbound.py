@@ -74,15 +74,37 @@ _UNIT_RE = re.compile(
 # Implementation: split by sentence; in each sentence, check both patterns.
 _SENTENCE_SPLIT = re.compile(r"(?<=[.!?])\s+")
 
-# Pattern 2: diagnostic statements
+# Pattern 2: diagnostic statements — directed AT THE PATIENT, not abstract
+# Per spec §11.4 (generalize, don't patch): educational content like
+# "Type 2 diabetes means your body doesn't use insulin as effectively"
+# is SAFE — it's abstract, not patient-directed. Layer 1 must catch
+# only statements that direct a diagnosis at the patient.
+#
+# Heuristic: the diagnosis phrase must be immediately followed by a
+# condition name (diabetes, prediabetes, hypoglycemia, hyperglycemia,
+# metabolic syndrome, etc.). This avoids matching "you have options" or
+# "you have a meal plan".
+_CONDITION_NAMES = (
+    r"(?:type\s*[12]\s*diabetes|diabetes|pre-?diabetes?|pre-?diabetic|"
+    r"diabetic|hypoglycemia|hyperglycemia|metabolic\s+syndrome|"
+    r"insulin\s+resistance|high\s+blood\s+sugar|low\s+blood\s+sugar)"
+)
+
 _DIAGNOSIS_PATTERNS: List[Tuple[str, str]] = [
-    ("dx_you_have",      r"\byou have\b"),
-    ("dx_your_diagnosis_is", r"\byour diagnosis is\b"),
-    ("dx_this_means",    r"\bthis means (you have|that you have)\b"),
-    ("dx_indicates",     r"\b(this )?indicates (you have|that you have)\b"),
-    ("dx_confirms",      r"\b(this )?confirms (you have|that you have)\b"),
-    ("dx_suggests",      r"\b(this )?suggests (you have|that you have)\b"),
-    ("dx_are_diabetic",  r"\byou (are|have) (pre-?diabetic|diabetic|pre-?diabetes|diabetes)\b"),
+    # "you have [condition]" — directed at the patient
+    ("dx_you_have",      r"\byou have\b\s+" + _CONDITION_NAMES),
+    # "your diagnosis is [condition]"
+    ("dx_your_diagnosis_is", r"\byour diagnosis is\b\s+" + _CONDITION_NAMES),
+    # "this means you have [condition]"
+    ("dx_this_means",    r"\bthis means (you have|that you have)\b\s+" + _CONDITION_NAMES),
+    # "this indicates/confirmed/suggests you have [condition]"
+    ("dx_indicates",     r"\b(this )?indicates (you have|that you have)\b\s+" + _CONDITION_NAMES),
+    ("dx_confirms",      r"\b(this )?confirms (you have|that you have)\b\s+" + _CONDITION_NAMES),
+    ("dx_suggests",      r"\b(this )?suggests (you have|that you have)\b\s+" + _CONDITION_NAMES),
+    # "you are diabetic/prediabetic" — directed at the patient
+    ("dx_are_diabetic",  r"\byou (are|are now)\s+(pre-?diabetic|diabetic|pre-?diabetic)\b"),
+    # "you are no longer diabetic" — directed at the patient
+    ("dx_no_longer",      r"\byou (are|are now)\s+no longer\s+(pre-?diabetic|diabetic|pre-?diabetes|diabetes)\b"),
 ]
 
 # Pattern 3: directive verbs near medication name

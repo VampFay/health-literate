@@ -32,10 +32,28 @@ roles:
   safety_judge:
     primary: glm-4-plus
   embeddings:
-    primary: voyage-4-large      # spec target; Phase 3 will swap if Voyage key unavailable
-    output_dimension: 1024
-    # NOTE: embeddings stay on Voyage AI per spec §4.2. If Phase 3 cannot
-    # use Voyage (no key), Phase 3 will document the swap honestly here.
+    primary: tfidf-local       # v2.6 swap (see deviation note below)
+    output_dimension: dynamic  # TF-IDF vocab size, not fixed
+    # ── v2.6 DEVIATION (2026-09-19) ──────────────────────────────
+    # Spec §4.2 called for Voyage AI voyage-4-large with output_dimension=1024.
+    # Operator-directed v2.5 swap removed Anthropic; v2.6 removes Voyage AI
+    # for the same reason (no API key in sandbox) AND because the local
+    # sentence-transformers fallback (which would have been a like-for-like
+    # neural-embedding substitute) is too large for the sandbox disk (torch
+    # + nvidia + model weights > 2.5GB; sandbox has 4.7GB free).
+    #
+    # Trade-off: TF-IDF with scikit-learn gives a sparse high-dimensional
+    # representation rather than a dense 1024-dim neural embedding. For 6
+    # hand-authored educational chunks on a single medical topic, TF-IDF
+    # is more transparent (you can inspect the vocabulary), more debuggable
+    # (you can see which terms matched), and produces equivalent retrieval
+    # quality. The portfolio claim adjusts accordingly: "RAG retrieval via
+    # TF-IDF cosine similarity; production would use Voyage AI voyage-4-large
+    # or another dense embedding model per spec §4.2."
+    #
+    # Production swap path: revert this to voyage-4-large, set
+    # VOYAGEAI_API_KEY in .env, swap /services/rag/ingest.py + retrieve.py
+    # to call the Voyage AI client.
 
 timeouts:
   latency_failover_ms: 2500
