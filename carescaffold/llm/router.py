@@ -15,9 +15,32 @@ import logging
 from dataclasses import dataclass
 from typing import Any
 
-from core.config import embeddings_config, models_for_role, retry_config, timeouts
+from core.config import embeddings_config, get_settings, models_for_role, retry_config, timeouts
 
 log = logging.getLogger(__name__)
+
+
+# ── Anthropic client (lazy) ──────────────────────────────────────
+_anthropic_client: Any = None
+
+
+def _get_anthropic_client() -> Any:
+    """Lazily instantiate the Anthropic async client.
+
+    Raises RuntimeError if ANTHROPIC_API_KEY is not configured. Service
+    code should catch this and surface a clear error to the operator.
+    """
+    global _anthropic_client
+    if _anthropic_client is None:
+        settings = get_settings()
+        if not settings.anthropic_api_key:
+            raise RuntimeError(
+                "ANTHROPIC_API_KEY not configured. Set it in .env "
+                "(required from Phase 2 onward per spec §4.4.2 Layer 2)."
+            )
+        import anthropic
+        _anthropic_client = anthropic.AsyncAnthropic(api_key=settings.anthropic_api_key)
+    return _anthropic_client
 
 
 @dataclass
@@ -29,6 +52,10 @@ class FallbackEvent:
     fallback: str
     reason: str
     latency_ms: int
+
+
+# Allowed verdicts for the outbound safety judge (spec §4.4.2)
+JUDGE_VERDICTS = ("SAFE", "BLOCK_DIAGNOSIS", "BLOCK_DOSAGE", "BLOCK_DIRECTIVE")
 
 
 class LLMRouter:
@@ -45,10 +72,76 @@ class LLMRouter:
             "Generation call wired in Phase 3 (spec §4.2)."
         )
 
-    async def call_safety_judge(self, prompt: str, **kwargs: Any) -> str:
-        raise NotImplementedError(
-            "Safety judge call wired in Phase 2 (spec §4.4.2 Layer 2)."
-        )
+    async def call_safety_judge(self, response_text: str) -> str:
+        """Phase 2 Layer 2 — Claude Haiku 4.5 judge call with structured output.
+
+        Spec §4.4.2: "Use Claude's tool-use / structured output capability
+        for the judge call to force one of the four fixed labels — do not
+        parse free text for this."
+
+        Implementation: uses Anthropic's tool-use API with a single tool
+        `submit_verdict` that takes a `verdict` enum argument. The model
+        is constrained to invoke this tool, giving us a structured label.
+
+        Returns one of: SAFE, BLOCK_DIAGNOSIS, BLOCK_DOSAGE, BLOCK_DIRECTIVE.
+        """
+        from llm.prompts import OUTBOUND_JUDGE_V1
+
+        judge_model = self.judge_model()
+        client = _get_anthropic_client()
+
+        # Define a tool that forces the model to return one of 4 labels.
+        # Anthropic's tool-use schema enforces the enum constraint.
+        verdict_tool = {
+            "name": "submit_verdict",
+            "description": "Submit the safety verdict for this patient-education response.",
+            "input_schema": {
+                "type": "object",
+                "properties": {
+                    "verdict": {
+                        "type": "string",
+                        "enum": list(JUDGE_VERDICTS),
+                        "description": (
+                            "One of: SAFE (no safety issue), BLOCK_DIAGNOSIS "
+                            "(response states a diagnosis), BLOCK_DOSAGE "
+                            "(response gives dosage info), BLOCK_DIRECTIVE "
+                            "(response tells patient to alter treatment)."
+                        ),
+                    },
+                },
+                "required": ["verdict"],
+            },
+        }
+
+        prompt_text = OUTBOUND_JUDGE_V1.replace("{response_text}", response_text)
+
+        try:
+            response = await client.messages.create(
+                model=judge_model,
+                max_tokens=1024,
+                tools=[verdict_tool],
+                tool_choice={"type": "tool", "name": "submit_verdict"},
+                messages=[{"role": "user", "content": prompt_text}],
+            )
+        except Exception as e:
+            log.error("Safety judge call failed: %s", e)
+            # FAIL SAFE: if the judge is unavailable, BLOCK rather than release.
+            # The judge is a defense-in-depth layer; if it fails, we cannot
+            # verify the response is safe, so we block by default.
+            return "BLOCK_DIRECTIVE"
+
+        # Extract verdict from the tool call
+        for block in response.content:
+            if block.type == "tool_use" and block.name == "submit_verdict":
+                verdict = block.input.get("verdict", "")
+                if verdict in JUDGE_VERDICTS:
+                    return verdict
+                # Unexpected verdict value — fail safe
+                return "BLOCK_DIRECTIVE"
+
+        # No tool_use block found — fail safe
+        log.warning("Judge response had no tool_use block; failing safe.")
+        return "BLOCK_DIRECTIVE"
 
     async def embed_documents(self, texts: list[str]) -> list[list[float]]:
         raise NotImplementedError(
