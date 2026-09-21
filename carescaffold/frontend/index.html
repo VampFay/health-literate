@@ -1,0 +1,266 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>CareScaffold — Type 2 Diabetes Education Assistant</title>
+  <script src="https://cdn.tailwindcss.com"></script>
+  <style>
+    body { font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif; }
+    .typing-indicator span {
+      display: inline-block;
+      width: 6px; height: 6px;
+      background: #94a3b8;
+      border-radius: 50%;
+      margin: 0 2px;
+      animation: typing 1.4s infinite;
+    }
+    .typing-indicator span:nth-child(2) { animation-delay: 0.2s; }
+    .typing-indicator span:nth-child(3) { animation-delay: 0.4s; }
+    @keyframes typing {
+      0%, 60%, 100% { transform: translateY(0); opacity: 0.4; }
+      30% { transform: translateY(-6px); opacity: 1; }
+    }
+    .citation-chip {
+      display: inline-block;
+      padding: 2px 8px;
+      background: #e0f2fe;
+      color: #0369a1;
+      border-radius: 4px;
+      font-size: 11px;
+      font-family: monospace;
+      margin: 2px;
+    }
+    .persona-active {
+      background: #0ea5e9 !important;
+      color: white !important;
+      border-color: #0ea5e9 !important;
+    }
+  </style>
+</head>
+<body class="bg-slate-50 min-h-screen">
+  <div class="max-w-3xl mx-auto px-4 py-6">
+    <!-- Header -->
+    <header class="mb-6">
+      <div class="flex items-center gap-3 mb-2">
+        <div class="w-10 h-10 bg-sky-500 rounded-lg flex items-center justify-center text-white font-bold text-lg">A1c</div>
+        <div>
+          <h1 class="text-xl font-bold text-slate-900">CareScaffold</h1>
+          <p class="text-sm text-slate-500">Type 2 Diabetes Education Assistant</p>
+        </div>
+      </div>
+      <p class="text-xs text-slate-400 bg-amber-50 border border-amber-200 rounded p-2">
+        ⚠️ <strong>Portfolio demo, not medical software.</strong> This tool explains educational content; it does not diagnose, prescribe, or direct treatment. For clinical decisions, talk to your care team.
+      </p>
+    </header>
+
+    <!-- Persona selector -->
+    <div class="mb-4 bg-white rounded-lg shadow-sm border border-slate-200 p-3">
+      <p class="text-xs text-slate-500 mb-2">Reading level:</p>
+      <div class="flex gap-2">
+        <button id="persona-foundational" onclick="setPersona('foundational')"
+          class="persona-btn flex-1 px-3 py-2 text-sm rounded border border-slate-300 bg-white hover:bg-slate-50 transition persona-active">
+          🍎 Foundational<br><span class="text-xs opacity-75">Everyday analogies, simpler words</span>
+        </button>
+        <button id="persona-higher" onclick="setPersona('higher')"
+          class="persona-btn flex-1 px-3 py-2 text-sm rounded border border-slate-300 bg-white hover:bg-slate-50 transition">
+          📊 Higher<br><span class="text-xs opacity-75">Data-oriented, technical terms</span>
+        </button>
+      </div>
+    </div>
+
+    <!-- Chat area -->
+    <div id="chat" class="bg-white rounded-lg shadow-sm border border-slate-200 p-4 mb-4 min-h-[300px] max-h-[500px] overflow-y-auto">
+      <!-- Welcome message -->
+      <div class="text-center text-slate-400 mt-8">
+        <p class="mb-2">👋 Hi! I'm here to help you understand Type 2 diabetes.</p>
+        <p class="text-sm">Ask me about A1C tests, metformin, carbohydrates, or anything else from your care team's education plan.</p>
+      </div>
+
+      <!-- Suggested questions -->
+      <div class="mt-6">
+        <p class="text-xs text-slate-400 mb-2 text-center">Try one of these:</p>
+        <div class="flex flex-wrap gap-2 justify-center">
+          <button onclick="askSuggested('What is an A1C test and why does my doctor want me to get one?')"
+            class="text-xs px-3 py-1.5 bg-sky-50 text-sky-700 rounded-full border border-sky-200 hover:bg-sky-100 transition">
+            What is an A1C test?
+          </button>
+          <button onclick="askSuggested('How does metformin work in my body?')"
+            class="text-xs px-3 py-1.5 bg-sky-50 text-sky-700 rounded-full border border-sky-200 hover:bg-sky-100 transition">
+            How does metformin work?
+          </button>
+          <button onclick="askSuggested('What foods have carbohydrates in them?')"
+            class="text-xs px-3 py-1.5 bg-sky-50 text-sky-700 rounded-full border border-sky-200 hover:bg-sky-100 transition">
+            What foods have carbs?
+          </button>
+          <button onclick="askSuggested('How does walking after a meal affect my blood sugar?')"
+            class="text-xs px-3 py-1.5 bg-sky-50 text-sky-700 rounded-full border border-sky-200 hover:bg-sky-100 transition">
+            How does walking affect blood sugar?
+          </button>
+        </div>
+      </div>
+    </div>
+
+    <!-- Input -->
+    <form id="chat-form" onsubmit="askQuestion(event)" class="flex gap-2">
+      <input
+        id="question-input"
+        type="text"
+        placeholder="Ask a question about Type 2 diabetes..."
+        class="flex-1 px-4 py-3 rounded-lg border border-slate-300 focus:outline-none focus:ring-2 focus:ring-sky-400 focus:border-transparent"
+        autocomplete="off"
+      >
+      <button
+        type="submit"
+        id="send-btn"
+        class="px-5 py-3 bg-sky-500 text-white rounded-lg hover:bg-sky-600 transition font-medium disabled:opacity-50 disabled:cursor-not-allowed"
+      >
+        Send
+      </button>
+    </form>
+
+    <!-- Footer -->
+    <footer class="mt-6 text-center text-xs text-slate-400">
+      <p>Built as a portfolio demo • <a href="/docs" class="text-sky-500 hover:underline">API docs</a> • <a href="https://github.com/VampFay/health-literate" class="text-sky-500 hover:underline">GitHub</a></p>
+    </footer>
+  </div>
+
+  <script>
+    let currentPersona = 'foundational';
+    let isWaiting = false;
+
+    function setPersona(p) {
+      currentPersona = p;
+      document.querySelectorAll('.persona-btn').forEach(b => b.classList.remove('persona-active'));
+      document.getElementById('persona-' + p).classList.add('persona-active');
+    }
+
+    function askSuggested(question) {
+      document.getElementById('question-input').value = question;
+      askQuestion(new Event('submit'));
+    }
+
+    function addUserMessage(text) {
+      const chat = document.getElementById('chat');
+      const msg = document.createElement('div');
+      msg.className = 'flex justify-end mb-4';
+      msg.innerHTML = `
+        <div class="bg-sky-500 text-white rounded-lg px-4 py-2 max-w-[80%]">
+          ${escapeHtml(text)}
+        </div>`;
+      chat.appendChild(msg);
+      chat.scrollTop = chat.scrollHeight;
+    }
+
+    function addBotMessage(response) {
+      const chat = document.getElementById('chat');
+      const msg = document.createElement('div');
+      msg.className = 'flex justify-start mb-4';
+
+      // Emergency escalation styling
+      if (response.escalated) {
+        msg.innerHTML = `
+          <div class="bg-red-50 border-2 border-red-300 rounded-lg px-4 py-3 max-w-[85%]">
+            <div class="flex items-start gap-2 mb-1">
+              <span class="text-red-600 text-lg">⚠️</span>
+              <p class="text-red-800 font-medium text-sm">This may need immediate attention</p>
+            </div>
+            <p class="text-red-700 text-sm">${escapeHtml(response.response)}</p>
+            <p class="text-xs text-red-400 mt-2 italic">Inbound safety check bypassed the assistant and routed you to emergency resources.</p>
+          </div>`;
+      } else if (response.safety_verdict && response.safety_verdict !== 'SAFE') {
+        // Outbound safety blocked
+        msg.innerHTML = `
+          <div class="bg-amber-50 border border-amber-300 rounded-lg px-4 py-3 max-w-[85%]">
+            <p class="text-amber-800 text-sm">${escapeHtml(response.response)}</p>
+            <p class="text-xs text-amber-500 mt-1 italic">Outbound safety check: ${escapeHtml(response.safety_verdict)} (${escapeHtml(response.safety_layer)})</p>
+          </div>`;
+      } else {
+        // Normal educational response
+        const citations = (response.citations || []).map(c => `<span class="citation-chip">${escapeHtml(c)}</span>`).join('');
+        msg.innerHTML = `
+          <div class="bg-slate-50 border border-slate-200 rounded-lg px-4 py-3 max-w-[85%]">
+            <p class="text-slate-800 text-sm whitespace-pre-wrap">${escapeHtml(response.response)}</p>
+            ${citations ? `<div class="mt-2 pt-2 border-t border-slate-200"><p class="text-xs text-slate-400 mb-1">Sources:</p>${citations}</div>` : ''}
+          </div>`;
+      }
+      chat.appendChild(msg);
+      chat.scrollTop = chat.scrollHeight;
+    }
+
+    function addTyping() {
+      const chat = document.getElementById('chat');
+      const msg = document.createElement('div');
+      msg.id = 'typing-indicator';
+      msg.className = 'flex justify-start mb-4';
+      msg.innerHTML = `
+        <div class="bg-slate-100 rounded-lg px-4 py-3">
+          <div class="typing-indicator">
+            <span></span><span></span><span></span>
+          </div>
+        </div>`;
+      chat.appendChild(msg);
+      chat.scrollTop = chat.scrollHeight;
+    }
+
+    function removeTyping() {
+      const el = document.getElementById('typing-indicator');
+      if (el) el.remove();
+    }
+
+    function escapeHtml(s) {
+      const div = document.createElement('div');
+      div.textContent = s || '';
+      return div.innerHTML;
+    }
+
+    async function askQuestion(event) {
+      event.preventDefault();
+      if (isWaiting) return;
+      const input = document.getElementById('question-input');
+      const question = input.value.trim();
+      if (!question) return;
+
+      // Clear welcome + suggested questions on first message
+      const chat = document.getElementById('chat');
+      const welcome = chat.querySelector('.text-center');
+      if (welcome) welcome.parentElement.remove();
+
+      addUserMessage(question);
+      input.value = '';
+      isWaiting = true;
+      document.getElementById('send-btn').disabled = true;
+      addTyping();
+
+      try {
+        const resp = await fetch('/scaffold', {
+          method: 'POST',
+          headers: { 'Content-Type': 'application/json' },
+          body: JSON.stringify({
+            question: question,
+            persona: currentPersona,
+          }),
+        });
+        const data = await resp.json();
+        removeTyping();
+        addBotMessage(data);
+      } catch (err) {
+        removeTyping();
+        addBotMessage({
+          response: `Sorry, I couldn't reach the assistant. Make sure the server is running. (${err.message})`,
+          escalated: false,
+          citations: [],
+          safety_verdict: 'SAFE',
+        });
+      } finally {
+        isWaiting = false;
+        document.getElementById('send-btn').disabled = false;
+        input.focus();
+      }
+    }
+
+    // Enter key submits (form already does this, but just in case)
+    document.getElementById('question-input').focus();
+  </script>
+</body>
+</html>

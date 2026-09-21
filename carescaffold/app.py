@@ -81,6 +81,28 @@ def create_app() -> FastAPI:
     from services.fhir.endpoint import router as fhir_router
     app.include_router(fhir_router)
 
+    # Phase 5: serve the patient-facing UI at / (spec §2: single HTML page,
+    # vanilla JS, Tailwind via CDN)
+    from fastapi.responses import HTMLResponse
+    from pathlib import Path
+
+    FRONTEND_DIR = Path(__file__).resolve().parent / "frontend"
+    INDEX_HTML = FRONTEND_DIR / "index.html"
+
+    @app.get("/", response_class=HTMLResponse, include_in_schema=False)
+    async def serve_ui():
+        """Serve the patient-facing chat UI at the root URL.
+
+        Visiting http://localhost:8000/ shows the CareScaffold chat interface
+        (not a 404). The Swagger UI is still available at /docs for developers.
+        """
+        if INDEX_HTML.exists():
+            return INDEX_HTML.read_text(encoding="utf-8")
+        return HTMLResponse(
+            "<h1>Frontend not found</h1><p>frontend/index.html is missing.</p>",
+            status_code=404,
+        )
+
     return app
 
 
