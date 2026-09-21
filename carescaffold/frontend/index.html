@@ -682,6 +682,10 @@
           headers: { 'Content-Type': 'application/json' },
           body: JSON.stringify({ question, persona: currentPersona }),
         });
+        if (!resp.ok) {
+          const errorText = await resp.text();
+          throw new Error(`Server returned ${resp.status}: ${errorText.substring(0, 100)}`);
+        }
         const data = await resp.json();
         removeTyping();
         addBotMessage(data);

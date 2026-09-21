@@ -76,7 +76,23 @@ async def scaffold_endpoint(req: ScaffoldRequest, _: AuthSubject) -> ScaffoldRes
         )
 
     # Standard pipeline: retrieve → generate → outbound safety
-    result: ScaffoldResponse = await generate(req.question, persona=req.persona, top_k=req.top_k)
+    try:
+        result: ScaffoldResponse = await generate(req.question, persona=req.persona, top_k=req.top_k)
+    except Exception as e:
+        log.error("Scaffold generation failed: %s", e)
+        return ScaffoldResponseBody(
+            response=(
+                f"I had trouble generating a response right now — this might be a "
+                f"connectivity issue with the AI service. Please try again in a moment. "
+                f"If the problem persists, check that the z-ai CLI is installed and "
+                f"the RAG education files are loaded. (Technical: {str(e)[:200]})"
+            ),
+            citations=[],
+            persona=req.persona,
+            safety_verdict="SAFE",
+            safety_layer="error",
+            retrieved_chunks=[],
+        )
     return ScaffoldResponseBody(
         response=result.response,
         citations=result.citations,
