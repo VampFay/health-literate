@@ -3,138 +3,537 @@
 <head>
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
-  <title>CareScaffold — Type 2 Diabetes Education Assistant</title>
+  <title>CareScaffold — Your Type 2 Diabetes Learning Companion</title>
   <script src="https://cdn.tailwindcss.com"></script>
+  <script>
+    tailwind.config = {
+      theme: {
+        extend: {
+          colors: {
+            carescaffold: {
+              50: '#f0fdf4', 100: '#dcfce7', 200: '#bbf7d0',
+              300: '#86efac', 400: '#4ade80', 500: '#10b981',
+              600: '#059669', 700: '#047857', 800: '#065f46', 900: '#064e3b',
+            },
+            achievement: {
+              400: '#fbbf24', 500: '#f59e0b', 600: '#d97706',
+            },
+            emergency: {
+              500: '#ef4444', 600: '#dc2626', 700: '#b91c1c',
+            },
+          },
+          fontFamily: {
+            sans: ['Inter', 'system-ui', 'sans-serif'],
+            mono: ['JetBrains Mono', 'monospace'],
+          },
+          animation: {
+            'fade-in': 'fadeIn 0.3s ease-in-out',
+            'slide-up': 'slideUp 0.3s ease-out',
+            'bounce-subtle': 'bounceSubtle 0.5s ease-in-out',
+          },
+        },
+      },
+    }
+  </script>
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&family=JetBrains+Mono:wght@400;500&display=swap" rel="stylesheet">
   <style>
-    body { font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif; }
+    /* WCAG 2.1 AA: 18px body text, 4.5:1 contrast minimum */
+    html { font-size: 18px; }
+    body { font-family: 'Inter', system-ui, sans-serif; }
+
+    /* Accessibility: reduced motion */
+    @media (prefers-reduced-motion: reduce) {
+      *, *::before, *::after {
+        animation-duration: 0.01ms !important;
+        transition-duration: 0.01ms !important;
+      }
+    }
+
+    /* High contrast mode */
+    @media (prefers-contrast: high) {
+      .gradient-bg { background: white !important; }
+      .shadow-soft { box-shadow: none !important; border: 2px solid #000 !important; }
+    }
+
+    @keyframes fadeIn { from { opacity: 0; } to { opacity: 1; } }
+    @keyframes slideUp { from { opacity: 0; transform: translateY(20px); } to { opacity: 1; transform: translateY(0); } }
+    @keyframes bounceSubtle { 0%, 100% { transform: translateY(0); } 50% { transform: translateY(-4px); } }
+
     .typing-indicator span {
-      display: inline-block;
-      width: 6px; height: 6px;
-      background: #94a3b8;
-      border-radius: 50%;
-      margin: 0 2px;
+      display: inline-block; width: 8px; height: 8px;
+      background: #10b981; border-radius: 50%; margin: 0 3px;
       animation: typing 1.4s infinite;
     }
     .typing-indicator span:nth-child(2) { animation-delay: 0.2s; }
     .typing-indicator span:nth-child(3) { animation-delay: 0.4s; }
     @keyframes typing {
       0%, 60%, 100% { transform: translateY(0); opacity: 0.4; }
-      30% { transform: translateY(-6px); opacity: 1; }
+      30% { transform: translateY(-8px); opacity: 1; }
     }
-    .citation-chip {
-      display: inline-block;
-      padding: 2px 8px;
-      background: #e0f2fe;
-      color: #0369a1;
-      border-radius: 4px;
-      font-size: 11px;
-      font-family: monospace;
-      margin: 2px;
-    }
+
     .persona-active {
-      background: #0ea5e9 !important;
-      color: white !important;
-      border-color: #0ea5e9 !important;
+      background: #10b981 !important; color: white !important;
+      border-color: #10b981 !important;
+    }
+
+    .citation-chip {
+      display: inline-block; padding: 3px 10px;
+      background: #d1fae5; color: #047857; border-radius: 6px;
+      font-size: 13px; font-family: 'JetBrains Mono', monospace; margin: 2px;
+      cursor: pointer; transition: background 0.2s;
+    }
+    .citation-chip:hover { background: #a7f3d0; }
+
+    .trust-badge {
+      display: inline-flex; align-items: center; gap: 4px;
+      padding: 3px 8px; border-radius: 6px; font-size: 12px; font-weight: 500;
+    }
+
+    .nav-item {
+      display: flex; flex-direction: column; align-items: center; gap: 2px;
+      padding: 8px 12px; border-radius: 8px; cursor: pointer;
+      transition: all 0.2s; color: #64748b; min-width: 64px;
+    }
+    .nav-item:hover { background: #f0fdf4; color: #059669; }
+    .nav-item.active { color: #10b981; font-weight: 600; }
+    .nav-item.active .nav-icon { transform: scale(1.1); }
+    .nav-icon { font-size: 22px; transition: transform 0.2s; }
+    .nav-label { font-size: 11px; }
+
+    .module-card {
+      transition: transform 0.2s, box-shadow 0.2s;
+    }
+    .module-card:hover {
+      transform: translateY(-2px);
+      box-shadow: 0 8px 16px rgba(0,0,0,0.1);
+    }
+
+    .badge-earned {
+      animation: bounceSubtle 0.5s ease-in-out;
+    }
+
+    /* Scrollbar styling */
+    ::-webkit-scrollbar { width: 6px; }
+    ::-webkit-scrollbar-track { background: transparent; }
+    ::-webkit-scrollbar-thumb { background: #d1d5db; border-radius: 3px; }
+    ::-webkit-scrollbar-thumb:hover { background: #9ca3af; }
+
+    /* Focus styles for keyboard navigation (WCAG 2.1 AA) */
+    *:focus-visible {
+      outline: 3px solid #10b981;
+      outline-offset: 2px;
+      border-radius: 4px;
+    }
+
+    /* Screen reader only text */
+    .sr-only {
+      position: absolute; width: 1px; height: 1px;
+      padding: 0; margin: -1px; overflow: hidden;
+      clip: rect(0,0,0,0); white-space: nowrap; border: 0;
     }
   </style>
 </head>
-<body class="bg-slate-50 min-h-screen">
-  <div class="max-w-3xl mx-auto px-4 py-6">
-    <!-- Header -->
-    <header class="mb-6">
-      <div class="flex items-center gap-3 mb-2">
-        <div class="w-10 h-10 bg-sky-500 rounded-lg flex items-center justify-center text-white font-bold text-lg">A1c</div>
-        <div>
-          <h1 class="text-xl font-bold text-slate-900">CareScaffold</h1>
-          <p class="text-sm text-slate-500">Type 2 Diabetes Education Assistant</p>
-        </div>
-      </div>
-      <p class="text-xs text-slate-400 bg-amber-50 border border-amber-200 rounded p-2">
-        ⚠️ <strong>Portfolio demo, not medical software.</strong> This tool explains educational content; it does not diagnose, prescribe, or direct treatment. For clinical decisions, talk to your care team.
-      </p>
-    </header>
+<body class="bg-carescaffold-50 min-h-screen pb-20">
 
-    <!-- Persona selector -->
-    <div class="mb-4 bg-white rounded-lg shadow-sm border border-slate-200 p-3">
-      <p class="text-xs text-slate-500 mb-2">Reading level:</p>
-      <div class="flex gap-2">
-        <button id="persona-foundational" onclick="setPersona('foundational')"
-          class="persona-btn flex-1 px-3 py-2 text-sm rounded border border-slate-300 bg-white hover:bg-slate-50 transition persona-active">
-          🍎 Foundational<br><span class="text-xs opacity-75">Everyday analogies, simpler words</span>
-        </button>
-        <button id="persona-higher" onclick="setPersona('higher')"
-          class="persona-btn flex-1 px-3 py-2 text-sm rounded border border-slate-300 bg-white hover:bg-slate-50 transition">
-          📊 Higher<br><span class="text-xs opacity-75">Data-oriented, technical terms</span>
-        </button>
-      </div>
-    </div>
-
-    <!-- Chat area -->
-    <div id="chat" class="bg-white rounded-lg shadow-sm border border-slate-200 p-4 mb-4 min-h-[300px] max-h-[500px] overflow-y-auto">
-      <!-- Welcome message -->
-      <div class="text-center text-slate-400 mt-8">
-        <p class="mb-2">👋 Hi! I'm here to help you understand Type 2 diabetes.</p>
-        <p class="text-sm">Ask me about A1C tests, metformin, carbohydrates, or anything else from your care team's education plan.</p>
-      </div>
-
-      <!-- Suggested questions -->
-      <div class="mt-6">
-        <p class="text-xs text-slate-400 mb-2 text-center">Try one of these:</p>
-        <div class="flex flex-wrap gap-2 justify-center">
-          <button onclick="askSuggested('What is an A1C test and why does my doctor want me to get one?')"
-            class="text-xs px-3 py-1.5 bg-sky-50 text-sky-700 rounded-full border border-sky-200 hover:bg-sky-100 transition">
-            What is an A1C test?
-          </button>
-          <button onclick="askSuggested('How does metformin work in my body?')"
-            class="text-xs px-3 py-1.5 bg-sky-50 text-sky-700 rounded-full border border-sky-200 hover:bg-sky-100 transition">
-            How does metformin work?
-          </button>
-          <button onclick="askSuggested('What foods have carbohydrates in them?')"
-            class="text-xs px-3 py-1.5 bg-sky-50 text-sky-700 rounded-full border border-sky-200 hover:bg-sky-100 transition">
-            What foods have carbs?
-          </button>
-          <button onclick="askSuggested('How does walking after a meal affect my blood sugar?')"
-            class="text-xs px-3 py-1.5 bg-sky-50 text-sky-700 rounded-full border border-sky-200 hover:bg-sky-100 transition">
-            How does walking affect blood sugar?
-          </button>
-        </div>
-      </div>
-    </div>
-
-    <!-- Input -->
-    <form id="chat-form" onsubmit="askQuestion(event)" class="flex gap-2">
-      <input
-        id="question-input"
-        type="text"
-        placeholder="Ask a question about Type 2 diabetes..."
-        class="flex-1 px-4 py-3 rounded-lg border border-slate-300 focus:outline-none focus:ring-2 focus:ring-sky-400 focus:border-transparent"
-        autocomplete="off"
-      >
-      <button
-        type="submit"
-        id="send-btn"
-        class="px-5 py-3 bg-sky-500 text-white rounded-lg hover:bg-sky-600 transition font-medium disabled:opacity-50 disabled:cursor-not-allowed"
-      >
-        Send
-      </button>
-    </form>
-
-    <!-- Footer -->
-    <footer class="mt-6 text-center text-xs text-slate-400">
-      <p>Built as a portfolio demo • <a href="/docs" class="text-sky-500 hover:underline">API docs</a> • <a href="https://github.com/VampFay/health-literate" class="text-sky-500 hover:underline">GitHub</a></p>
-    </footer>
+  <!-- ── Sticky Disclaimer Banner (Trust Signal #1: Honest Disclaimer) ── -->
+  <div class="sticky top-0 z-50 bg-amber-50 border-b border-amber-300 px-4 py-2 text-center">
+    <p class="text-sm text-amber-800 font-medium">
+      ⚠️ <strong>Portfolio demo — not medical software.</strong> For clinical decisions, talk to your care team.
+    </p>
   </div>
 
-  <script>
-    let currentPersona = 'foundational';
-    let isWaiting = false;
+  <!-- ── Onboarding Modal (Role Selection) ── -->
+  <div id="onboarding" class="fixed inset-0 z-[60] bg-black/40 flex items-center justify-center p-4" role="dialog" aria-labelledby="onboarding-title" aria-modal="true">
+    <div class="bg-white rounded-2xl shadow-2xl max-w-md w-full p-8 animate-slide-up">
+      <!-- Mascot Pip -->
+      <div class="text-center mb-6">
+        <svg viewBox="0 0 120 120" class="w-24 h-24 mx-auto" aria-hidden="true">
+          <!-- Pip the friendly pancreas -->
+          <ellipse cx="60" cy="65" rx="38" ry="30" fill="#10b981" />
+          <ellipse cx="48" cy="58" rx="12" ry="8" fill="#059669" opacity="0.6" />
+          <circle cx="50" cy="58" r="4" fill="white" />
+          <circle cx="50" cy="58" r="2" fill="#1e293b" />
+          <circle cx="70" cy="58" r="4" fill="white" />
+          <circle cx="70" cy="58" r="2" fill="#1e293b" />
+          <path d="M 48 72 Q 60 80 72 72" stroke="#1e293b" stroke-width="3" fill="none" stroke-linecap="round" />
+          <circle cx="40" cy="68" r="3" fill="#fbbf24" opacity="0.6" />
+          <circle cx="80" cy="68" r="3" fill="#fbbf24" opacity="0.6" />
+        </svg>
+        <h2 id="onboarding-title" class="text-2xl font-bold text-slate-800 mt-3">Hi! I'm Pip 🫀</h2>
+        <p class="text-slate-500 mt-1">Your Type 2 diabetes learning companion</p>
+      </div>
 
-    function setPersona(p) {
-      currentPersona = p;
-      document.querySelectorAll('.persona-btn').forEach(b => b.classList.remove('persona-active'));
-      document.getElementById('persona-' + p).classList.add('persona-active');
+      <p class="text-slate-600 text-center mb-6">Who are you? I'll tailor my answers to fit.</p>
+
+      <div class="space-y-3">
+        <button onclick="selectRole('patient')" class="w-full p-4 rounded-xl border-2 border-slate-200 hover:border-carescaffold-400 hover:bg-carescaffold-50 transition text-left">
+          <div class="flex items-center gap-3">
+            <span class="text-2xl">🧑‍🦰</span>
+            <div>
+              <p class="font-semibold text-slate-800">Newly diagnosed</p>
+              <p class="text-sm text-slate-500">Just found out I have Type 2 diabetes</p>
+            </div>
+          </div>
+        </button>
+        <button onclick="selectRole('manager')" class="w-full p-4 rounded-xl border-2 border-slate-200 hover:border-carescaffold-400 hover:bg-carescaffold-50 transition text-left">
+          <div class="flex items-center gap-3">
+            <span class="text-2xl">📊</span>
+            <div>
+              <p class="font-semibold text-slate-800">Long-term manager</p>
+              <p class="text-sm text-slate-500">Been managing T2D for a while, want to go deeper</p>
+            </div>
+          </div>
+        </button>
+        <button onclick="selectRole('caregiver')" class="w-full p-4 rounded-xl border-2 border-slate-200 hover:border-carescaffold-400 hover:bg-carescaffold-50 transition text-left">
+          <div class="flex items-center gap-3">
+            <span class="text-2xl">💛</span>
+            <div>
+              <p class="font-semibold text-slate-800">Caregiver</p>
+              <p class="text-sm text-slate-500">I help someone who has Type 2 diabetes</p>
+            </div>
+          </div>
+        </button>
+      </div>
+    </div>
+  </div>
+
+  <!-- ── App Container ── -->
+  <div id="app" class="max-w-2xl mx-auto px-4 pt-4 pb-4 hidden">
+
+    <!-- ═══════════════════════════════════════════════════════════════ -->
+    <!-- HOME SCREEN — Ask & Learn (the primary screen)                   -->
+    <!-- ═══════════════════════════════════════════════════════════════ -->
+    <div id="screen-home" class="screen">
+      <!-- Mascot greeting -->
+      <div class="flex items-center gap-3 mb-4">
+        <svg viewBox="0 0 120 120" class="w-12 h-12 flex-shrink-0" aria-hidden="true">
+          <ellipse cx="60" cy="65" rx="38" ry="30" fill="#10b981" />
+          <circle cx="50" cy="58" r="4" fill="white" /><circle cx="50" cy="58" r="2" fill="#1e293b" />
+          <circle cx="70" cy="58" r="4" fill="white" /><circle cx="70" cy="58" r="2" fill="#1e293b" />
+          <path d="M 48 72 Q 60 80 72 72" stroke="#1e293b" stroke-width="3" fill="none" stroke-linecap="round" />
+        </svg>
+        <div>
+          <h1 class="text-xl font-bold text-slate-800" id="greeting-text">Ask Pip anything 🫀</h1>
+          <p class="text-sm text-slate-500" id="greeting-sub">I'm here to help you understand Type 2 diabetes</p>
+        </div>
+      </div>
+
+      <!-- FHIR Context Bar (A1C chips + conditions) -->
+      <div id="context-bar" class="bg-white rounded-xl shadow-sm border border-slate-200 p-3 mb-4">
+        <div class="flex items-center gap-2 mb-2">
+          <span class="text-xs text-slate-400 font-medium">YOUR HEALTH CONTEXT</span>
+          <button onclick="loadFhirContext()" class="text-xs text-carescaffold-600 hover:underline" id="fhir-load-btn">Load from FHIR →</button>
+        </div>
+        <div id="context-chips" class="flex flex-wrap gap-2">
+          <span class="text-sm text-slate-400 italic">No FHIR data loaded yet. Click "Load from FHIR" to pull your A1C history.</span>
+        </div>
+      </div>
+
+      <!-- Persona toggle -->
+      <div class="mb-4 bg-white rounded-xl shadow-sm border border-slate-200 p-3">
+        <div class="flex items-center gap-2 mb-2">
+          <span class="text-xs text-slate-400 font-medium">READING LEVEL</span>
+        </div>
+        <div class="flex gap-2">
+          <button id="persona-foundational" onclick="setPersona('foundational')"
+            class="persona-btn persona-active flex-1 px-3 py-2.5 text-sm rounded-lg border border-slate-300 bg-white transition">
+            🍎 Simple<br><span class="text-xs opacity-75">Kitchen analogies, plain words</span>
+          </button>
+          <button id="persona-higher" onclick="setPersona('higher')"
+            class="persona-btn flex-1 px-3 py-2.5 text-sm rounded-lg border border-slate-300 bg-white transition">
+            📊 Detailed<br><span class="text-xs opacity-75">Data trends, technical terms</span>
+          </button>
+        </div>
+      </div>
+
+      <!-- Chat area -->
+      <div id="chat" class="bg-white rounded-xl shadow-sm border border-slate-200 p-4 mb-4 min-h-[280px] max-h-[400px] overflow-y-auto" role="log" aria-live="polite" aria-label="Chat conversation">
+        <div class="text-center text-slate-400 mt-6" id="welcome-msg">
+          <p class="mb-3">👋 Hi! I'm here to help you understand Type 2 diabetes.</p>
+          <p class="text-sm mb-4">Ask me about A1C tests, metformin, carbs, or anything from your care team's education plan.</p>
+          <div class="flex flex-wrap gap-2 justify-center">
+            <button onclick="askSuggested('What is an A1C test and why does my doctor want me to get one?')"
+              class="text-sm px-4 py-2 bg-carescaffold-50 text-carescaffold-700 rounded-full border border-carescaffold-200 hover:bg-carescaffold-100 transition">
+              📊 What is an A1C test?
+            </button>
+            <button onclick="askSuggested('How does metformin work in my body?')"
+              class="text-sm px-4 py-2 bg-carescaffold-50 text-carescaffold-700 rounded-full border border-carescaffold-200 hover:bg-carescaffold-100 transition">
+              💊 How does metformin work?
+            </button>
+            <button onclick="askSuggested('What foods have carbohydrates in them?')"
+              class="text-sm px-4 py-2 bg-carescaffold-50 text-carescaffold-700 rounded-full border border-carescaffold-200 hover:bg-carescaffold-100 transition">
+              🍞 What foods have carbs?
+            </button>
+            <button onclick="askSuggested('How does walking after a meal affect my blood sugar?')"
+              class="text-sm px-4 py-2 bg-carescaffold-50 text-carescaffold-700 rounded-full border border-carescaffold-200 hover:bg-carescaffold-100 transition">
+              🚶 How does walking affect sugar?
+            </button>
+          </div>
+        </div>
+      </div>
+
+      <!-- Trust signal strip (shows after each response) -->
+      <div id="trust-strip" class="hidden bg-slate-50 rounded-xl border border-slate-200 p-3 mb-4">
+        <p class="text-xs text-slate-400 font-medium mb-2">SAFETY CHECKS THAT RAN FOR THIS RESPONSE:</p>
+        <div class="flex flex-wrap gap-2" id="trust-badges"></div>
+      </div>
+
+      <!-- Input -->
+      <form id="chat-form" onsubmit="askQuestion(event)" class="flex gap-2">
+        <input id="question-input" type="text"
+          placeholder="Ask about Type 2 diabetes..."
+          class="flex-1 px-4 py-3 rounded-xl border border-slate-300 focus:outline-none focus:ring-2 focus:ring-carescaffold-400 focus:border-transparent text-base"
+          autocomplete="off" aria-label="Type your question here">
+        <button type="submit" id="send-btn"
+          class="px-6 py-3 bg-carescaffold-500 text-white rounded-xl hover:bg-carescaffold-600 transition font-semibold disabled:opacity-50 disabled:cursor-not-allowed">
+          Send
+        </button>
+      </form>
+    </div>
+
+    <!-- ═══════════════════════════════════════════════════════════════ -->
+    <!-- LIBRARY SCREEN — Browse 6 education modules                     -->
+    <!-- ═══════════════════════════════════════════════════════════════ -->
+    <div id="screen-library" class="screen hidden">
+      <h1 class="text-xl font-bold text-slate-800 mb-1">📚 Learning Library</h1>
+      <p class="text-sm text-slate-500 mb-4">Six core topics to help you understand Type 2 diabetes</p>
+      <div id="module-grid" class="grid grid-cols-1 sm:grid-cols-2 gap-4">
+        <!-- Module cards populated by JS -->
+      </div>
+
+      <!-- Achievements section -->
+      <div class="mt-8">
+        <h2 class="text-lg font-bold text-slate-800 mb-3">🏆 Your Achievements</h2>
+        <div id="achievements-grid" class="grid grid-cols-3 sm:grid-cols-4 gap-3">
+          <!-- Populated by JS -->
+        </div>
+      </div>
+    </div>
+
+    <!-- ═══════════════════════════════════════════════════════════════ -->
+    <!-- HISTORY SCREEN — Past Q&A timeline                               -->
+    <!-- ═══════════════════════════════════════════════════════════════ -->
+    <div id="screen-history" class="screen hidden">
+      <h1 class="text-xl font-bold text-slate-800 mb-1">💬 Your Questions</h1>
+      <p class="text-sm text-slate-500 mb-4">Everything you've asked Pip, saved for you</p>
+      <input type="text" id="history-search" placeholder="🔍 Search your questions..." oninput="filterHistory()"
+        class="w-full px-4 py-2.5 mb-4 rounded-xl border border-slate-300 focus:ring-2 focus:ring-carescaffold-400 text-base" aria-label="Search your past questions">
+      <div id="history-list" class="space-y-3">
+        <p class="text-slate-400 text-center py-8" id="history-empty">No questions yet. Ask Pip something from the Home tab!</p>
+      </div>
+    </div>
+
+    <!-- ═══════════════════════════════════════════════════════════════ -->
+    <!-- A1C CHART SCREEN — Visual A1C trend from FHIR                    -->
+    <!-- ═══════════════════════════════════════════════════════════════ -->
+    <div id="screen-a1c" class="screen hidden">
+      <h1 class="text-xl font-bold text-slate-800 mb-1">📈 A1C History</h1>
+      <p class="text-sm text-slate-500 mb-4">Your A1C readings over time, from your FHIR patient record</p>
+      <div id="a1c-content">
+        <div class="bg-white rounded-xl shadow-sm border border-slate-200 p-6 text-center">
+          <p class="text-slate-400 mb-3">No A1C data loaded yet.</p>
+          <button onclick="loadFhirContext()" class="px-4 py-2 bg-carescaffold-500 text-white rounded-lg hover:bg-carescaffold-600 transition">
+            Load from FHIR →
+          </button>
+        </div>
+      </div>
+    </div>
+
+    <!-- ═══════════════════════════════════════════════════════════════ -->
+    <!-- SETTINGS / TRUST CENTER                                          -->
+    <!-- ═══════════════════════════════════════════════════════════════ -->
+    <div id="screen-settings" class="screen hidden">
+      <h1 class="text-xl font-bold text-slate-800 mb-1">⚙️ Settings & Trust Center</h1>
+      <p class="text-sm text-slate-500 mb-4">Everything about how this tool works — transparent by design</p>
+
+      <!-- Role switcher -->
+      <div class="bg-white rounded-xl shadow-sm border border-slate-200 p-4 mb-4">
+        <h2 class="font-semibold text-slate-800 mb-2">Your Role</h2>
+        <p class="text-sm text-slate-500 mb-3" id="current-role-display">Currently: —</p>
+        <div class="flex gap-2">
+          <button onclick="switchRole('patient')" class="role-btn px-3 py-2 text-sm rounded-lg border border-slate-300 hover:bg-slate-50 transition">🧑‍🦰 Patient</button>
+          <button onclick="switchRole('manager')" class="role-btn px-3 py-2 text-sm rounded-lg border border-slate-300 hover:bg-slate-50 transition">📊 Manager</button>
+          <button onclick="switchRole('caregiver')" class="role-btn px-3 py-2 text-sm rounded-lg border border-slate-300 hover:bg-slate-50 transition">💛 Caregiver</button>
+        </div>
+      </div>
+
+      <!-- Safety Layer Transparency (Trust Signal #5) -->
+      <div class="bg-white rounded-xl shadow-sm border border-slate-200 p-4 mb-4">
+        <h2 class="font-semibold text-slate-800 mb-2">🛡️ Safety Layers (always active)</h2>
+        <div class="space-y-3 text-sm">
+          <div class="flex items-start gap-2">
+            <span class="text-red-500 text-lg">🔴</span>
+            <div>
+              <p class="font-medium text-slate-700">Emergency detection</p>
+              <p class="text-slate-500 text-xs">If you describe chest pain, severe hypoglycemia, or self-harm, I immediately redirect you to 911/988 — no AI response, no delay.</p>
+            </div>
+          </div>
+          <div class="flex items-start gap-2">
+            <span class="text-carescaffold-600 text-lg">🔒</span>
+            <div>
+              <p class="font-medium text-slate-700">PHI redaction</p>
+              <p class="text-slate-500 text-xs">Your personal health info (names, phone, MRN, etc.) is stripped and replaced with [TOKEN] before any AI call. Your data never leaves your device in its original form.</p>
+            </div>
+          </div>
+          <div class="flex items-start gap-2">
+            <span class="text-carescaffold-600 text-lg">✅</span>
+            <div>
+              <p class="font-medium text-slate-700">Outbound safety check (2 layers)</p>
+              <p class="text-slate-500 text-xs">Every AI response is checked by (1) regex patterns for dosage/diagnosis/directive language, then (2) an independent AI judge. If either layer flags the response, you see a care-team redirect instead.</p>
+            </div>
+          </div>
+        </div>
+      </div>
+
+      <!-- Clinician review badge (Trust Signal #4) -->
+      <div class="bg-white rounded-xl shadow-sm border border-slate-200 p-4 mb-4">
+        <h2 class="font-semibold text-slate-800 mb-2">👨‍⚕️ Clinician Review</h2>
+        <p class="text-sm text-slate-500">Educational content in this tool was written by a software engineer, not a clinician. The content has not been reviewed by a licensed physician. For clinical decisions, always consult your care team.</p>
+        <p class="text-xs text-slate-400 mt-2 italic">In production, this section would show: "Content reviewed by Dr. [Name], MD on [date]" with a link to their credentials.</p>
+      </div>
+
+      <!-- Honest compliance disclosure -->
+      <div class="bg-amber-50 rounded-xl border border-amber-300 p-4 mb-4">
+        <h2 class="font-semibold text-amber-800 mb-2">📋 Honest Compliance Disclosure</h2>
+        <ul class="text-sm text-amber-700 space-y-2 list-disc pl-5">
+          <li><strong>Not "HIPAA certified"</strong> — no such certification exists for software. PHI redaction is built and tested against the HIPAA Safe Harbor standard (45 CFR 164.514(b)(2)); 90.86% recall / 85.24% precision on a 152-case adversarial corpus.</li>
+          <li><strong>Not "ONC certified"</strong> — the FHIR R4 endpoint is self-tested against the R4 spec; Inferno's Docker conformance suite was not run (Docker unavailable in sandbox).</li>
+          <li><strong>100% synthetic data</strong> — all patient data is generated by Synthea (MITRE's open-source synthetic patient generator). This system has never touched real PHI.</li>
+          <li><strong>BAA not required</strong> — because no real PHI is processed, a Business Associate Agreement with the LLM/embedding providers is not required for this demo. A production version would require one.</li>
+        </ul>
+      </div>
+
+      <!-- Links -->
+      <div class="text-center text-sm text-slate-400 mt-6">
+        <a href="/docs" class="text-carescaffold-600 hover:underline">API docs (Swagger)</a> ·
+        <a href="https://github.com/VampFay/health-literate" class="text-carescaffold-600 hover:underline">GitHub repo</a>
+      </div>
+    </div>
+
+  </div>
+
+  <!-- ── Bottom Navigation ── -->
+  <nav class="fixed bottom-0 left-0 right-0 bg-white border-t border-slate-200 z-40" role="navigation" aria-label="Main navigation">
+    <div class="max-w-2xl mx-auto flex justify-around items-center px-2 py-1">
+      <button onclick="showScreen('home')" class="nav-item active" id="nav-home" aria-label="Home">
+        <span class="nav-icon">🏠</span><span class="nav-label">Home</span>
+      </button>
+      <button onclick="showScreen('library')" class="nav-item" id="nav-library" aria-label="Library">
+        <span class="nav-icon">📚</span><span class="nav-label">Library</span>
+      </button>
+      <button onclick="showScreen('history')" class="nav-item" id="nav-history" aria-label="History">
+        <span class="nav-icon">💬</span><span class="nav-label">History</span>
+      </button>
+      <button onclick="showScreen('a1c')" class="nav-item" id="nav-a1c" aria-label="A1C chart">
+        <span class="nav-icon">📈</span><span class="nav-label">A1C</span>
+      </button>
+      <button onclick="showScreen('settings')" class="nav-item" id="nav-settings" aria-label="Settings">
+        <span class="nav-icon">⚙️</span><span class="nav-label">Settings</span>
+      </button>
+    </div>
+  </nav>
+
+  <!-- ── Emergency floating button ── -->
+  <button onclick="showEmergency()" class="fixed bottom-20 right-4 z-40 bg-emergency-500 text-white rounded-full w-14 h-14 shadow-lg hover:bg-emergency-600 transition flex items-center justify-center text-2xl font-bold" aria-label="Emergency help — call 911 or 988" title="Emergency help">
+    🆘
+  </button>
+
+  <script>
+    // ── State ──
+    let currentPersona = localStorage.getItem('persona') || 'foundational';
+    let currentRole = localStorage.getItem('role') || null;
+    let isWaiting = false;
+    let history = JSON.parse(localStorage.getItem('qa_history') || '[]');
+    let achievements = JSON.parse(localStorage.getItem('achievements') || '[]');
+    let fhirData = null;
+    let a1cReadings = [];
+
+    // ── Modules (6 hand-authored education files) ──
+    const MODULES = [
+      { id: '01_diagnosis_basics', icon: '🩺', title: 'Diagnosis Basics', desc: 'What Type 2 diabetes means, why you have it', time: '4 min read' },
+      { id: '02_a1c_target_explained', icon: '📊', title: 'A1C Target Explained', desc: 'What the A1C test measures and why it matters', time: '5 min read' },
+      { id: '03_metformin_mechanism', icon: '💊', title: 'How Metformin Works', desc: 'What metformin does in your body', time: '5 min read' },
+      { id: '04_metformin_timing_and_side_effects', icon: '⏰', title: 'Metformin: Timing & Side Effects', desc: 'When to take it, what to expect', time: '6 min read' },
+      { id: '05_dietary_guidance_carbs', icon: '🍞', title: 'Carbohydrates Explained', desc: 'How carbs affect blood sugar, practical patterns', time: '6 min read' },
+      { id: '06_dietary_guidance_meals_and_lifestyle', icon: '🥗', title: 'Meals, Lifestyle & the Big Picture', desc: 'Food, movement, sleep, stress — how they interact', time: '7 min read' },
+    ];
+
+    // ── Achievements ──
+    const ALL_ACHIEVEMENTS = [
+      { id: 'first_question', icon: '🌟', name: 'First Question', desc: 'Asked Pip your first question' },
+      { id: 'a1c_explorer', icon: '📊', name: 'A1C Explorer', desc: 'Asked about A1C testing' },
+      { id: 'med_learner', icon: '💊', name: 'Medication Learner', desc: 'Asked about metformin' },
+      { id: 'carb_counter', icon: '🍞', name: 'Carb Counter', desc: 'Asked about carbohydrates' },
+      { id: 'mover', icon: '🚶', name: 'Mover', desc: 'Asked about exercise' },
+      { id: 'library_reader', icon: '📚', name: 'Library Reader', desc: 'Read a module in the library' },
+      { id: 'persona_switcher', icon: '🔀', name: 'Perspective Switcher', desc: 'Tried both reading levels' },
+      { id: 'safety_aware', icon: '🛡️', name: 'Safety Aware', desc: 'Opened the Trust Center' },
+    ];
+
+    // ── Onboarding ──
+    function selectRole(role) {
+      currentRole = role;
+      localStorage.setItem('role', role);
+      document.getElementById('onboarding').classList.add('hidden');
+      document.getElementById('app').classList.remove('hidden');
+      updateGreeting();
+      updateRoleDisplay();
+      renderModules();
+      renderAchievements();
+      renderHistory();
+      setPersona(currentPersona);
     }
 
+    function updateGreeting() {
+      const greetings = {
+        patient: { title: 'Ask Pip anything 🫀', sub: "I'm here to help you understand your new diagnosis" },
+        manager: { title: 'Ask Pip anything 🫀', sub: "Let's go deeper into managing Type 2 diabetes" },
+        caregiver: { title: 'Ask Pip anything 🫀', sub: "I'm here to help you support your loved one" },
+      };
+      const g = greetings[currentRole] || greetings.patient;
+      document.getElementById('greeting-text').textContent = g.title;
+      document.getElementById('greeting-sub').textContent = g.sub;
+    }
+
+    function switchRole(role) {
+      currentRole = role;
+      localStorage.setItem('role', role);
+      updateGreeting();
+      updateRoleDisplay();
+    }
+
+    function updateRoleDisplay() {
+      const roleNames = { patient: '🧑‍🦰 Patient', manager: '📊 Long-term Manager', caregiver: '💛 Caregiver' };
+      document.getElementById('current-role-display').textContent = 'Currently: ' + (roleNames[currentRole] || 'Not set');
+    }
+
+    // ── Screen navigation ──
+    function showScreen(screen) {
+      document.querySelectorAll('.screen').forEach(s => s.classList.add('hidden'));
+      document.getElementById('screen-' + screen).classList.remove('hidden');
+      document.querySelectorAll('.nav-item').forEach(n => n.classList.remove('active'));
+      document.getElementById('nav-' + screen).classList.add('active');
+      if (screen === 'settings') { earnAchievement('safety_aware'); }
+      if (screen === 'library') { renderModules(); renderAchievements(); }
+    }
+
+    // ── Persona ──
+    function setPersona(p) {
+      currentPersona = p;
+      localStorage.setItem('persona', p);
+      document.querySelectorAll('.persona-btn').forEach(b => b.classList.remove('persona-active'));
+      document.getElementById('persona-' + p).classList.add('persona-active');
+      // Track if user has tried both
+      let personasTried = JSON.parse(localStorage.getItem('personas_tried') || '[]');
+      if (!personasTried.includes(p)) {
+        personasTried.push(p);
+        localStorage.setItem('personas_tried', JSON.stringify(personasTried));
+        if (personasTried.length >= 2) { earnAchievement('persona_switcher'); }
+      }
+    }
+
+    // ── Chat ──
     function askSuggested(question) {
       document.getElementById('question-input').value = question;
       askQuestion(new Event('submit'));
@@ -143,11 +542,8 @@
     function addUserMessage(text) {
       const chat = document.getElementById('chat');
       const msg = document.createElement('div');
-      msg.className = 'flex justify-end mb-4';
-      msg.innerHTML = `
-        <div class="bg-sky-500 text-white rounded-lg px-4 py-2 max-w-[80%]">
-          ${escapeHtml(text)}
-        </div>`;
+      msg.className = 'flex justify-end mb-4 animate-fade-in';
+      msg.innerHTML = `<div class="bg-carescaffold-500 text-white rounded-2xl px-4 py-2.5 max-w-[80%]">${escapeHtml(text)}</div>`;
       chat.appendChild(msg);
       chat.scrollTop = chat.scrollHeight;
     }
@@ -155,37 +551,63 @@
     function addBotMessage(response) {
       const chat = document.getElementById('chat');
       const msg = document.createElement('div');
-      msg.className = 'flex justify-start mb-4';
+      msg.className = 'flex justify-start mb-4 animate-fade-in';
 
-      // Emergency escalation styling
       if (response.escalated) {
         msg.innerHTML = `
-          <div class="bg-red-50 border-2 border-red-300 rounded-lg px-4 py-3 max-w-[85%]">
+          <div class="bg-red-50 border-2 border-red-300 rounded-2xl px-4 py-3 max-w-[85%]">
             <div class="flex items-start gap-2 mb-1">
-              <span class="text-red-600 text-lg">⚠️</span>
-              <p class="text-red-800 font-medium text-sm">This may need immediate attention</p>
+              <span class="text-red-600 text-xl">⚠️</span>
+              <p class="text-red-800 font-semibold text-base">This may need immediate attention</p>
             </div>
-            <p class="text-red-700 text-sm">${escapeHtml(response.response)}</p>
-            <p class="text-xs text-red-400 mt-2 italic">Inbound safety check bypassed the assistant and routed you to emergency resources.</p>
+            <p class="text-red-700 text-sm leading-relaxed">${escapeHtml(response.response)}</p>
+            <p class="text-xs text-red-400 mt-2 italic">Inbound safety check: detected emergency keywords → bypassed AI → routed you to emergency resources</p>
           </div>`;
       } else if (response.safety_verdict && response.safety_verdict !== 'SAFE') {
-        // Outbound safety blocked
         msg.innerHTML = `
-          <div class="bg-amber-50 border border-amber-300 rounded-lg px-4 py-3 max-w-[85%]">
-            <p class="text-amber-800 text-sm">${escapeHtml(response.response)}</p>
-            <p class="text-xs text-amber-500 mt-1 italic">Outbound safety check: ${escapeHtml(response.safety_verdict)} (${escapeHtml(response.safety_layer)})</p>
+          <div class="bg-amber-50 border border-amber-300 rounded-2xl px-4 py-3 max-w-[85%]">
+            <p class="text-amber-800 text-sm leading-relaxed">${escapeHtml(response.response)}</p>
+            <p class="text-xs text-amber-500 mt-1.5 italic">Outbound safety check: ${escapeHtml(response.safety_verdict)} (${escapeHtml(response.safety_layer)})</p>
           </div>`;
       } else {
-        // Normal educational response
-        const citations = (response.citations || []).map(c => `<span class="citation-chip">${escapeHtml(c)}</span>`).join('');
+        const citations = (response.citations || []).map(c => `<span class="citation-chip" onclick="openModule('${c.replace('.md','')}')">${escapeHtml(c.replace('.md','').replace(/^\d+_/,'').replace(/_/g,' '))}</span>`).join('');
         msg.innerHTML = `
-          <div class="bg-slate-50 border border-slate-200 rounded-lg px-4 py-3 max-w-[85%]">
-            <p class="text-slate-800 text-sm whitespace-pre-wrap">${escapeHtml(response.response)}</p>
-            ${citations ? `<div class="mt-2 pt-2 border-t border-slate-200"><p class="text-xs text-slate-400 mb-1">Sources:</p>${citations}</div>` : ''}
+          <div class="bg-slate-50 border border-slate-200 rounded-2xl px-4 py-3 max-w-[85%]">
+            <p class="text-slate-800 text-sm leading-relaxed whitespace-pre-wrap">${escapeHtml(response.response)}</p>
+            ${citations ? `<div class="mt-2.5 pt-2 border-t border-slate-200"><p class="text-xs text-slate-400 mb-1">📚 Sources (tap to read):</p>${citations}</div>` : ''}
           </div>`;
       }
       chat.appendChild(msg);
       chat.scrollTop = chat.scrollHeight;
+
+      // Show trust strip
+      showTrustStrip(response);
+    }
+
+    function showTrustStrip(response) {
+      const strip = document.getElementById('trust-strip');
+      const badges = document.getElementById('trust-badges');
+      badges.innerHTML = '';
+
+      // Always: inbound safety check
+      badges.innerHTML += `<span class="trust-badge bg-red-50 text-red-600">🔴 Emergency check: ${response.escalated ? 'triggered' : 'passed'}</span>`;
+
+      if (!response.escalated) {
+        // PHI redaction
+        badges.innerHTML += `<span class="trust-badge bg-carescaffold-50 text-carescaffold-700">🔒 PHI redacted before AI call</span>`;
+
+        // Outbound safety check
+        if (response.safety_verdict === 'SAFE') {
+          badges.innerHTML += `<span class="trust-badge bg-carescaffold-50 text-carescaffold-700">✅ Outbound safety: 2 layers passed</span>`;
+        } else {
+          badges.innerHTML += `<span class="trust-badge bg-amber-50 text-amber-700">⚠️ Outbound safety: ${escapeHtml(response.safety_verdict)} — response replaced with care-team redirect</span>`;
+        }
+
+        // Clinician review badge (placeholder)
+        badges.innerHTML += `<span class="trust-badge bg-slate-100 text-slate-500">👨‍⚕️ Content not yet clinician-reviewed</span>`;
+      }
+
+      strip.classList.remove('hidden');
     }
 
     function addTyping() {
@@ -193,14 +615,20 @@
       const msg = document.createElement('div');
       msg.id = 'typing-indicator';
       msg.className = 'flex justify-start mb-4';
-      msg.innerHTML = `
-        <div class="bg-slate-100 rounded-lg px-4 py-3">
-          <div class="typing-indicator">
-            <span></span><span></span><span></span>
-          </div>
-        </div>`;
+      msg.innerHTML = `<div class="bg-slate-100 rounded-2xl px-4 py-3"><div class="typing-indicator"><span></span><span></span><span></span></div></div>`;
       chat.appendChild(msg);
       chat.scrollTop = chat.scrollHeight;
+    }
+
+    function showRedactionAnimation() {
+      const chat = document.getElementById('chat');
+      const msg = document.createElement('div');
+      msg.id = 'redaction-anim';
+      msg.className = 'flex justify-center mb-2 animate-fade-in';
+      msg.innerHTML = `<div class="text-xs text-carescaffold-600 bg-carescaffold-50 rounded-full px-4 py-1.5">🔒 Redacting personal info…</div>`;
+      chat.appendChild(msg);
+      chat.scrollTop = chat.scrollHeight;
+      setTimeout(() => { const el = document.getElementById('redaction-anim'); if (el) el.remove(); }, 1500);
     }
 
     function removeTyping() {
@@ -221,45 +649,336 @@
       const question = input.value.trim();
       if (!question) return;
 
-      // Clear welcome + suggested questions on first message
-      const chat = document.getElementById('chat');
-      const welcome = chat.querySelector('.text-center');
-      if (welcome) welcome.parentElement.remove();
+      // Clear welcome message
+      const welcome = document.getElementById('welcome-msg');
+      if (welcome) welcome.remove();
+
+      // Hide trust strip from previous response
+      document.getElementById('trust-strip').classList.add('hidden');
 
       addUserMessage(question);
       input.value = '';
       isWaiting = true;
       document.getElementById('send-btn').disabled = true;
+
+      // Show PHI redaction animation (trust signal #3)
+      showRedactionAnimation();
+
+      // Earn first-question achievement
+      earnAchievement('first_question');
+
+      // Track topic-based achievements
+      const qLower = question.toLowerCase();
+      if (qLower.includes('a1c')) earnAchievement('a1c_explorer');
+      if (qLower.includes('metformin')) earnAchievement('med_learner');
+      if (qLower.includes('carb') || qLower.includes('food') || qLower.includes('eat')) earnAchievement('carb_counter');
+      if (qLower.includes('walk') || qLower.includes('exercis') || qLower.includes('mov')) earnAchievement('mover');
+
       addTyping();
 
       try {
         const resp = await fetch('/scaffold', {
           method: 'POST',
           headers: { 'Content-Type': 'application/json' },
-          body: JSON.stringify({
-            question: question,
-            persona: currentPersona,
-          }),
+          body: JSON.stringify({ question, persona: currentPersona }),
         });
         const data = await resp.json();
         removeTyping();
         addBotMessage(data);
+
+        // Save to history
+        history.unshift({
+          question, response: data.response, citations: data.citations,
+          safety_verdict: data.safety_verdict, safety_layer: data.safety_layer,
+          escalated: data.escalated, persona: currentPersona, timestamp: new Date().toISOString(),
+        });
+        if (history.length > 100) history = history.slice(0, 100);
+        localStorage.setItem('qa_history', JSON.stringify(history));
+        renderHistory();
       } catch (err) {
         removeTyping();
-        addBotMessage({
-          response: `Sorry, I couldn't reach the assistant. Make sure the server is running. (${err.message})`,
-          escalated: false,
-          citations: [],
-          safety_verdict: 'SAFE',
-        });
+        addBotMessage({ response: `Sorry, I couldn't reach the server. (${err.message})`, escalated: false, citations: [], safety_verdict: 'SAFE' });
       } finally {
         isWaiting = false;
         document.getElementById('send-btn').disabled = false;
-        input.focus();
+        document.getElementById('question-input').focus();
       }
     }
 
-    // Enter key submits (form already does this, but just in case)
+    // ── Library ──
+    function renderModules() {
+      const grid = document.getElementById('module-grid');
+      grid.innerHTML = MODULES.map(m => {
+        const read = achievements.includes('library_reader') || localStorage.getItem('read_' + m.id);
+        return `
+          <div class="module-card bg-white rounded-xl shadow-sm border border-slate-200 p-5 cursor-pointer" onclick="openModule('${m.id}')">
+            <div class="flex items-start gap-3">
+              <span class="text-3xl">${m.icon}</span>
+              <div class="flex-1">
+                <h3 class="font-semibold text-slate-800 text-base">${m.title}</h3>
+                <p class="text-sm text-slate-500 mt-1">${m.desc}</p>
+                <div class="flex items-center gap-2 mt-2">
+                  <span class="text-xs text-slate-400">⏱ ${m.time}</span>
+                  ${read ? '<span class="text-xs text-carescaffold-600">✓ Read</span>' : ''}
+                </div>
+              </div>
+            </div>
+          </div>`;
+      }).join('');
+    }
+
+    async function openModule(moduleId) {
+      // Fetch the .md file from /content/education_module/
+      try {
+        const resp = await fetch(`/content/education_module/${moduleId}.md`);
+        if (!resp.ok) throw new Error('Module not found');
+        const text = await resp.text();
+        // Simple markdown to HTML (basic: headers, paragraphs, bold, italic)
+        const html = text
+          .replace(/^# (.+)$/gm, '<h1 class="text-2xl font-bold text-slate-800 mt-4 mb-2">$1</h1>')
+          .replace(/^## (.+)$/gm, '<h2 class="text-lg font-semibold text-slate-700 mt-3 mb-1">$1</h2>')
+          .replace(/\*\*(.+?)\*\*/g, '<strong>$1</strong>')
+          .replace(/\*(.+?)\*/g, '<em>$1</em>')
+          .replace(/\n\n/g, '</p><p class="text-slate-700 text-base leading-relaxed mb-3">')
+          .replace(/^- (.+)$/gm, '<li class="text-slate-700 text-base">$1</li>');
+        showModal(`<div class="prose max-w-none"><p class="text-slate-700 text-base leading-relaxed mb-3">${html}</p></div>`, MODULES.find(m => m.id === moduleId)?.title || 'Module');
+        localStorage.setItem('read_' + moduleId, 'true');
+        earnAchievement('library_reader');
+        renderModules();
+      } catch (e) {
+        showModal(`<p class="text-slate-500">Could not load module: ${e.message}</p>`, 'Error');
+      }
+    }
+
+    // ── Achievements ──
+    function earnAchievement(id) {
+      if (achievements.includes(id)) return;
+      achievements.push(id);
+      localStorage.setItem('achievements', JSON.stringify(achievements));
+      renderAchievements();
+      // Show toast
+      const ach = ALL_ACHIEVEMENTS.find(a => a.id === id);
+      if (ach) showToast(`🏆 Achievement unlocked: ${ach.name}!`);
+    }
+
+    function renderAchievements() {
+      const grid = document.getElementById('achievements-grid');
+      if (!grid) return;
+      grid.innerHTML = ALL_ACHIEVEMENTS.map(a => {
+        const earned = achievements.includes(a.id);
+        return `
+          <div class="text-center p-3 rounded-xl ${earned ? 'bg-achievement-400/10 badge-earned' : 'bg-slate-100 opacity-50'}" title="${a.desc}">
+            <div class="text-3xl mb-1">${earned ? a.icon : '🔒'}</div>
+            <p class="text-xs font-medium ${earned ? 'text-slate-700' : 'text-slate-400'}">${a.name}</p>
+          </div>`;
+      }).join('');
+    }
+
+    // ── History ──
+    function renderHistory() {
+      const list = document.getElementById('history-list');
+      if (!list) return;
+      if (history.length === 0) {
+        list.innerHTML = '<p class="text-slate-400 text-center py-8">No questions yet. Ask Pip something from the Home tab!</p>';
+        return;
+      }
+      list.innerHTML = history.map(h => {
+        const date = new Date(h.timestamp).toLocaleDateString('en-US', { month: 'short', day: 'numeric', hour: 'numeric', minute: '2-digit' });
+        const personaIcon = h.persona === 'foundational' ? '🍎' : '📊';
+        const safetyIcon = h.escalated ? '🔴' : (h.safety_verdict === 'SAFE' ? '✅' : '⚠️');
+        return `
+          <div class="bg-white rounded-xl shadow-sm border border-slate-200 p-4 cursor-pointer hover:shadow-md transition" onclick="reopenHistory('${h.timestamp}')">
+            <div class="flex items-center gap-2 text-xs text-slate-400 mb-1">
+              <span>${date}</span> · <span>${personaIcon}</span> · <span>${safetyIcon}</span>
+            </div>
+            <p class="font-medium text-slate-800 text-sm">${escapeHtml(h.question)}</p>
+            <p class="text-sm text-slate-500 mt-1 line-clamp-2">${escapeHtml(h.response.substring(0, 120))}...</p>
+          </div>`;
+      }).join('');
+    }
+
+    function filterHistory() {
+      const query = document.getElementById('history-search').value.toLowerCase();
+      const items = document.querySelectorAll('#history-list > div');
+      items.forEach(item => {
+        const text = item.textContent.toLowerCase();
+        item.style.display = text.includes(query) ? '' : 'none';
+      });
+    }
+
+    function reopenHistory(timestamp) {
+      const h = history.find(x => x.timestamp === timestamp);
+      if (!h) return;
+      showScreen('home');
+      const chat = document.getElementById('chat');
+      chat.innerHTML = '';
+      addUserMessage(h.question);
+      addBotMessage({ response: h.response, citations: h.citations, safety_verdict: h.safety_verdict, safety_layer: h.safety_layer, escalated: h.escalated });
+    }
+
+    // ── FHIR context bar ──
+    async function loadFhirContext() {
+      try {
+        const resp = await fetch('/fhir/Patient');
+        const bundle = await resp.json();
+        if (bundle.total === 0 || !bundle.entry) {
+          document.getElementById('context-chips').innerHTML = '<span class="text-sm text-slate-400">No patients loaded. Run generate_synthea_patients.py first.</span>';
+          return;
+        }
+        const patient = bundle.entry[0].resource;
+        const pid = patient.id;
+
+        // Get A1C observations
+        const obsResp = await fetch(`/fhir/Observation?patient=${pid}`);
+        const obsBundle = await obsResp.json();
+        a1cReadings = (obsBundle.entry || []).map(e => {
+          const o = e.resource;
+          return {
+            date: o.effectiveDateTime?.substring(0, 10) || 'N/A',
+            value: o.valueQuantity?.value || 0,
+            unit: o.valueQuantity?.unit || '%',
+          };
+        }).sort((a, b) => a.date.localeCompare(b.date));
+
+        // Render context chips
+        const latestA1c = a1cReadings[a1cReadings.length - 1];
+        const chips = [];
+        if (latestA1c) {
+          const color = latestA1c.value < 7 ? 'bg-carescaffold-100 text-carescaffold-700' :
+                        latestA1c.value < 8 ? 'bg-amber-100 text-amber-700' : 'bg-red-100 text-red-700';
+          chips.push(`<span class="${color} px-3 py-1 rounded-full text-sm font-medium">📊 A1C: ${latestA1c.value}${latestA1c.unit} (${latestA1c.date})</span>`);
+        }
+        chips.push(`<span class="bg-slate-100 text-slate-600 px-3 py-1 rounded-full text-sm">🩺 ${a1cReadings.length} A1C readings</span>`);
+        document.getElementById('context-chips').innerHTML = chips.join('');
+
+        // Render A1C chart screen
+        renderA1cChart();
+
+        // Hide the load button
+        document.getElementById('fhir-load-btn').classList.add('hidden');
+      } catch (e) {
+        document.getElementById('context-chips').innerHTML = `<span class="text-sm text-red-500">Error loading FHIR data: ${e.message}</span>`;
+      }
+    }
+
+    function renderA1cChart() {
+      if (a1cReadings.length === 0) return;
+      const content = document.getElementById('a1c-content');
+      const latest = a1cReadings[a1cReadings.length - 1];
+      const values = a1cReadings.map(r => r.value);
+      const minVal = Math.min(...values);
+      const maxVal = Math.max(...values);
+
+      // Simple SVG chart
+      const width = 320, height = 200, padding = 40;
+      const xStep = (width - 2 * padding) / Math.max(a1cReadings.length - 1, 1);
+      const yScale = (v) => height - padding - ((v - 4) / (maxVal - 4 + 1)) * (height - 2 * padding);
+      const points = a1cReadings.map((r, i) => `${padding + i * xStep},${yScale(r.value)}`).join(' ');
+      const trend = latest.value > a1cReadings[0].value ? '↑' : latest.value < a1cReadings[0].value ? '↓' : '→';
+      const trendColor = latest.value < 7 ? 'text-carescaffold-600' : latest.value < 8 ? 'text-amber-600' : 'text-red-600';
+
+      content.innerHTML = `
+        <div class="bg-white rounded-xl shadow-sm border border-slate-200 p-5 mb-4">
+          <div class="flex items-center justify-between mb-4">
+            <div>
+              <p class="text-sm text-slate-400">Latest A1C</p>
+              <p class="text-3xl font-bold ${trendColor}">${latest.value}${latest.unit}</p>
+              <p class="text-sm text-slate-500">${latest.date} ${trend} trend</p>
+            </div>
+            <div class="text-right">
+              <p class="text-sm text-slate-400">Total readings</p>
+              <p class="text-2xl font-bold text-slate-700">${a1cReadings.length}</p>
+              <p class="text-sm text-slate-500">Range: ${minVal}–${maxVal}%</p>
+            </div>
+          </div>
+          <svg viewBox="0 0 ${width} ${height}" class="w-full" aria-label="A1C trend chart">
+            <!-- Target range shading (below 7% = green, 7-8% = yellow, above 8% = red) -->
+            <rect x="${padding}" y="${yScale(7)}" width="${width - 2*padding}" height="${yScale(4) - yScale(7)}" fill="#d1fae5" opacity="0.5" />
+            <rect x="${padding}" y="${yScale(8)}" width="${width - 2*padding}" height="${yScale(7) - yScale(8)}" fill="#fef3c7" opacity="0.5" />
+            <rect x="${padding}" y="${padding}" width="${width - 2*padding}" height="${yScale(8) - padding}" fill="#fee2e2" opacity="0.5" />
+            <!-- Target line at 7% -->
+            <line x1="${padding}" y1="${yScale(7)}" x2="${width - padding}" y2="${yScale(7)}" stroke="#10b981" stroke-width="1" stroke-dasharray="4,4" />
+            <text x="${width - padding + 4}" y="${yScale(7) + 4}" fill="#10b981" font-size="10">7% target</text>
+            <!-- Data line -->
+            <polyline points="${points}" fill="none" stroke="#10b981" stroke-width="2" />
+            <!-- Data points -->
+            ${a1cReadings.map((r, i) => `<circle cx="${padding + i * xStep}" cy="${yScale(r.value)}" r="4" fill="#10b981" class="cursor-pointer" onclick="askSuggested('My A1C was ${r.value}% on ${r.date}. What does this mean?')"><title>${r.date}: ${r.value}${r.unit}</title></circle>`).join('')}
+            <!-- Y-axis labels -->
+            <text x="10" y="${yScale(4)}" fill="#94a3b8" font-size="10">4%</text>
+            <text x="10" y="${yScale(8)}" fill="#94a3b8" font-size="10">8%</text>
+          </svg>
+          <p class="text-xs text-slate-400 mt-2 text-center">Tap any data point to ask Pip about that reading</p>
+        </div>
+        <div class="bg-white rounded-xl shadow-sm border border-slate-200 p-4">
+          <h3 class="font-semibold text-slate-700 mb-2 text-sm">All readings</h3>
+          <div class="space-y-1">
+            ${a1cReadings.slice().reverse().map(r => `
+              <div class="flex justify-between text-sm py-1 border-b border-slate-100 last:border-0">
+                <span class="text-slate-500">${r.date}</span>
+                <span class="font-medium ${r.value < 7 ? 'text-carescaffold-600' : r.value < 8 ? 'text-amber-600' : 'text-red-600'}">${r.value}${r.unit}</span>
+              </div>`).join('')}
+          </div>
+        </div>`;
+    }
+
+    // ── Emergency ──
+    function showEmergency() {
+      showModal(`
+        <div class="text-center">
+          <p class="text-2xl mb-4">🆘 Emergency Resources</p>
+          <div class="space-y-3 text-left">
+            <div class="bg-red-50 border border-red-300 rounded-xl p-4">
+              <p class="font-semibold text-red-700">Medical Emergency</p>
+              <p class="text-red-600 text-sm">If you're having chest pain, trouble breathing, or signs of a stroke — call <strong>911</strong> (US) or your local emergency number immediately.</p>
+            </div>
+            <div class="bg-red-50 border border-red-300 rounded-xl p-4">
+              <p class="font-semibold text-red-700">Severe Low Blood Sugar</p>
+              <p class="text-red-600 text-sm">If your sugar is below 54 mg/dL and you can't think clearly or are losing consciousness — call <strong>911</strong> or have someone give you glucagon.</p>
+            </div>
+            <div class="bg-red-50 border border-red-300 rounded-xl p-4">
+              <p class="font-semibold text-red-700">Mental Health Crisis</p>
+              <p class="text-red-600 text-sm">If you're thinking about hurting yourself — call or text <strong>988</strong> (Suicide & Crisis Lifeline). Available 24/7.</p>
+            </div>
+          </div>
+        </div>
+      `, 'Emergency Resources');
+    }
+
+    // ── Modal ──
+    function showModal(html, title) {
+      const modal = document.createElement('div');
+      modal.className = 'fixed inset-0 z-[60] bg-black/40 flex items-center justify-center p-4';
+      modal.innerHTML = `
+        <div class="bg-white rounded-2xl shadow-2xl max-w-lg w-full max-h-[80vh] overflow-y-auto animate-slide-up">
+          <div class="sticky top-0 bg-white border-b border-slate-200 px-5 py-3 flex justify-between items-center">
+            <h2 class="font-bold text-slate-800">${title || ''}</h2>
+            <button onclick="this.closest('.fixed').remove()" class="text-slate-400 hover:text-slate-600 text-2xl leading-none" aria-label="Close">&times;</button>
+          </div>
+          <div class="p-5">${html}</div>
+        </div>`;
+      document.body.appendChild(modal);
+    }
+
+    // ── Toast ──
+    function showToast(msg) {
+      const toast = document.createElement('div');
+      toast.className = 'fixed bottom-24 left-1/2 -translate-x-1/2 z-50 bg-slate-800 text-white px-5 py-3 rounded-xl shadow-lg text-sm animate-slide-up';
+      toast.textContent = msg;
+      document.body.appendChild(toast);
+      setTimeout(() => toast.remove(), 3000);
+    }
+
+    // ── Init ──
+    if (currentRole) {
+      document.getElementById('onboarding').classList.add('hidden');
+      document.getElementById('app').classList.remove('hidden');
+      updateGreeting();
+      updateRoleDisplay();
+      setPersona(currentPersona);
+      renderModules();
+      renderAchievements();
+      renderHistory();
+    }
     document.getElementById('question-input').focus();
   </script>
 </body>
