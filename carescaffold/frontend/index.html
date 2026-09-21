@@ -1,328 +1,1814 @@
 <!DOCTYPE html>
-<html lang="en">
+<html lang="en" class="scroll-smooth">
 <head>
   <meta charset="UTF-8">
-  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0, viewport-fit=cover">
+  <meta name="theme-color" content="#0A4F47">
+  <meta name="description" content="CareScaffold — adaptive Type 2 diabetes education, scaffolded to your reading level.">
   <title>CareScaffold — Type 2 Diabetes Education</title>
+
   <script src="https://cdn.tailwindcss.com"></script>
   <link rel="preconnect" href="https://fonts.googleapis.com">
-  <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&display=swap" rel="stylesheet">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&family=Sora:wght@400;500;600;700;800&display=swap" rel="stylesheet">
+
   <script>
     tailwind.config = {
       theme: {
         extend: {
           colors: {
-            brand: { 50:'#f0fdfa',100:'#ccfbf1',200:'#99f6e4',300:'#5eead4',400:'#2dd4bf',500:'#14b8a6',600:'#0d9488',700:'#0f766e',800:'#115e59',900:'#134e4a' },
-            ink: { 50:'#f8fafc',100:'#f1f5f9',200:'#e2e8f0',300:'#cbd5e1',400:'#94a3b8',500:'#64748b',600:'#475569',700:'#334155',800:'#1e293b',900:'#0f172a' },
+            brand: {
+              50:  '#F2FBF8',
+              100: '#D9F5EE',
+              200: '#B3EBE0',
+              300: '#80DBCB',
+              400: '#48C4B0',
+              500: '#22A894',
+              600: '#14857A',
+              700: '#0F6B63',
+              800: '#0E554F',
+              900: '#0A4F47',
+              950: '#063330'
+            },
+            sand: {
+              50:  '#FCFAF6',
+              100: '#FBF7F0',
+              200: '#F4ECDE',
+              300: '#EAD9BE',
+              400: '#D9BE96'
+            },
+            coral: {
+              400: '#FF8A7A',
+              500: '#FF6B5B',
+              600: '#E84B3C',
+              700: '#C2382B'
+            },
+            amber2: {
+              400: '#FBBF24',
+              500: '#F59E0B',
+              600: '#D97706'
+            }
           },
-          fontFamily: { sans: ['Inter','system-ui','sans-serif'] },
-        },
-      },
+          fontFamily: {
+            sans:  ['Inter', 'system-ui', 'sans-serif'],
+            display: ['Sora', 'Inter', 'system-ui', 'sans-serif']
+          },
+          boxShadow: {
+            glass:   '0 8px 32px -8px rgba(10,79,71,0.10), 0 2px 8px -4px rgba(10,79,71,0.06)',
+            glassLg: '0 20px 60px -12px rgba(10,79,71,0.18), 0 4px 16px -6px rgba(10,79,71,0.08)',
+            float:   '0 12px 40px -10px rgba(20,184,166,0.35)'
+          }
+        }
+      }
     }
   </script>
+
   <style>
-    html{font-size:16px}
-    body{font-family:'Inter',system-ui,sans-serif;-webkit-font-smoothing:antialiased;background:#fff}
-    *:focus-visible{outline:2px solid #0d9488;outline-offset:2px}
-    .sr-only{position:absolute;width:1px;height:1px;overflow:hidden;clip:rect(0,0,0,0)}
-    @media(prefers-reduced-motion:reduce){*{animation-duration:.01ms!important;transition-duration:.01ms!important}}
-    @keyframes fadeIn{from{opacity:0;transform:translateY(6px)}to{opacity:1;transform:translateY(0)}}
-    .animate-in{animation:fadeIn .3s ease-out}
-    .typing-dot{display:inline-block;width:6px;height:6px;background:#94a3b8;border-radius:50%;margin:0 2px;animation:blink 1.4s infinite}
-    .typing-dot:nth-child(2){animation-delay:.2s}
-    .typing-dot:nth-child(3){animation-delay:.4s}
-    @keyframes blink{0%,60%,100%{opacity:.3}30%{opacity:1}}
-    .card{background:#fff;border:1px solid #e2e8f0;border-radius:12px}
-    .btn-primary{background:#0d9488;color:#fff;border-radius:10px;padding:10px 20px;font-weight:500;border:none;cursor:pointer;transition:background .15s}
-    .btn-primary:hover{background:#0f766e}
-    .btn-primary:disabled{opacity:.4;cursor:not-allowed}
-    .btn-ghost{border:1px solid #e2e8f0;background:#fff;border-radius:10px;padding:10px 16px;cursor:pointer;transition:border-color .15s;color:#475569}
-    .btn-ghost:hover{border-color:#94a3b8}
-    .chip{padding:6px 12px;border-radius:8px;font-size:13px;font-weight:500}
-    .nav-tab{display:flex;align-items:center;gap:6px;padding:8px 16px;border-radius:8px;cursor:pointer;color:#94a3b8;font-size:13px;font-weight:500;transition:all .15s;border:none;background:none}
-    .nav-tab:hover{color:#475569;background:#f8fafc}
-    .nav-tab.active{color:#0d9488;background:#f0fdfa}
-    .cite{display:inline-block;padding:3px 8px;background:#f0fdfa;color:#0f766e;border-radius:6px;font-size:12px;cursor:pointer;border:1px solid #ccfbf1}
-    .cite:hover{background:#ccfbf1}
-    ::-webkit-scrollbar{width:4px}
-    ::-webkit-scrollbar-thumb{background:#cbd5e1;border-radius:2px}
+    /* ─── Base ──────────────────────────────────────────────────── */
+    :root {
+      --teal-deep: #0A4F47;
+      --teal-700:  #0F6B63;
+      --teal-500:  #22A894;
+      --aqua-400:  #48C4B0;
+      --sand-100:  #FBF7F0;
+      --sand-200:  #F4ECDE;
+      --coral-500: #FF6B5B;
+      --amber-500: #F59E0B;
+      --ink-900:   #0B2A26;
+      --ink-700:   #23443F;
+      --ink-500:   #5C7771;
+      --ink-300:   #9AAFA9;
+      --ink-200:   #C5D3CE;
+    }
+
+    html { font-size: 16px; -webkit-text-size-adjust: 100%; }
+    body {
+      font-family: 'Inter', system-ui, sans-serif;
+      -webkit-font-smoothing: antialiased;
+      -moz-osx-font-smoothing: grayscale;
+      background: var(--sand-100);
+      color: var(--ink-700);
+      overflow-x: hidden;
+      min-height: 100dvh;
+    }
+    h1, h2, h3, h4, .font-display { font-family: 'Sora', 'Inter', sans-serif; letter-spacing: -0.02em; }
+
+    /* ─── Accessibility ──────────────────────────────────────────── */
+    *:focus-visible {
+      outline: 2.5px solid var(--teal-500);
+      outline-offset: 2px;
+      border-radius: 6px;
+    }
+    .sr-only {
+      position: absolute !important;
+      width: 1px; height: 1px;
+      padding: 0; margin: -1px;
+      overflow: hidden; clip: rect(0,0,0,0);
+      white-space: nowrap; border: 0;
+    }
+    .skip-link {
+      position: absolute; left: -9999px; top: 12px;
+      z-index: 100; padding: 10px 18px;
+      background: var(--teal-deep); color: #fff;
+      border-radius: 12px; font-weight: 600; font-size: 14px;
+    }
+    .skip-link:focus { left: 12px; }
+
+    @media (prefers-reduced-motion: reduce) {
+      *, *::before, *::after {
+        animation-duration: 0.01ms !important;
+        animation-iteration-count: 1 !important;
+        transition-duration: 0.01ms !important;
+        scroll-behavior: auto !important;
+      }
+      .mesh-blob { animation: none !important; }
+      .a1c-stroke { stroke-dashoffset: 0 !important; animation: none !important; }
+    }
+
+    /* ─── Gradient Mesh Background ──────────────────────────────── */
+    .mesh-bg {
+      position: fixed; inset: 0; z-index: -2;
+      overflow: hidden;
+      pointer-events: none;
+      background:
+        radial-gradient(ellipse 80% 60% at 0% 0%,  rgba(72,196,176,0.14) 0%, transparent 55%),
+        radial-gradient(ellipse 70% 50% at 100% 10%, rgba(34,168,148,0.10) 0%, transparent 55%),
+        radial-gradient(ellipse 90% 70% at 50% 100%, rgba(255,138,122,0.07) 0%, transparent 55%),
+        linear-gradient(180deg, #FBF7F0 0%, #F6EFE2 100%);
+    }
+    .mesh-blob {
+      position: absolute;
+      border-radius: 50%;
+      filter: blur(60px);
+      opacity: 0.55;
+      will-change: transform;
+    }
+    .blob-1 {
+      width: 380px; height: 380px;
+      background: radial-gradient(circle, rgba(72,196,176,0.55), transparent 70%);
+      top: -80px; left: -60px;
+      animation: drift1 22s ease-in-out infinite;
+    }
+    .blob-2 {
+      width: 320px; height: 320px;
+      background: radial-gradient(circle, rgba(34,168,148,0.40), transparent 70%);
+      top: 40%; right: -80px;
+      animation: drift2 28s ease-in-out infinite;
+    }
+    .blob-3 {
+      width: 280px; height: 280px;
+      background: radial-gradient(circle, rgba(255,138,122,0.28), transparent 70%);
+      bottom: -60px; left: 30%;
+      animation: drift3 25s ease-in-out infinite;
+    }
+    @keyframes drift1 {
+      0%,100% { transform: translate(0,0) scale(1); }
+      50%     { transform: translate(40px,30px) scale(1.08); }
+    }
+    @keyframes drift2 {
+      0%,100% { transform: translate(0,0) scale(1); }
+      50%     { transform: translate(-30px,-40px) scale(1.12); }
+    }
+    @keyframes drift3 {
+      0%,100% { transform: translate(0,0) scale(1); }
+      50%     { transform: translate(50px,-20px) scale(0.95); }
+    }
+    /* Subtle grain overlay for depth */
+    .mesh-grain {
+      position: fixed; inset: 0; z-index: -1;
+      pointer-events: none;
+      opacity: 0.025;
+      background-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='200' height='200'%3E%3Cfilter id='n'%3E%3CfeTurbulence type='fractalNoise' baseFrequency='0.85' numOctaves='2'/%3E%3C/filter%3E%3Crect width='100%25' height='100%25' filter='url(%23n)'/%3E%3C/svg%3E");
+    }
+
+    /* ─── Glass surfaces ─────────────────────────────────────────── */
+    .glass {
+      background: rgba(255,255,255,0.62);
+      backdrop-filter: blur(20px) saturate(140%);
+      -webkit-backdrop-filter: blur(20px) saturate(140%);
+      border: 1px solid rgba(255,255,255,0.78);
+      box-shadow: 0 8px 32px -8px rgba(10,79,71,0.10), 0 2px 8px -4px rgba(10,79,71,0.06);
+    }
+    .glass-soft {
+      background: rgba(255,255,255,0.48);
+      backdrop-filter: blur(14px) saturate(130%);
+      -webkit-backdrop-filter: blur(14px) saturate(130%);
+      border: 1px solid rgba(255,255,255,0.6);
+    }
+    .glass-deep {
+      background: rgba(10,79,71,0.04);
+      backdrop-filter: blur(8px);
+      -webkit-backdrop-filter: blur(8px);
+      border: 1px solid rgba(10,79,71,0.08);
+    }
+
+    /* ─── Animations ─────────────────────────────────────────────── */
+    @keyframes fadeUp {
+      from { opacity: 0; transform: translateY(14px); }
+      to   { opacity: 1; transform: translateY(0); }
+    }
+    @keyframes fadeIn {
+      from { opacity: 0; }
+      to   { opacity: 1; }
+    }
+    @keyframes scaleIn {
+      from { opacity: 0; transform: scale(0.96); }
+      to   { opacity: 1; transform: scale(1); }
+    }
+    @keyframes screenIn {
+      from { opacity: 0; transform: translateY(8px); filter: blur(4px); }
+      to   { opacity: 1; transform: translateY(0); filter: blur(0); }
+    }
+    @keyframes breath {
+      0%, 100% { transform: scale(1); opacity: 0.55; }
+      50%      { transform: scale(1.18); opacity: 1; }
+    }
+    @keyframes typingPulse {
+      0%, 60%, 100% { transform: scale(0.7); opacity: 0.35; }
+      30%           { transform: scale(1.1); opacity: 1; }
+    }
+    @keyframes shimmer {
+      0%   { background-position: -200% 0; }
+      100% { background-position: 200% 0; }
+    }
+    @keyframes emergencyPulse {
+      0%, 100% { box-shadow: 0 0 0 0 rgba(232,75,60,0.45); }
+      50%      { box-shadow: 0 0 0 12px rgba(232,75,60,0); }
+    }
+    @keyframes toastIn {
+      from { opacity: 0; transform: translate(-50%,-12px) scale(0.96); }
+      to   { opacity: 1; transform: translate(-50%,0) scale(1); }
+    }
+
+    .animate-fade-up    { animation: fadeUp 0.5s cubic-bezier(0.22,1,0.36,1) both; }
+    .animate-fade-in    { animation: fadeIn 0.4s ease-out both; }
+    .animate-scale-in   { animation: scaleIn 0.4s cubic-bezier(0.22,1,0.36,1) both; }
+    .screen-in          { animation: screenIn 0.45s cubic-bezier(0.22,1,0.36,1) both; }
+
+    /* Staggered children */
+    .stagger > * { opacity: 0; animation: fadeUp 0.5s cubic-bezier(0.22,1,0.36,1) forwards; }
+    .stagger > *:nth-child(1) { animation-delay: 0.04s; }
+    .stagger > *:nth-child(2) { animation-delay: 0.10s; }
+    .stagger > *:nth-child(3) { animation-delay: 0.16s; }
+    .stagger > *:nth-child(4) { animation-delay: 0.22s; }
+    .stagger > *:nth-child(5) { animation-delay: 0.28s; }
+    .stagger > *:nth-child(6) { animation-delay: 0.34s; }
+
+    /* ─── Chat ──────────────────────────────────────────────────── */
+    .chat-scroll { scroll-behavior: smooth; scrollbar-width: thin; scrollbar-color: rgba(20,133,122,0.3) transparent; }
+    .chat-scroll::-webkit-scrollbar { width: 6px; }
+    .chat-scroll::-webkit-scrollbar-thumb { background: rgba(20,133,122,0.25); border-radius: 3px; }
+    .chat-scroll::-webkit-scrollbar-thumb:hover { background: rgba(20,133,122,0.4); }
+
+    .bubble-user {
+      background: linear-gradient(135deg, #14857A 0%, #0A4F47 100%);
+      color: #fff;
+      border-radius: 20px 20px 6px 20px;
+      box-shadow: 0 10px 28px -10px rgba(10,79,71,0.45), inset 0 1px 0 rgba(255,255,255,0.18);
+    }
+    .bubble-bot {
+      background: rgba(255,255,255,0.72);
+      backdrop-filter: blur(16px);
+      -webkit-backdrop-filter: blur(16px);
+      border: 1px solid rgba(255,255,255,0.85);
+      border-radius: 20px 20px 20px 6px;
+      box-shadow: 0 8px 24px -10px rgba(10,79,71,0.18);
+      color: var(--ink-700);
+    }
+    .bubble-error {
+      background: rgba(255,251,235,0.85);
+      backdrop-filter: blur(14px);
+      -webkit-backdrop-filter: blur(14px);
+      border: 1px solid rgba(245,158,11,0.35);
+      border-radius: 20px 20px 20px 6px;
+      box-shadow: 0 8px 24px -10px rgba(245,158,11,0.25);
+    }
+    .bubble-unsafe {
+      background: rgba(254,243,199,0.7);
+      backdrop-filter: blur(14px);
+      -webkit-backdrop-filter: blur(14px);
+      border: 1px solid rgba(245,158,11,0.28);
+      border-radius: 20px 20px 20px 6px;
+      color: var(--ink-700);
+    }
+
+    .avatar-bot {
+      background: linear-gradient(135deg, #48C4B0, #0F6B63);
+      box-shadow: 0 4px 14px -4px rgba(15,107,99,0.5);
+    }
+    .avatar-bot::after {
+      content: ''; position: absolute; inset: 0; border-radius: 50%;
+      animation: breath 3.4s ease-in-out infinite;
+      box-shadow: 0 0 0 0 rgba(72,196,176,0.5);
+    }
+
+    /* Organic typing indicator */
+    .typing-orb {
+      display: inline-block;
+      width: 9px; height: 9px;
+      border-radius: 50%;
+      background: linear-gradient(135deg, #48C4B0, #14857A);
+      animation: typingPulse 1.4s ease-in-out infinite;
+    }
+    .typing-orb:nth-child(2) { animation-delay: 0.18s; }
+    .typing-orb:nth-child(3) { animation-delay: 0.36s; }
+
+    /* ─── Citation chips ────────────────────────────────────────── */
+    .cite-chip {
+      display: inline-flex; align-items: center; gap: 6px;
+      padding: 5px 11px 5px 9px;
+      background: linear-gradient(135deg, rgba(72,196,176,0.14), rgba(34,168,148,0.10));
+      border: 1px solid rgba(34,168,148,0.28);
+      color: var(--teal-700);
+      border-radius: 999px;
+      font-size: 12px; font-weight: 500;
+      cursor: pointer;
+      transition: transform 0.2s ease, box-shadow 0.2s ease, background 0.2s ease;
+    }
+    .cite-chip:hover {
+      transform: translateY(-1px);
+      background: linear-gradient(135deg, rgba(72,196,176,0.22), rgba(34,168,148,0.16));
+      box-shadow: 0 6px 16px -6px rgba(34,168,148,0.35);
+    }
+    .cite-chip svg { width: 11px; height: 11px; opacity: 0.7; }
+
+    /* ─── Trust strip badges ────────────────────────────────────── */
+    .trust-badge {
+      display: inline-flex; align-items: center; gap: 5px;
+      padding: 4px 9px;
+      border-radius: 999px;
+      font-size: 11px; font-weight: 500;
+      border: 1px solid transparent;
+      white-space: nowrap;
+    }
+    .trust-badge .dot { width: 5px; height: 5px; border-radius: 50%; flex-shrink: 0; }
+    .trust-passed  { background: rgba(34,168,148,0.12); color: var(--teal-700);  border-color: rgba(34,168,148,0.25); }
+    .trust-warn    { background: rgba(245,158,11,0.14); color: var(--amber-500); border-color: rgba(245,158,11,0.3); }
+    .trust-danger  { background: rgba(232,75,60,0.12);  color: var(--coral-600); border-color: rgba(232,75,60,0.28); }
+    .trust-neutral { background: rgba(92,119,113,0.10); color: var(--ink-500);   border-color: rgba(92,119,113,0.18); }
+    .trust-passed .dot  { background: var(--teal-500); }
+    .trust-warn .dot    { background: var(--amber-500); }
+    .trust-danger .dot  { background: var(--coral-500); }
+    .trust-neutral .dot { background: var(--ink-300); }
+
+    /* ─── Persona toggle (segmented control) ───────────────────── */
+    .segmented {
+      position: relative;
+      display: flex;
+      padding: 4px;
+      background: rgba(10,79,71,0.06);
+      border-radius: 14px;
+      border: 1px solid rgba(10,79,71,0.08);
+    }
+    .seg-thumb {
+      position: absolute;
+      top: 4px; bottom: 4px;
+      width: calc(50% - 4px);
+      border-radius: 10px;
+      background: linear-gradient(135deg, #22A894, #0F6B63);
+      box-shadow: 0 6px 16px -6px rgba(15,107,99,0.5);
+      transition: transform 0.42s cubic-bezier(0.22,1,0.36,1);
+      z-index: 1;
+    }
+    .seg-thumb.right { transform: translateX(100%); }
+    .seg-btn {
+      position: relative; z-index: 2;
+      flex: 1; padding: 9px 14px;
+      font-size: 13px; font-weight: 600;
+      color: var(--ink-500);
+      transition: color 0.3s ease;
+      border: none; background: transparent; cursor: pointer;
+      border-radius: 10px;
+    }
+    .seg-btn.active { color: #fff; }
+
+    /* ─── Bottom nav ────────────────────────────────────────────── */
+    .nav-shell {
+      background: rgba(255,255,255,0.78);
+      backdrop-filter: blur(24px) saturate(160%);
+      -webkit-backdrop-filter: blur(24px) saturate(160%);
+      border: 1px solid rgba(255,255,255,0.9);
+      box-shadow: 0 -8px 32px -8px rgba(10,79,71,0.14), 0 -2px 8px -4px rgba(10,79,71,0.06);
+    }
+    .nav-item {
+      position: relative;
+      display: flex; flex-direction: column; align-items: center; gap: 3px;
+      padding: 8px 4px;
+      font-size: 11px; font-weight: 500;
+      color: var(--ink-500);
+      background: transparent; border: none; cursor: pointer;
+      transition: color 0.3s ease;
+      flex: 1;
+    }
+    .nav-item .nav-ico {
+      width: 24px; height: 24px;
+      display: flex; align-items: center; justify-content: center;
+      transition: transform 0.3s cubic-bezier(0.22,1,0.36,1);
+    }
+    .nav-item .nav-ico svg { width: 20px; height: 20px; }
+    .nav-item:hover { color: var(--teal-700); }
+    .nav-item:hover .nav-ico { transform: translateY(-1px); }
+    .nav-item.active { color: var(--teal-deep); }
+    .nav-item.active .nav-ico {
+      background: linear-gradient(135deg, rgba(72,196,176,0.22), rgba(34,168,148,0.14));
+      border-radius: 12px;
+      transform: scale(1.06);
+    }
+    .nav-item.active .nav-ico svg { color: var(--teal-700); }
+
+    /* ─── Emergency FAB ─────────────────────────────────────────── */
+    .fab-emergency {
+      background: linear-gradient(135deg, #FF6B5B 0%, #C2382B 100%);
+      color: #fff;
+      box-shadow: 0 12px 30px -10px rgba(232,75,60,0.55), inset 0 1px 0 rgba(255,255,255,0.25);
+      transition: transform 0.25s ease, box-shadow 0.25s ease;
+    }
+    .fab-emergency:hover { transform: translateY(-2px) scale(1.03); box-shadow: 0 16px 38px -10px rgba(232,75,60,0.65); }
+    .fab-emergency:active { transform: translateY(0) scale(0.98); }
+
+    /* ─── Buttons ───────────────────────────────────────────────── */
+    .btn-primary {
+      background: linear-gradient(135deg, #14857A 0%, #0A4F47 100%);
+      color: #fff;
+      border: none;
+      box-shadow: 0 8px 20px -8px rgba(10,79,71,0.45);
+      transition: transform 0.2s ease, box-shadow 0.2s ease, opacity 0.2s ease;
+    }
+    .btn-primary:hover:not(:disabled) { transform: translateY(-1px); box-shadow: 0 12px 26px -8px rgba(10,79,71,0.55); }
+    .btn-primary:active:not(:disabled) { transform: translateY(0); }
+    .btn-primary:disabled { opacity: 0.5; cursor: not-allowed; }
+
+    .btn-ghost {
+      background: rgba(255,255,255,0.6);
+      border: 1px solid rgba(10,79,71,0.14);
+      color: var(--ink-700);
+      transition: all 0.2s ease;
+    }
+    .btn-ghost:hover { background: rgba(255,255,255,0.9); border-color: rgba(34,168,148,0.4); transform: translateY(-1px); }
+
+    .btn-amber {
+      background: linear-gradient(135deg, #F59E0B, #D97706);
+      color: #fff;
+      border: none;
+      box-shadow: 0 6px 16px -6px rgba(217,119,6,0.45);
+      transition: transform 0.2s ease;
+    }
+    .btn-amber:hover { transform: translateY(-1px); }
+
+    /* ─── Inputs ─────────────────────────────────────────────────── */
+    .input-soft {
+      background: rgba(255,255,255,0.75);
+      border: 1px solid rgba(10,79,71,0.14);
+      transition: border-color 0.25s ease, box-shadow 0.25s ease, background 0.25s ease;
+    }
+    .input-soft:focus {
+      outline: none;
+      background: rgba(255,255,255,0.95);
+      border-color: rgba(34,168,148,0.55);
+      box-shadow: 0 0 0 4px rgba(72,196,176,0.18);
+    }
+
+    /* ─── Module cards ───────────────────────────────────────────── */
+    .module-card {
+      position: relative;
+      cursor: pointer;
+      transition: transform 0.35s cubic-bezier(0.22,1,0.36,1), box-shadow 0.35s ease;
+      overflow: hidden;
+    }
+    .module-card::before {
+      content: '';
+      position: absolute; inset: 0;
+      background: linear-gradient(135deg, var(--mod-c1, rgba(72,196,176,0.12)), var(--mod-c2, rgba(34,168,148,0.06)));
+      opacity: 0; transition: opacity 0.35s ease;
+      pointer-events: none;
+    }
+    .module-card:hover { transform: translateY(-4px); box-shadow: 0 18px 40px -14px rgba(10,79,71,0.18); }
+    .module-card:hover::before { opacity: 1; }
+    .module-card .mod-num {
+      position: absolute; top: 14px; right: 16px;
+      font-family: 'Sora', sans-serif;
+      font-weight: 700; font-size: 36px;
+      color: rgba(10,79,71,0.06);
+      line-height: 1;
+      transition: color 0.35s ease;
+    }
+    .module-card:hover .mod-num { color: rgba(34,168,148,0.16); }
+    .module-card .mod-icon {
+      width: 40px; height: 40px;
+      border-radius: 12px;
+      display: flex; align-items: center; justify-content: center;
+      background: linear-gradient(135deg, rgba(72,196,176,0.18), rgba(34,168,148,0.10));
+      color: var(--teal-700);
+      transition: transform 0.35s ease;
+    }
+    .module-card:hover .mod-icon { transform: scale(1.08) rotate(-3deg); }
+
+    /* ─── A1C chart ──────────────────────────────────────────────── */
+    .a1c-stroke {
+      stroke-dasharray: var(--len, 1000);
+      stroke-dashoffset: var(--len, 1000);
+      animation: drawIn 1.4s cubic-bezier(0.22,1,0.36,1) 0.2s forwards;
+    }
+    @keyframes drawIn { to { stroke-dashoffset: 0; } }
+    .a1c-area {
+      opacity: 0;
+      animation: fadeIn 0.9s ease-out 0.9s forwards;
+    }
+    .a1c-dot {
+      opacity: 0;
+      transform: scale(0);
+      transform-origin: center;
+      animation: dotPop 0.5s cubic-bezier(0.22,1.4,0.36,1) forwards;
+    }
+    @keyframes dotPop {
+      to { opacity: 1; transform: scale(1); }
+    }
+
+    /* ─── History items ──────────────────────────────────────────── */
+    .history-item {
+      cursor: pointer;
+      transition: transform 0.25s ease, box-shadow 0.25s ease, border-color 0.25s ease;
+    }
+    .history-item:hover { transform: translateY(-2px); box-shadow: 0 12px 28px -10px rgba(10,79,71,0.14); border-color: rgba(34,168,148,0.35); }
+
+    /* ─── Onboarding ─────────────────────────────────────────────── */
+    .onboard-card {
+      background: rgba(255,255,255,0.82);
+      backdrop-filter: blur(28px) saturate(160%);
+      -webkit-backdrop-filter: blur(28px) saturate(160%);
+      border: 1px solid rgba(255,255,255,0.9);
+      box-shadow: 0 30px 80px -20px rgba(10,79,71,0.25), 0 8px 24px -10px rgba(10,79,71,0.12);
+    }
+    .role-card {
+      cursor: pointer;
+      transition: transform 0.3s cubic-bezier(0.22,1,0.36,1), border-color 0.3s ease, background 0.3s ease, box-shadow 0.3s ease;
+    }
+    .role-card:hover {
+      transform: translateY(-3px);
+      border-color: rgba(34,168,148,0.5);
+      background: rgba(255,255,255,0.95);
+      box-shadow: 0 18px 40px -14px rgba(15,107,99,0.22);
+    }
+    .role-ico {
+      width: 48px; height: 48px; border-radius: 14px;
+      display: flex; align-items: center; justify-content: center;
+      background: linear-gradient(135deg, rgba(72,196,176,0.2), rgba(34,168,148,0.1));
+      color: var(--teal-700);
+    }
+
+    /* ─── Modal ──────────────────────────────────────────────────── */
+    .modal-backdrop {
+      background: rgba(6,51,48,0.45);
+      backdrop-filter: blur(6px);
+      -webkit-backdrop-filter: blur(6px);
+      animation: fadeIn 0.25s ease-out both;
+    }
+    .modal-panel {
+      animation: scaleIn 0.35s cubic-bezier(0.22,1,0.36,1) both;
+    }
+
+    /* ─── Toast ──────────────────────────────────────────────────── */
+    .toast {
+      animation: toastIn 0.4s cubic-bezier(0.22,1,0.36,1) both;
+    }
+
+    /* ─── Emergency banner ──────────────────────────────────────── */
+    .emergency-banner {
+      background: linear-gradient(135deg, rgba(232,75,60,0.10), rgba(255,107,91,0.06));
+      border: 1.5px solid rgba(232,75,60,0.4);
+      animation: emergencyPulse 2.4s ease-in-out infinite, scaleIn 0.45s cubic-bezier(0.22,1,0.36,1) both;
+    }
+
+    /* ─── Shimmer for loading ───────────────────────────────────── */
+    .shimmer {
+      background: linear-gradient(90deg, rgba(255,255,255,0.4) 25%, rgba(255,255,255,0.8) 50%, rgba(255,255,255,0.4) 75%);
+      background-size: 200% 100%;
+      animation: shimmer 1.4s linear infinite;
+    }
+
+    /* ─── Utility ────────────────────────────────────────────────── */
+    .hidden { display: none !important; }
+    .no-tap { -webkit-tap-highlight-color: transparent; }
+    .pb-safe { padding-bottom: env(safe-area-inset-bottom, 0px); }
+    .pt-safe { padding-top: env(safe-area-inset-top, 0px); }
+
+    /* Screen reader only transitions when no motion */
+    @media (prefers-reduced-motion: reduce) {
+      .screen-in, .animate-fade-up, .animate-scale-in, .stagger > * { animation: none !important; opacity: 1 !important; }
+    }
   </style>
 </head>
-<body class="min-h-screen bg-white pb-16">
 
-  <!-- Disclaimer -->
-  <div class="sticky top-0 z-50 bg-amber-50 border-b border-amber-200">
-    <div class="max-w-2xl mx-auto px-4 py-2">
-      <p class="text-xs text-amber-700"><strong>Portfolio demo</strong> — not medical software. For clinical decisions, consult your care team.</p>
-    </div>
+<body class="pb-28">
+  <a href="#app" class="skip-link">Skip to main content</a>
+
+  <!-- ─── Animated gradient mesh background ─────────────────────── -->
+  <div class="mesh-bg" aria-hidden="true">
+    <div class="mesh-blob blob-1"></div>
+    <div class="mesh-blob blob-2"></div>
+    <div class="mesh-blob blob-3"></div>
   </div>
+  <div class="mesh-grain" aria-hidden="true"></div>
 
-  <!-- Onboarding -->
-  <div id="onboarding" class="fixed inset-0 z-[60] bg-ink-900/30 flex items-center justify-center p-4" role="dialog" aria-modal="true">
-    <div class="card max-w-md w-full p-8 animate-in">
-      <h1 class="text-xl font-bold text-ink-800 mb-1">Welcome to CareScaffold</h1>
-      <p class="text-sm text-ink-500 mb-6">Type 2 diabetes education, personalized to your reading level. I'll tailor my answers — who are you?</p>
-      <div class="space-y-2">
-        <button onclick="selectRole('patient')" class="w-full p-3.5 rounded-lg border border-ink-200 hover:border-brand-400 hover:bg-brand-50 transition text-left text-sm text-ink-700 font-medium">Newly diagnosed</button>
-        <button onclick="selectRole('manager')" class="w-full p-3.5 rounded-lg border border-ink-200 hover:border-brand-400 hover:bg-brand-50 transition text-left text-sm text-ink-700 font-medium">Long-term manager</button>
-        <button onclick="selectRole('caregiver')" class="w-full p-3.5 rounded-lg border border-ink-200 hover:border-brand-400 hover:bg-brand-50 transition text-left text-sm text-ink-700 font-medium">Caregiver</button>
+  <!-- ─── Portfolio disclaimer ribbon ───────────────────────────── -->
+  <div class="sticky top-0 z-40 pt-safe" role="region" aria-label="Disclaimer">
+    <div class="mx-auto max-w-3xl px-4">
+      <div class="glass-soft mt-2 rounded-full px-4 py-1.5 flex items-center gap-2 text-[11px] text-brand-800">
+        <svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" class="flex-shrink-0"><path d="M12 9v4M12 17h.01M10.29 3.86 1.82 18a2 2 0 0 0 1.71 3h16.94a2 2 0 0 0 1.71-3L13.71 3.86a2 2 0 0 0-3.42 0z"/></svg>
+        <span><strong class="font-semibold">Portfolio demo</strong> — not medical software. For clinical decisions, consult your care team.</span>
       </div>
     </div>
   </div>
 
-  <!-- App -->
-  <div id="app" class="max-w-2xl mx-auto px-4 pt-4 hidden">
+  <!-- ─── Onboarding overlay (multi-step) ───────────────────────── -->
+  <div id="onboarding" class="fixed inset-0 z-[70] flex items-center justify-center p-4" role="dialog" aria-modal="true" aria-labelledby="ob-title">
+    <div class="modal-backdrop absolute inset-0"></div>
+    <div class="onboard-card relative w-full max-w-md rounded-3xl p-8">
 
-    <!-- HOME -->
-    <div id="screen-home" class="screen">
-      <div class="mb-4">
-        <h1 class="text-lg font-bold text-ink-800" id="greeting-text">CareScaffold</h1>
-        <p class="text-sm text-ink-400" id="greeting-sub">Type 2 diabetes education, personalized to you</p>
+      <!-- Step indicator -->
+      <div class="flex gap-1.5 mb-6" aria-hidden="true">
+        <div class="h-1 rounded-full bg-brand-500 transition-all duration-500" id="ob-dot-1" style="width:32px"></div>
+        <div class="h-1 rounded-full bg-brand-200 transition-all duration-500" id="ob-dot-2" style="width:12px"></div>
       </div>
+
+      <!-- Step 1: Welcome -->
+      <div id="ob-step-1" class="ob-step">
+        <div class="flex items-center gap-3 mb-5">
+          <div class="relative w-12 h-12 rounded-2xl avatar-bot flex items-center justify-center flex-shrink-0">
+            <svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="#fff" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M12 21s-7-4.5-9.5-9A5.5 5.5 0 0 1 12 6a5.5 5.5 0 0 1 9.5 6c-2.5 4.5-9.5 9-9.5 9z"/></svg>
+          </div>
+          <div>
+            <p class="text-xs font-medium text-brand-600 uppercase tracking-wider">CareScaffold</p>
+            <p class="text-[11px] text-ink-400">Type 2 diabetes education</p>
+          </div>
+        </div>
+        <h1 id="ob-title" class="font-display text-2xl font-bold text-brand-900 leading-tight mb-3">Education that meets you where you are.</h1>
+        <p class="text-sm text-ink-500 leading-relaxed mb-6">A thoughtful companion for understanding Type 2 diabetes — answers scaffolded to your reading level, every response safety-checked before you see it.</p>
+        <button onclick="obNext()" class="btn-primary w-full py-3.5 rounded-2xl font-semibold text-sm flex items-center justify-center gap-2 group">
+          Begin
+          <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" class="transition-transform group-hover:translate-x-0.5"><path d="M5 12h14M12 5l7 7-7 7"/></svg>
+        </button>
+      </div>
+
+      <!-- Step 2: Role selection -->
+      <div id="ob-step-2" class="ob-step hidden">
+        <h2 class="font-display text-xl font-bold text-brand-900 mb-2">Who are you?</h2>
+        <p class="text-sm text-ink-500 mb-5">I'll tailor the language. You can change this any time in Settings.</p>
+        <div class="space-y-2.5 stagger" role="radiogroup" aria-label="Select your role">
+          <button onclick="selectRole('patient')" role="radio" aria-checked="false" class="role-card w-full text-left p-4 rounded-2xl border border-brand-200/60 bg-white/50 flex items-center gap-3.5 no-tap">
+            <div class="role-ico flex-shrink-0">
+              <svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M20 21v-2a4 4 0 0 0-4-4H8a4 4 0 0 0-4 4v2"/><circle cx="12" cy="7" r="4"/></svg>
+            </div>
+            <div class="flex-1">
+              <p class="font-semibold text-brand-900 text-sm">Newly diagnosed</p>
+              <p class="text-xs text-ink-500 mt-0.5">Learning the basics for the first time</p>
+            </div>
+            <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" class="text-brand-400"><path d="M9 18l6-6-6-6"/></svg>
+          </button>
+          <button onclick="selectRole('manager')" role="radio" aria-checked="false" class="role-card w-full text-left p-4 rounded-2xl border border-brand-200/60 bg-white/50 flex items-center gap-3.5 no-tap">
+            <div class="role-ico flex-shrink-0">
+              <svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M22 12h-4l-3 9L9 3l-3 9H2"/></svg>
+            </div>
+            <div class="flex-1">
+              <p class="font-semibold text-brand-900 text-sm">Long-term manager</p>
+              <p class="text-xs text-ink-500 mt-0.5">Going deeper into self-management</p>
+            </div>
+            <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" class="text-brand-400"><path d="M9 18l6-6-6-6"/></svg>
+          </button>
+          <button onclick="selectRole('caregiver')" role="radio" aria-checked="false" class="role-card w-full text-left p-4 rounded-2xl border border-brand-200/60 bg-white/50 flex items-center gap-3.5 no-tap">
+            <div class="role-ico flex-shrink-0">
+              <svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M17 21v-2a4 4 0 0 0-4-4H5a4 4 0 0 0-4 4v2"/><circle cx="9" cy="7" r="4"/><path d="M23 21v-2a4 4 0 0 0-3-3.87M16 3.13a4 4 0 0 1 0 7.75"/></svg>
+            </div>
+            <div class="flex-1">
+              <p class="font-semibold text-brand-900 text-sm">Caregiver</p>
+              <p class="text-xs text-ink-500 mt-0.5">Supporting someone with T2D</p>
+            </div>
+            <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" class="text-brand-400"><path d="M9 18l6-6-6-6"/></svg>
+          </button>
+        </div>
+        <button onclick="obBack()" class="mt-5 text-xs text-ink-400 hover:text-brand-700 font-medium transition-colors flex items-center gap-1">
+          <svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><path d="M15 18l-6-6 6-6"/></svg> Back
+        </button>
+      </div>
+
+    </div>
+  </div>
+
+  <!-- ─── App ───────────────────────────────────────────────────── -->
+  <main id="app" class="mx-auto max-w-3xl px-4 pt-3 hidden">
+
+    <!-- ════════ HOME (chat) ════════ -->
+    <section id="screen-home" class="screen screen-in" aria-label="Chat">
+      <!-- Greeting -->
+      <header class="mb-5 flex items-end justify-between gap-3">
+        <div>
+          <p class="text-[11px] font-semibold text-brand-600 uppercase tracking-wider mb-1" id="greeting-eyebrow">CareScaffold</p>
+          <h1 class="font-display text-2xl sm:text-3xl font-bold text-brand-900 leading-tight" id="greeting-text">Hello there.</h1>
+          <p class="text-sm text-ink-500 mt-1" id="greeting-sub">Type 2 diabetes education, personalized to you.</p>
+        </div>
+        <div class="hidden sm:flex items-center gap-2 text-[11px] text-ink-400">
+          <span class="w-1.5 h-1.5 rounded-full bg-brand-500 animate-pulse" aria-hidden="true"></span>
+          Safety-checked
+        </div>
+      </header>
 
       <!-- FHIR context -->
-      <div class="card p-3 mb-3">
-        <div class="flex items-center justify-between mb-1.5">
-          <span class="text-[11px] text-ink-400 font-medium uppercase tracking-wide">Health Context</span>
-          <button onclick="loadFhirContext()" class="text-xs text-brand-600 hover:underline" id="fhir-load-btn">Load from FHIR</button>
+      <div class="glass rounded-2xl p-3.5 mb-3">
+        <div class="flex items-center justify-between mb-2">
+          <span class="text-[10px] text-ink-400 font-semibold uppercase tracking-wider">Health Context</span>
+          <button onclick="loadFhirContext()" id="fhir-load-btn" class="text-xs text-brand-700 hover:text-brand-900 font-semibold flex items-center gap-1.5 transition-colors group">
+            <svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" class="transition-transform group-hover:rotate-180 duration-500"><path d="M23 4v6h-6M1 20v-6h6"/><path d="M3.51 9a9 9 0 0 1 14.85-3.36L23 10M1 14l4.64 4.36A9 9 0 0 0 20.49 15"/></svg>
+            Load from FHIR
+          </button>
         </div>
-        <div id="context-chips" class="flex flex-wrap gap-2"><span class="text-sm text-ink-300">No health data loaded</span></div>
+        <div id="context-chips" class="flex flex-wrap gap-2">
+          <span class="text-xs text-ink-300 italic">No health data loaded</span>
+        </div>
       </div>
 
-      <!-- Persona -->
-      <div class="card p-3 mb-3">
-        <span class="text-[11px] text-ink-400 font-medium uppercase tracking-wide block mb-2">Reading Level</span>
-        <div class="flex gap-2">
-          <button id="persona-foundational" onclick="setPersona('foundational')" class="flex-1 py-2 px-3 rounded-lg border text-sm font-medium transition" style="border-color:#0d9488;background:#f0fdfa;color:#0f766e">Simple</button>
-          <button id="persona-higher" onclick="setPersona('higher')" class="flex-1 py-2 px-3 rounded-lg border border-ink-200 text-sm font-medium text-ink-500 transition hover:border-ink-300">Detailed</button>
+      <!-- Persona toggle -->
+      <div class="glass rounded-2xl p-3.5 mb-3">
+        <div class="flex items-center justify-between mb-2.5">
+          <span class="text-[10px] text-ink-400 font-semibold uppercase tracking-wider">Reading Level</span>
+          <span class="text-[10px] text-ink-300" id="persona-hint">Plain language</span>
+        </div>
+        <div class="segmented" role="radiogroup" aria-label="Reading level">
+          <div class="seg-thumb" id="seg-thumb"></div>
+          <button id="persona-foundational" onclick="setPersona('foundational')" role="radio" aria-checked="true" class="seg-btn active">Simple</button>
+          <button id="persona-higher" onclick="setPersona('higher')" role="radio" aria-checked="false" class="seg-btn">Detailed</button>
         </div>
       </div>
 
       <!-- Chat -->
-      <div id="chat" class="card p-4 mb-3 min-h-[240px] max-h-[400px] overflow-y-auto" role="log" aria-live="polite">
-        <div id="welcome-msg" class="text-center py-8">
-          <p class="text-ink-600 font-medium text-sm mb-1">Ask a question about Type 2 diabetes</p>
-          <p class="text-xs text-ink-400 mb-4">A1C tests, metformin, carbohydrates, lifestyle</p>
-          <div class="flex flex-wrap gap-2 justify-center max-w-sm mx-auto">
-            <button onclick="askSuggested('What is an A1C test and why does my doctor want me to get one?')" class="text-xs px-3 py-1.5 bg-ink-50 text-ink-600 rounded-lg border border-ink-100 hover:bg-ink-100 transition">What is an A1C test?</button>
-            <button onclick="askSuggested('How does metformin work in my body?')" class="text-xs px-3 py-1.5 bg-ink-50 text-ink-600 rounded-lg border border-ink-100 hover:bg-ink-100 transition">How does metformin work?</button>
-            <button onclick="askSuggested('What foods have carbohydrates in them?')" class="text-xs px-3 py-1.5 bg-ink-50 text-ink-600 rounded-lg border border-ink-100 hover:bg-ink-100 transition">What foods have carbs?</button>
-            <button onclick="askSuggested('How does walking after a meal affect my blood sugar?')" class="text-xs px-3 py-1.5 bg-ink-50 text-ink-600 rounded-lg border border-ink-100 hover:bg-ink-100 transition">Walking and blood sugar</button>
+      <div id="chat" class="glass rounded-3xl p-4 sm:p-5 mb-3 min-h-[280px] max-h-[440px] overflow-y-auto chat-scroll" role="log" aria-live="polite" aria-label="Conversation">
+        <!-- Welcome state -->
+        <div id="welcome-msg" class="text-center py-10 animate-fade-in">
+          <div class="relative w-14 h-14 mx-auto mb-4 avatar-bot rounded-2xl flex items-center justify-center">
+            <svg width="26" height="26" viewBox="0 0 24 24" fill="none" stroke="#fff" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M21 15a2 2 0 0 1-2 2H7l-4 4V5a2 2 0 0 1 2-2h14a2 2 0 0 1 2 2z"/></svg>
+          </div>
+          <p class="font-display text-lg font-semibold text-brand-900 mb-1">Ask a question about Type 2 diabetes</p>
+          <p class="text-xs text-ink-400 mb-5">A1C, metformin, carbohydrates, lifestyle — anything on your mind.</p>
+          <div class="flex flex-wrap gap-2 justify-center max-w-md mx-auto stagger" role="list">
+            <button onclick="askSuggested('What is an A1C test and why does my doctor want me to get one?')" class="cite-chip no-tap" role="listitem">
+              <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M12 2v20M2 12h20" stroke-linecap="round"/></svg>
+              What is an A1C test?
+            </button>
+            <button onclick="askSuggested('How does metformin work in my body?')" class="cite-chip no-tap" role="listitem">
+              <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M12 2v20M2 12h20" stroke-linecap="round"/></svg>
+              How does metformin work?
+            </button>
+            <button onclick="askSuggested('What foods have carbohydrates in them?')" class="cite-chip no-tap" role="listitem">
+              <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M12 2v20M2 12h20" stroke-linecap="round"/></svg>
+              What foods have carbs?
+            </button>
+            <button onclick="askSuggested('How does walking after a meal affect my blood sugar?')" class="cite-chip no-tap" role="listitem">
+              <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M12 2v20M2 12h20" stroke-linecap="round"/></svg>
+              Walking and blood sugar
+            </button>
           </div>
         </div>
       </div>
 
       <!-- Trust strip -->
-      <div id="trust-strip" class="hidden card p-2.5 mb-3">
-        <div class="flex flex-wrap gap-1.5 text-[11px]" id="trust-badges"></div>
+      <div id="trust-strip" class="glass-deep rounded-2xl p-3 mb-3 hidden animate-fade-up">
+        <div class="flex items-center gap-1.5 mb-2">
+          <svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" class="text-brand-600"><path d="M12 22s8-4 8-10V5l-8-3-8 3v7c0 6 8 10 8 10z" stroke-linecap="round" stroke-linejoin="round"/><path d="M9 12l2 2 4-4" stroke-linecap="round" stroke-linejoin="round"/></svg>
+          <span class="text-[10px] font-semibold uppercase tracking-wider text-brand-700">Safety checks</span>
+        </div>
+        <div class="flex flex-wrap gap-1.5" id="trust-badges"></div>
       </div>
 
       <!-- Input -->
-      <form id="chat-form" onsubmit="askQuestion(event)" class="flex gap-2">
-        <input id="question-input" type="text" placeholder="Ask about Type 2 diabetes…" class="flex-1 px-4 py-3 rounded-xl border border-ink-200 focus:outline-none focus:ring-2 focus:ring-brand-400 focus:border-transparent text-base" autocomplete="off" aria-label="Question">
-        <button type="submit" id="send-btn" class="btn-primary text-sm">Send</button>
+      <form id="chat-form" onsubmit="askQuestion(event)" class="glass rounded-2xl p-2 flex gap-2 items-center">
+        <label for="question-input" class="sr-only">Ask a question about Type 2 diabetes</label>
+        <input id="question-input" type="text" placeholder="Ask about Type 2 diabetes…" class="input-soft flex-1 px-4 py-3 rounded-xl text-[15px] text-ink-700 placeholder:text-ink-300" autocomplete="off" aria-label="Question input" maxlength="2000">
+        <button type="submit" id="send-btn" class="btn-primary px-5 py-3 rounded-xl text-sm font-semibold flex items-center gap-2 no-tap" aria-label="Send question">
+          <span class="hidden sm:inline">Send</span>
+          <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round" class="sm:hidden"><path d="M22 2L11 13M22 2l-7 20-4-9-9-4 20-7z"/></svg>
+          <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round" class="hidden sm:block"><path d="M5 12h14M12 5l7 7-7 7"/></svg>
+        </button>
       </form>
-    </div>
+    </section>
 
-    <!-- LIBRARY -->
-    <div id="screen-library" class="screen hidden">
-      <h1 class="text-lg font-bold text-ink-800 mb-1">Education Library</h1>
-      <p class="text-sm text-ink-400 mb-4">Six core topics, written in plain language</p>
-      <div id="module-grid" class="grid grid-cols-1 sm:grid-cols-2 gap-3"></div>
-    </div>
+    <!-- ════════ LIBRARY ════════ -->
+    <section id="screen-library" class="screen hidden" aria-label="Education library">
+      <header class="mb-5">
+        <p class="text-[11px] font-semibold text-brand-600 uppercase tracking-wider mb-1">Library</p>
+        <h1 class="font-display text-2xl sm:text-3xl font-bold text-brand-900 leading-tight">Six core topics.</h1>
+        <p class="text-sm text-ink-500 mt-1">Written in plain language, grounded in the same sources your answers draw from.</p>
+      </header>
+      <div id="module-grid" class="grid grid-cols-1 sm:grid-cols-2 gap-3 stagger"></div>
+    </section>
 
-    <!-- HISTORY -->
-    <div id="screen-history" class="screen hidden">
-      <h1 class="text-lg font-bold text-ink-800 mb-1">Question History</h1>
-      <p class="text-sm text-ink-400 mb-3">Everything you've asked</p>
-      <input type="text" id="history-search" placeholder="Search…" oninput="filterHistory()" class="w-full px-4 py-2.5 mb-3 rounded-xl border border-ink-200 focus:ring-2 focus:ring-brand-400 text-sm" aria-label="Search">
-      <div id="history-list" class="space-y-2"></div>
-    </div>
+    <!-- ════════ HISTORY ════════ -->
+    <section id="screen-history" class="screen hidden" aria-label="Question history">
+      <header class="mb-5">
+        <p class="text-[11px] font-semibold text-brand-600 uppercase tracking-wider mb-1">History</p>
+        <h1 class="font-display text-2xl sm:text-3xl font-bold text-brand-900 leading-tight">Everything you've asked.</h1>
+        <p class="text-sm text-ink-500 mt-1">Saved on this device only. Tap any to reopen the conversation.</p>
+      </header>
+      <label for="history-search" class="sr-only">Search history</label>
+      <div class="relative mb-4">
+        <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" class="absolute left-4 top-1/2 -translate-y-1/2 text-ink-300 pointer-events-none"><circle cx="11" cy="11" r="8"/><path d="m21 21-4.35-4.35" stroke-linecap="round"/></svg>
+        <input type="text" id="history-search" placeholder="Search questions…" oninput="filterHistory()" class="input-soft w-full pl-11 pr-4 py-3 rounded-2xl text-sm text-ink-700 placeholder:text-ink-300" aria-label="Search history">
+      </div>
+      <div id="history-list" class="space-y-2.5"></div>
+    </section>
 
-    <!-- A1C -->
-    <div id="screen-a1c" class="screen hidden">
-      <h1 class="text-lg font-bold text-ink-800 mb-1">A1C History</h1>
-      <p class="text-sm text-ink-400 mb-4">Your readings over time, from FHIR</p>
+    <!-- ════════ A1C ════════ -->
+    <section id="screen-a1c" class="screen hidden" aria-label="A1C history chart">
+      <header class="mb-5">
+        <p class="text-[11px] font-semibold text-brand-600 uppercase tracking-wider mb-1">A1C Tracker</p>
+        <h1 class="font-display text-2xl sm:text-3xl font-bold text-brand-900 leading-tight">Your readings over time.</h1>
+        <p class="text-sm text-ink-500 mt-1">Pulled from your FHIR record. Tap any point to ask what it means.</p>
+      </header>
       <div id="a1c-content">
-        <div class="card p-8 text-center">
-          <p class="text-sm text-ink-400 mb-3">No A1C data loaded</p>
-          <button onclick="loadFhirContext()" class="btn-primary text-sm">Load from FHIR</button>
+        <div class="glass rounded-3xl p-8 text-center">
+          <div class="relative w-16 h-16 mx-auto mb-4 avatar-bot rounded-2xl flex items-center justify-center">
+            <svg width="30" height="30" viewBox="0 0 24 24" fill="none" stroke="#fff" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M3 3v18h18"/><path d="m19 9-5 5-4-4-3 3"/></svg>
+          </div>
+          <p class="font-display text-lg font-semibold text-brand-900 mb-1">No A1C data loaded yet</p>
+          <p class="text-sm text-ink-400 mb-5 max-w-xs mx-auto">Connect to your FHIR record to see your A1C trend, range, and what each reading means.</p>
+          <button onclick="loadFhirContext()" class="btn-primary px-6 py-3 rounded-xl text-sm font-semibold inline-flex items-center gap-2 no-tap">
+            <svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><path d="M23 4v6h-6M1 20v-6h6"/><path d="M3.51 9a9 9 0 0 1 14.85-3.36L23 10M1 14l4.64 4.36A9 9 0 0 0 20.49 15"/></svg>
+            Load from FHIR
+          </button>
         </div>
       </div>
-    </div>
+    </section>
 
-    <!-- SETTINGS -->
-    <div id="screen-settings" class="screen hidden">
-      <h1 class="text-lg font-bold text-ink-800 mb-1">Settings</h1>
-      <p class="text-sm text-ink-400 mb-4">How this tool works — transparent by design</p>
+    <!-- ════════ SETTINGS ════════ -->
+    <section id="screen-settings" class="screen hidden" aria-label="Settings">
+      <header class="mb-5">
+        <p class="text-[11px] font-semibold text-brand-600 uppercase tracking-wider mb-1">Settings</p>
+        <h1 class="font-display text-2xl sm:text-3xl font-bold text-brand-900 leading-tight">How this tool works.</h1>
+        <p class="text-sm text-ink-500 mt-1">Transparent by design — every safety layer is visible here.</p>
+      </header>
 
-      <div class="card p-4 mb-3">
-        <h2 class="font-semibold text-ink-800 text-sm mb-2">Role</h2>
-        <p class="text-xs text-ink-400 mb-2" id="current-role-display">—</p>
+      <!-- Role -->
+      <div class="glass rounded-2xl p-4 mb-3">
+        <h2 class="font-display font-semibold text-brand-900 text-sm mb-1">Role</h2>
+        <p class="text-xs text-ink-400 mb-3" id="current-role-display">—</p>
         <div class="flex gap-2 flex-wrap">
-          <button onclick="switchRole('patient')" class="btn-ghost text-xs">Patient</button>
-          <button onclick="switchRole('manager')" class="btn-ghost text-xs">Manager</button>
-          <button onclick="switchRole('caregiver')" class="btn-ghost text-xs">Caregiver</button>
+          <button onclick="switchRole('patient')" class="btn-ghost text-xs px-3.5 py-2 rounded-lg no-tap">Newly diagnosed</button>
+          <button onclick="switchRole('manager')" class="btn-ghost text-xs px-3.5 py-2 rounded-lg no-tap">Manager</button>
+          <button onclick="switchRole('caregiver')" class="btn-ghost text-xs px-3.5 py-2 rounded-lg no-tap">Caregiver</button>
         </div>
       </div>
 
-      <div class="card p-4 mb-3">
-        <h2 class="font-semibold text-ink-800 text-sm mb-3">Safety Layers</h2>
-        <div class="space-y-2.5 text-xs">
-          <div class="flex gap-3"><span class="w-2 h-2 rounded-full bg-red-400 mt-1 flex-shrink-0"></span><div><p class="font-medium text-ink-700">Emergency detection</p><p class="text-ink-400 mt-0.5">Chest pain, severe hypoglycemia, self-harm → immediate redirect to 911/988, no AI delay</p></div></div>
-          <div class="flex gap-3"><span class="w-2 h-2 rounded-full bg-brand-400 mt-1 flex-shrink-0"></span><div><p class="font-medium text-ink-700">PHI redaction</p><p class="text-ink-400 mt-0.5">Personal identifiers replaced with tokens before any AI call</p></div></div>
-          <div class="flex gap-3"><span class="w-2 h-2 rounded-full bg-brand-400 mt-1 flex-shrink-0"></span><div><p class="font-medium text-ink-700">Outbound safety (2 layers)</p><p class="text-ink-400 mt-0.5">Every AI response checked by regex + independent AI judge before you see it</p></div></div>
+      <!-- Reading level -->
+      <div class="glass rounded-2xl p-4 mb-3">
+        <h2 class="font-display font-semibold text-brand-900 text-sm mb-1">Reading Level</h2>
+        <p class="text-xs text-ink-400 mb-3">How detailed should answers be?</p>
+        <div class="segmented" role="radiogroup" aria-label="Reading level in settings">
+          <div class="seg-thumb" id="seg-thumb-settings"></div>
+          <button id="persona-foundational-settings" onclick="setPersona('foundational')" role="radio" aria-checked="true" class="seg-btn active">Simple</button>
+          <button id="persona-higher-settings" onclick="setPersona('higher')" role="radio" aria-checked="false" class="seg-btn">Detailed</button>
         </div>
       </div>
 
-      <div class="card p-4 mb-3">
-        <h2 class="font-semibold text-ink-800 text-sm mb-1">Clinician Review</h2>
-        <p class="text-xs text-ink-500">Content written by a software engineer, not a clinician. Not reviewed by a licensed physician. Always consult your care team.</p>
+      <!-- Safety layers -->
+      <div class="glass rounded-2xl p-4 mb-3">
+        <h2 class="font-display font-semibold text-brand-900 text-sm mb-3">Safety Layers</h2>
+        <div class="space-y-3 text-xs">
+          <div class="flex gap-3">
+            <span class="w-2 h-2 rounded-full bg-coral-500 mt-1.5 flex-shrink-0" style="box-shadow:0 0 0 3px rgba(232,75,60,0.18)"></span>
+            <div>
+              <p class="font-semibold text-ink-700 text-[13px]">Emergency detection</p>
+              <p class="text-ink-400 mt-0.5 leading-relaxed">Chest pain, severe hypoglycemia, self-harm → immediate redirect to 911 / 988. No AI in the loop.</p>
+            </div>
+          </div>
+          <div class="flex gap-3">
+            <span class="w-2 h-2 rounded-full bg-brand-500 mt-1.5 flex-shrink-0" style="box-shadow:0 0 0 3px rgba(34,168,148,0.18)"></span>
+            <div>
+              <p class="font-semibold text-ink-700 text-[13px]">PHI redaction</p>
+              <p class="text-ink-400 mt-0.5 leading-relaxed">Personal identifiers replaced with tokens before any AI call.</p>
+            </div>
+          </div>
+          <div class="flex gap-3">
+            <span class="w-2 h-2 rounded-full bg-brand-500 mt-1.5 flex-shrink-0" style="box-shadow:0 0 0 3px rgba(34,168,148,0.18)"></span>
+            <div>
+              <p class="font-semibold text-ink-700 text-[13px]">Outbound safety (2 layers)</p>
+              <p class="text-ink-400 mt-0.5 leading-relaxed">Every AI response checked by regex + independent AI judge before you see it.</p>
+            </div>
+          </div>
+        </div>
       </div>
 
-      <div class="rounded-xl border border-amber-200 bg-amber-50/50 p-4 mb-3">
-        <h2 class="font-semibold text-amber-700 text-sm mb-2">Compliance Disclosure</h2>
-        <ul class="text-xs text-amber-600 space-y-1.5 list-disc pl-4">
-          <li><strong>Not "HIPAA certified"</strong> — no such certification exists. PHI redaction tested against HIPAA Safe Harbor (45 CFR 164.514(b)(2)); 91% recall / 85% precision on 152-case corpus.</li>
-          <li><strong>Not "ONC certified"</strong> — FHIR R4 self-tested; Inferno Docker run not performed (sandbox constraint).</li>
-          <li><strong>100% synthetic data</strong> — all patient data from Synthea. Never touched real PHI.</li>
-          <li><strong>BAA not required</strong> — no real PHI processed. Production would require a BAA.</li>
+      <!-- Clinician review -->
+      <div class="glass rounded-2xl p-4 mb-3">
+        <h2 class="font-display font-semibold text-brand-900 text-sm mb-1">Clinician Review</h2>
+        <p class="text-xs text-ink-500 leading-relaxed">Content written by a software engineer, not a clinician. Not reviewed by a licensed physician. Always consult your care team.</p>
+      </div>
+
+      <!-- Compliance -->
+      <div class="rounded-2xl border border-amber2-500/30 bg-amber2-500/5 p-4 mb-3">
+        <h2 class="font-display font-semibold text-amber2-600 text-sm mb-2 flex items-center gap-2">
+          <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><path d="M12 9v4M12 17h.01M10.29 3.86 1.82 18a2 2 0 0 0 1.71 3h16.94a2 2 0 0 0 1.71-3L13.71 3.86a2 2 0 0 0-3.42 0z" stroke-linecap="round" stroke-linejoin="round"/></svg>
+          Compliance Disclosure
+        </h2>
+        <ul class="text-xs text-amber2-600/90 space-y-1.5 list-none pl-0">
+          <li class="flex gap-2"><span class="text-amber2-500 mt-px">•</span><span><strong>Not "HIPAA certified"</strong> — no such certification exists. PHI redaction tested against HIPAA Safe Harbor (45 CFR 164.514(b)(2)); 91% recall / 85% precision on 152-case corpus.</span></li>
+          <li class="flex gap-2"><span class="text-amber2-500 mt-px">•</span><span><strong>Not "ONC certified"</strong> — FHIR R4 self-tested; Inferno Docker run not performed (sandbox constraint).</span></li>
+          <li class="flex gap-2"><span class="text-amber2-500 mt-px">•</span><span><strong>100% synthetic data</strong> — all patient data from Synthea. Never touched real PHI.</span></li>
+          <li class="flex gap-2"><span class="text-amber2-500 mt-px">•</span><span><strong>BAA not required</strong> — no real PHI processed. Production would require a BAA.</span></li>
         </ul>
       </div>
 
-      <div class="text-center text-xs text-ink-300 mt-6">
-        <a href="/docs" class="text-brand-600 hover:underline">API Docs</a> · <a href="https://github.com/VampFay/health-literate" class="text-brand-600 hover:underline">GitHub</a>
+      <!-- Data controls -->
+      <div class="glass rounded-2xl p-4 mb-3">
+        <h2 class="font-display font-semibold text-brand-900 text-sm mb-3">Your Data</h2>
+        <div class="flex items-center justify-between mb-2">
+          <p class="text-xs text-ink-500">Questions & answers stored on this device only.</p>
+          <button onclick="clearHistory()" class="text-xs text-coral-600 hover:text-coral-700 font-semibold transition-colors">Clear history</button>
+        </div>
+        <p class="text-[11px] text-ink-300">Persona and role also stored locally.</p>
       </div>
-    </div>
-  </div>
 
-  <!-- Nav -->
-  <nav class="fixed bottom-0 left-0 right-0 bg-white border-t border-ink-100 z-40" role="navigation" aria-label="Main">
-    <div class="max-w-2xl mx-auto flex justify-around px-2 py-2">
-      <button onclick="showScreen('home')" class="nav-tab active" id="nav-home">Home</button>
-      <button onclick="showScreen('library')" class="nav-tab" id="nav-library">Library</button>
-      <button onclick="showScreen('history')" class="nav-tab" id="nav-history">History</button>
-      <button onclick="showScreen('a1c')" class="nav-tab" id="nav-a1c">A1C</button>
-      <button onclick="showScreen('settings')" class="nav-tab" id="nav-settings">Settings</button>
+      <div class="text-center text-xs text-ink-300 mt-6 mb-2">
+        <a href="/docs" class="text-brand-600 hover:text-brand-800 font-medium transition-colors">API Docs</a>
+        <span class="mx-2 text-ink-200">·</span>
+        <a href="https://github.com/VampFay/health-literate" class="text-brand-600 hover:text-brand-800 font-medium transition-colors">GitHub</a>
+      </div>
+    </section>
+  </main>
+
+  <!-- ─── Bottom navigation ─────────────────────────────────────── -->
+  <nav class="fixed bottom-0 left-0 right-0 z-50 pb-safe" role="navigation" aria-label="Main navigation">
+    <div class="mx-auto max-w-3xl px-4 pb-3">
+      <div class="nav-shell rounded-2xl px-2 py-1.5 flex">
+        <button onclick="showScreen('home')" class="nav-item active" id="nav-home" aria-current="page" aria-label="Home">
+          <span class="nav-ico"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M3 9l9-7 9 7v11a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2z"/><path d="M9 22V12h6v10"/></svg></span>
+          <span>Home</span>
+        </button>
+        <button onclick="showScreen('library')" class="nav-item" id="nav-library" aria-label="Library">
+          <span class="nav-ico"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M4 19.5A2.5 2.5 0 0 1 6.5 17H20"/><path d="M6.5 2H20v20H6.5A2.5 2.5 0 0 1 4 19.5v-15A2.5 2.5 0 0 1 6.5 2z"/></svg></span>
+          <span>Library</span>
+        </button>
+        <button onclick="showScreen('history')" class="nav-item" id="nav-history" aria-label="History">
+          <span class="nav-ico"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M3 12a9 9 0 1 0 9-9 9.75 9.75 0 0 0-6.74 2.74L3 8"/><path d="M3 3v5h5"/><path d="M12 7v5l4 2"/></svg></span>
+          <span>History</span>
+        </button>
+        <button onclick="showScreen('a1c')" class="nav-item" id="nav-a1c" aria-label="A1C chart">
+          <span class="nav-ico"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M3 3v18h18"/><path d="m19 9-5 5-4-4-3 3"/></svg></span>
+          <span>A1C</span>
+        </button>
+        <button onclick="showScreen('settings')" class="nav-item" id="nav-settings" aria-label="Settings">
+          <span class="nav-ico"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="12" r="3"/><path d="M19.4 15a1.65 1.65 0 0 0 .33 1.82l.06.06a2 2 0 0 1 0 2.83 2 2 0 0 1-2.83 0l-.06-.06a1.65 1.65 0 0 0-1.82-.33 1.65 1.65 0 0 0-1 1.51V21a2 2 0 0 1-4 0v-.09A1.65 1.65 0 0 0 9 19.4a1.65 1.65 0 0 0-1.82.33l-.06.06a2 2 0 0 1-2.83 0 2 2 0 0 1 0-2.83l.06-.06a1.65 1.65 0 0 0 .33-1.82 1.65 1.65 0 0 0-1.51-1H3a2 2 0 0 1 0-4h.09A1.65 1.65 0 0 0 4.6 9a1.65 1.65 0 0 0-.33-1.82l-.06-.06a2 2 0 0 1 0-2.83 2 2 0 0 1 2.83 0l.06.06a1.65 1.65 0 0 0 1.82.33H9a1.65 1.65 0 0 0 1-1.51V3a2 2 0 0 1 4 0v.09a1.65 1.65 0 0 0 1 1.51 1.65 1.65 0 0 0 1.82-.33l.06-.06a2 2 0 0 1 2.83 0 2 2 0 0 1 0 2.83l-.06.06a1.65 1.65 0 0 0-.33 1.82V9a1.65 1.65 0 0 0 1.51 1H21a2 2 0 0 1 0 4h-.09a1.65 1.65 0 0 0-1.51 1z"/></svg></span>
+          <span>Settings</span>
+        </button>
+      </div>
     </div>
   </nav>
 
-  <!-- Emergency -->
-  <button onclick="showEmergency()" class="fixed bottom-16 right-4 z-40 px-4 py-2 bg-red-500 text-white rounded-xl shadow-lg hover:bg-red-600 transition text-sm font-medium" aria-label="Emergency">Emergency</button>
+  <!-- ─── Emergency FAB ─────────────────────────────────────────── -->
+  <button onclick="showEmergency()" class="fab-emergency fixed right-4 z-50 px-4 py-3 rounded-2xl text-sm font-semibold flex items-center gap-2 no-tap" style="bottom: calc(5.5rem + env(safe-area-inset-bottom, 0px))" aria-label="Emergency resources">
+    <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><path d="M10.29 3.86 1.82 18a2 2 0 0 0 1.71 3h16.94a2 2 0 0 0 1.71-3L13.71 3.86a2 2 0 0 0-3.42 0z"/><path d="M12 9v4M12 17h.01"/></svg>
+    <span class="hidden sm:inline">Emergency</span>
+  </button>
+
+  <!-- ─── Toast region ──────────────────────────────────────────── -->
+  <div id="toast-root" class="fixed top-4 left-1/2 z-[80] pointer-events-none" aria-live="assertive" aria-atomic="true"></div>
 
   <script>
-    let persona=localStorage.getItem('persona')||'foundational';
-    let role=localStorage.getItem('role')||null;
-    let waiting=false;
-    let history=JSON.parse(localStorage.getItem('qa_history')||'[]');
-    let a1cReadings=[];
-    const MODULES=[
-      {id:'01_diagnosis_basics',title:'Diagnosis Basics',desc:'What T2D means and why you have it',time:'4 min'},
-      {id:'02_a1c_target_explained',title:'A1C Explained',desc:'What the test measures and why',time:'5 min'},
-      {id:'03_metformin_mechanism',title:'How Metformin Works',desc:'What metformin does in your body',time:'5 min'},
-      {id:'04_metformin_timing_and_side_effects',title:'Metformin: Timing & Side Effects',desc:'When to take it, what to expect',time:'6 min'},
-      {id:'05_dietary_guidance_carbs',title:'Carbohydrates',desc:'How carbs affect blood sugar',time:'6 min'},
-      {id:'06_dietary_guidance_meals_and_lifestyle',title:'Meals & Lifestyle',desc:'Food, movement, sleep, stress',time:'7 min'},
+    /* ════════════════════════════════════════════════════════════
+       State
+       ════════════════════════════════════════════════════════════ */
+    let persona = localStorage.getItem('persona') || 'foundational';
+    let role = localStorage.getItem('role') || null;
+    let waiting = false;
+    let history = JSON.parse(localStorage.getItem('qa_history') || '[]');
+    let a1cReadings = [];
+    let patientInfo = null;
+    let lastQuestion = '';
+    let obStep = 1;
+
+    const MODULES = [
+      { id:'01_diagnosis_basics',                   title:'Diagnosis Basics',            desc:'What T2D means and why you have it',           time:'4 min', icon:'M9 12l2 2 4-4M12 22s8-4 8-10V5l-8-3-8 3v7c0 6 8 10 8 10z' },
+      { id:'02_a1c_target_explained',                 title:'A1C Explained',               desc:'What the test measures and why',              time:'5 min', icon:'M3 3v18h18M19 9l-5 5-4-4-3 3' },
+      { id:'03_metformin_mechanism',                  title:'How Metformin Works',         desc:'What metformin does in your body',            time:'5 min', icon:'M10.5 13.5l1.5 1.5 4-4M12 22s8-4 8-10V5l-8-3-8 3v7c0 6 8 10 8 10z' },
+      { id:'04_metformin_timing_and_side_effects',   title:'Metformin: Timing & Effects', desc:'When to take it, what to expect',            time:'6 min', icon:'M12 6v6l4 2M12 22a10 10 0 1 1 0-20 10 10 0 0 1 0 20z' },
+      { id:'05_dietary_guidance_carbs',               title:'Carbohydrates',               desc:'How carbs affect blood sugar',                time:'6 min', icon:'M12 2a9 9 0 1 0 9 9M12 11l4-4M3 11h18' },
+      { id:'06_dietary_guidance_meals_and_lifestyle', title:'Meals & Lifestyle',           desc:'Food, movement, sleep, stress',              time:'7 min', icon:'M12 2v6M9 8h6M5 12h14M8 16h8M5 20h14' },
     ];
 
-    function selectRole(r){role=r;localStorage.setItem('role',r);document.getElementById('onboarding').classList.add('hidden');document.getElementById('app').classList.remove('hidden');updateGreeting();updateRole();renderModules();renderHistory();setPersona(persona);}
-    function updateGreeting(){const g={patient:'Type 2 diabetes education, personalized to you',manager:'Going deeper into managing Type 2 diabetes',caregiver:'Supporting someone with Type 2 diabetes'};document.getElementById('greeting-sub').textContent=g[role]||g.patient;}
-    function switchRole(r){role=r;localStorage.setItem('role',r);updateGreeting();updateRole();}
-    function updateRole(){const n={patient:'Patient',manager:'Manager',caregiver:'Caregiver'};document.getElementById('current-role-display').textContent=n[role]||'Not set';}
+    const REDUCED_MOTION = window.matchMedia('(prefers-reduced-motion: reduce)').matches;
 
-    function showScreen(s){document.querySelectorAll('.screen').forEach(x=>x.classList.add('hidden'));document.getElementById('screen-'+s).classList.remove('hidden');document.querySelectorAll('.nav-tab').forEach(x=>x.classList.remove('active'));document.getElementById('nav-'+s).classList.add('active');if(s==='library')renderModules();}
+    /* ════════════════════════════════════════════════════════════
+       Helpers
+       ════════════════════════════════════════════════════════════ */
+    function esc(s) {
+      const d = document.createElement('div');
+      d.textContent = s || '';
+      return d.innerHTML;
+    }
 
-    function setPersona(p){persona=p;localStorage.setItem('persona',p);
-      const f=document.getElementById('persona-foundational'),h=document.getElementById('persona-higher');
-      if(p==='foundational'){f.style.cssText='border-color:#0d9488;background:#f0fdfa;color:#0f766e';h.style.cssText='border:1px solid #e2e8f0;background:#fff;color:#475569';}
-      else{h.style.cssText='border-color:#0d9488;background:#f0fdfa;color:#0f766e';f.style.cssText='border:1px solid #e2e8f0;background:#fff;color:#475569';}}
+    function fmtCitation(c) {
+      return c.replace(/\.md$/, '').replace(/^\d+_/, '').replace(/_/g, ' ');
+    }
 
-    function askSuggested(q){document.getElementById('question-input').value=q;askQuestion(new Event('submit'));}
+    function toast(msg, type = 'info') {
+      const root = document.getElementById('toast-root');
+      const colors = {
+        info:    'bg-brand-800 text-white',
+        success: 'bg-brand-700 text-white',
+        error:   'bg-coral-600 text-white',
+        warn:    'bg-amber2-500 text-white'
+      };
+      const t = document.createElement('div');
+      t.className = `toast pointer-events-auto px-4 py-2.5 rounded-2xl text-xs font-semibold shadow-glassLg ${colors[type] || colors.info}`;
+      t.textContent = msg;
+      root.appendChild(t);
+      setTimeout(() => {
+        t.style.transition = 'opacity .4s ease, transform .4s ease';
+        t.style.opacity = '0';
+        t.style.transform = 'translateY(-8px)';
+        setTimeout(() => t.remove(), 400);
+      }, 2600);
+    }
 
-    function esc(s){const d=document.createElement('div');d.textContent=s||'';return d.innerHTML;}
+    /* ════════════════════════════════════════════════════════════
+       Onboarding
+       ════════════════════════════════════════════════════════════ */
+    function obNext() {
+      obStep = 2;
+      document.getElementById('ob-step-1').classList.add('hidden');
+      const step2 = document.getElementById('ob-step-2');
+      step2.classList.remove('hidden');
+      step2.classList.add('animate-fade-up');
+      document.getElementById('ob-dot-1').style.width = '12px';
+      document.getElementById('ob-dot-1').className = 'h-1 rounded-full bg-brand-200 transition-all duration-500';
+      document.getElementById('ob-dot-2').style.width = '32px';
+      document.getElementById('ob-dot-2').className = 'h-1 rounded-full bg-brand-500 transition-all duration-500';
+    }
 
-    function addUserMessage(t){const c=document.getElementById('chat');const d=document.createElement('div');d.className='flex justify-end mb-3 animate-in';d.innerHTML=`<div style="background:#0d9488;color:#fff;border-radius:16px 16px 4px 16px;padding:10px 14px;max-width:80%" class="text-sm">${esc(t)}</div>`;c.appendChild(d);c.scrollTop=c.scrollHeight;}
+    function obBack() {
+      obStep = 1;
+      document.getElementById('ob-step-2').classList.add('hidden');
+      const step1 = document.getElementById('ob-step-1');
+      step1.classList.remove('hidden');
+      step1.classList.add('animate-fade-up');
+      document.getElementById('ob-dot-1').style.width = '32px';
+      document.getElementById('ob-dot-1').className = 'h-1 rounded-full bg-brand-500 transition-all duration-500';
+      document.getElementById('ob-dot-2').style.width = '12px';
+      document.getElementById('ob-dot-2').className = 'h-1 rounded-full bg-brand-200 transition-all duration-500';
+    }
 
-    function addBotMessage(r){
-      const c=document.getElementById('chat');const d=document.createElement('div');d.className='flex justify-start mb-3 animate-in';
-      if(r.escalated){
-        d.innerHTML=`<div style="background:#fef2f2;border:2px solid #f43f5e;border-radius:16px 16px 16px 4px;padding:14px 16px;max-width:85%"><p style="color:#be123c;font-weight:600;font-size:14px;margin-bottom:4px">This may need immediate attention</p><p style="color:#e11d48;font-size:14px;line-height:1.5">${esc(r.response)}</p></div>`;
-        showTrustStrip(r);
-      }else if(r.safety_layer==='error'){
-        // Error state — amber background, retry button, NO citations, NO trust strip
-        d.innerHTML=`<div style="background:#fffbeb;border:1px solid #fde68a;border-radius:16px 16px 16px 4px;padding:14px 16px;max-width:85%"><p style="color:#92400e;font-size:14px;line-height:1.5">I'm having trouble connecting right now. Please try again in a moment.</p><button onclick="retryLast()" style="margin-top:8px;padding:6px 14px;background:#92400e;color:#fff;border:none;border-radius:8px;font-size:12px;cursor:pointer">Retry</button></div>`;
-        document.getElementById('trust-strip').classList.add('hidden');
-      }else if(r.safety_verdict&&r.safety_verdict!=='SAFE'){
-        d.innerHTML=`<div style="background:#fef3c7;border:1px solid #fcd34d;border-radius:16px 16px 16px 4px;padding:12px 14px;max-width:85%"><p style="color:#92400e;font-size:14px;line-height:1.5">${esc(r.response)}</p></div>`;
-        showTrustStrip(r);
-      }else{
-        let cites='';
-        if(r.citations&&Array.isArray(r.citations)&&r.citations.length>0){
-          cites=r.citations.map(c=>{const n=c.replace(/\.md$/,'').replace(/^\d+_/,'').replace(/_/g,' ');return `<button class="cite" onclick="openModule('${c.replace(/\.md$/,'')}')">${esc(n)}</button>`;}).join('');
+    function selectRole(r) {
+      role = r;
+      localStorage.setItem('role', r);
+      // Mark selected radio
+      document.querySelectorAll('#ob-step-2 .role-card').forEach(btn => {
+        btn.setAttribute('aria-checked', btn.onclick && btn.getAttribute('onclick').includes(`'${r}'`) ? 'true' : 'false');
+      });
+      // Exit onboarding with a fade
+      const ob = document.getElementById('onboarding');
+      ob.style.transition = 'opacity .4s ease';
+      ob.style.opacity = '0';
+      setTimeout(() => {
+        ob.remove();
+        document.getElementById('app').classList.remove('hidden');
+        updateGreeting();
+        updateRole();
+        renderModules();
+        renderHistory();
+        setPersona(persona);
+        setTimeout(() => document.getElementById('question-input') && document.getElementById('question-input').focus(), 300);
+      }, 400);
+    }
+
+    function updateGreeting() {
+      const subs = {
+        patient:  'Type 2 diabetes education, personalized to you.',
+        manager:  'Going deeper into managing Type 2 diabetes.',
+        caregiver:'Supporting someone with Type 2 diabetes.'
+      };
+      const greetings = {
+        patient:  'Hello there.',
+        manager:  'Welcome back.',
+        caregiver: 'Thanks for being here.'
+      };
+      document.getElementById('greeting-sub').textContent = subs[role] || subs.patient;
+      document.getElementById('greeting-text').textContent = greetings[role] || greetings.patient;
+    }
+
+    function switchRole(r) {
+      role = r;
+      localStorage.setItem('role', r);
+      updateGreeting();
+      updateRole();
+      toast('Role updated', 'success');
+    }
+
+    function updateRole() {
+      const names = { patient: 'Newly diagnosed', manager: 'Long-term manager', caregiver: 'Caregiver' };
+      const el = document.getElementById('current-role-display');
+      if (el) el.textContent = names[role] || 'Not set';
+    }
+
+    /* ════════════════════════════════════════════════════════════
+       Screen routing
+       ════════════════════════════════════════════════════════════ */
+    function showScreen(s) {
+      const screens = document.querySelectorAll('.screen');
+      const target = document.getElementById('screen-' + s);
+      if (!target) return;
+      screens.forEach(x => x.classList.add('hidden'));
+      target.classList.remove('hidden');
+      // Re-trigger screen-in animation
+      target.classList.remove('screen-in');
+      void target.offsetWidth;
+      target.classList.add('screen-in');
+      window.scrollTo({ top: 0, behavior: REDUCED_MOTION ? 'auto' : 'smooth' });
+      // Nav state
+      document.querySelectorAll('.nav-item').forEach(x => {
+        x.classList.remove('active');
+        x.removeAttribute('aria-current');
+      });
+      const nav = document.getElementById('nav-' + s);
+      if (nav) { nav.classList.add('active'); nav.setAttribute('aria-current', 'page'); }
+      // Lazy render
+      if (s === 'library') renderModules();
+      if (s === 'history') renderHistory();
+      if (s === 'a1c' && a1cReadings.length > 0) renderA1cChart();
+    }
+
+    /* ════════════════════════════════════════════════════════════
+       Persona toggle (segmented control)
+       ════════════════════════════════════════════════════════════ */
+    function setPersona(p) {
+      persona = p;
+      localStorage.setItem('persona', p);
+      ['persona-foundational', 'persona-higher'].forEach(id => {
+        const el = document.getElementById(id);
+        if (!el) return;
+        const active = (id === 'persona-foundational' && p === 'foundational') || (id === 'persona-higher' && p === 'higher');
+        el.classList.toggle('active', active);
+        el.setAttribute('aria-checked', active ? 'true' : 'false');
+      });
+      const thumb = document.getElementById('seg-thumb');
+      if (thumb) thumb.classList.toggle('right', p === 'higher');
+      // Settings mirror
+      ['persona-foundational-settings', 'persona-higher-settings'].forEach(id => {
+        const el = document.getElementById(id);
+        if (!el) return;
+        const active = (id === 'persona-foundational-settings' && p === 'foundational') || (id === 'persona-higher-settings' && p === 'higher');
+        el.classList.toggle('active', active);
+        el.setAttribute('aria-checked', active ? 'true' : 'false');
+      });
+      const thumbS = document.getElementById('seg-thumb-settings');
+      if (thumbS) thumbS.classList.toggle('right', p === 'higher');
+      const hint = document.getElementById('persona-hint');
+      if (hint) hint.textContent = p === 'foundational' ? 'Plain language' : 'More detail';
+    }
+
+    /* ════════════════════════════════════════════════════════════
+       Chat
+       ════════════════════════════════════════════════════════════ */
+    function askSuggested(q) {
+      const input = document.getElementById('question-input');
+      input.value = q;
+      askQuestion(new Event('submit'));
+    }
+
+    function addUserMessage(t) {
+      const c = document.getElementById('chat');
+      const d = document.createElement('div');
+      d.className = 'flex justify-end mb-4 animate-fade-up';
+      d.innerHTML = `
+        <div class="bubble-user px-4 py-3 max-w-[82%] text-[14px] leading-relaxed whitespace-pre-wrap break-words">${esc(t)}</div>`;
+      c.appendChild(d);
+      c.scrollTop = c.scrollHeight;
+    }
+
+    function addBotMessage(r) {
+      const c = document.getElementById('chat');
+      const d = document.createElement('div');
+      d.className = 'flex justify-start mb-4 animate-fade-up';
+      d.innerHTML = botBubbleHTML(r);
+      c.appendChild(d);
+      c.scrollTop = c.scrollHeight;
+      // Reveal trust strip
+      if (r.safety_layer !== 'error') showTrustStrip(r);
+      else document.getElementById('trust-strip').classList.add('hidden');
+    }
+
+    function botBubbleHTML(r) {
+      const avatar = `
+        <div class="relative w-8 h-8 rounded-xl avatar-bot flex items-center justify-center flex-shrink-0 mt-0.5">
+          <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="#fff" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round"><path d="M21 15a2 2 0 0 1-2 2H7l-4 4V5a2 2 0 0 1 2-2h14a2 2 0 0 1 2 2z"/></svg>
+        </div>`;
+
+      // Emergency escalation
+      if (r.escalated) {
+        return `
+          ${avatar}
+          <div class="max-w-[85%] flex-1 min-w-0">
+            <div class="emergency-banner rounded-2xl rounded-tl-md p-4">
+              <div class="flex items-center gap-2 mb-2">
+                <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="#C2382B" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><path d="M10.29 3.86 1.82 18a2 2 0 0 0 1.71 3h16.94a2 2 0 0 0 1.71-3L13.71 3.86a2 2 0 0 0-3.42 0z"/><path d="M12 9v4M12 17h.01"/></svg>
+                <p class="font-display font-bold text-coral-700 text-sm">This may need immediate attention</p>
+              </div>
+              <p class="text-coral-700/90 text-[14px] leading-relaxed">${esc(r.response)}</p>
+              <div class="mt-3 pt-3 border-t border-coral-500/20 flex flex-wrap gap-2">
+                <a href="tel:911" class="inline-flex items-center gap-1.5 px-3 py-1.5 rounded-lg bg-coral-600 text-white text-xs font-semibold hover:bg-coral-700 transition-colors">
+                  <svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><path d="M22 16.92v3a2 2 0 0 1-2.18 2 19.79 19.79 0 0 1-8.63-3.07 19.5 19.5 0 0 1-6-6 19.79 19.79 0 0 1-3.07-8.67A2 2 0 0 1 4.11 2h3a2 2 0 0 1 2 1.72c.127.96.361 1.903.7 2.81a2 2 0 0 1-.45 2.11L8.09 9.91a16 16 0 0 0 6 6l1.27-1.27a2 2 0 0 1 2.11-.45c.907.339 1.85.573 2.81.7A2 2 0 0 1 22 16.92z"/></svg>
+                  Call 911
+                </a>
+                <a href="tel:988" class="inline-flex items-center gap-1.5 px-3 py-1.5 rounded-lg bg-white/70 border border-coral-500/30 text-coral-700 text-xs font-semibold hover:bg-white transition-colors">
+                  988 Crisis Line
+                </a>
+              </div>
+            </div>
+          </div>`;
+      }
+
+      // Error state — amber bubble + retry, NO citations, NO trust strip
+      if (r.safety_layer === 'error') {
+        return `
+          ${avatar}
+          <div class="max-w-[85%]">
+            <div class="bubble-error rounded-2xl rounded-tl-md p-4">
+              <div class="flex items-start gap-2.5">
+                <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="#D97706" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round" class="mt-0.5 flex-shrink-0"><path d="M12 9v4M12 17h.01M10.29 3.86 1.82 18a2 2 0 0 0 1.71 3h16.94a2 2 0 0 0 1.71-3L13.71 3.86a2 2 0 0 0-3.42 0z"/></svg>
+                <div class="flex-1">
+                  <p class="text-amber2-600 text-[14px] leading-relaxed">I'm having trouble connecting right now. Please try again in a moment.</p>
+                  <button onclick="retryLast()" class="btn-amber mt-3 px-4 py-2 rounded-lg text-xs font-semibold inline-flex items-center gap-1.5 no-tap">
+                    <svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" class="transition-transform group-hover:rotate-180"><path d="M23 4v6h-6M1 20v-6h6"/><path d="M3.51 9a9 9 0 0 1 14.85-3.36L23 10M1 14l4.64 4.36A9 9 0 0 0 20.49 15"/></svg>
+                    Retry
+                  </button>
+                </div>
+              </div>
+            </div>
+          </div>`;
+      }
+
+      // Unsafe / replaced response (safety_verdict != SAFE, layer != error, not escalated)
+      if (r.safety_verdict && r.safety_verdict !== 'SAFE') {
+        return `
+          ${avatar}
+          <div class="max-w-[85%]">
+            <div class="bubble-unsafe rounded-2xl rounded-tl-md p-4">
+              <div class="flex items-center gap-1.5 mb-1.5">
+                <svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="#D97706" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><path d="M12 9v4M12 17h.01M10.29 3.86 1.82 18a2 2 0 0 0 1.71 3h16.94a2 2 0 0 0 1.71-3L13.71 3.86a2 2 0 0 0-3.42 0z"/></svg>
+                <span class="text-[11px] font-semibold text-amber2-600 uppercase tracking-wide">Replaced by safety layer</span>
+              </div>
+              <p class="text-ink-700 text-[14px] leading-relaxed whitespace-pre-wrap">${esc(r.response)}</p>
+            </div>
+          </div>`;
+      }
+
+      // Normal SAFE response — gray glass + citation chips
+      let cites = '';
+      if (r.citations && Array.isArray(r.citations) && r.citations.length > 0) {
+        const chips = r.citations.map(c => {
+          const id = c.replace(/\.md$/, '');
+          return `<button class="cite-chip no-tap" onclick="openModule('${id}')" aria-label="Open source: ${esc(fmtCitation(c))}">
+            <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2"><path d="M4 19.5A2.5 2.5 0 0 1 6.5 17H20" stroke-linecap="round"/><path d="M6.5 2H20v20H6.5A2.5 2.5 0 0 1 4 19.5v-15A2.5 2.5 0 0 1 6.5 2z" stroke-linecap="round" stroke-linejoin="round"/></svg>
+            ${esc(fmtCitation(c))}
+          </button>`;
+        }).join('');
+        cites = `
+          <div class="mt-3 pt-3 border-t border-brand-200/40">
+            <p class="text-[10px] uppercase tracking-wider text-ink-400 font-semibold mb-2 flex items-center gap-1">
+              <svg width="10" height="10" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><path d="M4 19.5A2.5 2.5 0 0 1 6.5 17H20" stroke-linecap="round"/><path d="M6.5 2H20v20H6.5A2.5 2.5 0 0 1 4 19.5v-15A2.5 2.5 0 0 1 6.5 2z" stroke-linecap="round" stroke-linejoin="round"/></svg>
+              Sources
+            </p>
+            <div class="flex flex-wrap gap-1.5">${chips}</div>
+          </div>`;
+      }
+      return `
+        ${avatar}
+        <div class="max-w-[85%]">
+          <div class="bubble-bot rounded-2xl rounded-tl-md p-4">
+            <p class="text-[14px] leading-relaxed whitespace-pre-wrap break-words">${esc(r.response)}</p>
+            ${cites}
+          </div>
+        </div>`;
+    }
+
+    function showTrustStrip(r) {
+      const strip = document.getElementById('trust-strip');
+      const badges = document.getElementById('trust-badges');
+      badges.innerHTML = '';
+
+      const mk = (cls, label) => {
+        const s = document.createElement('span');
+        s.className = `trust-badge ${cls}`;
+        s.innerHTML = `<span class="dot"></span>${label}`;
+        return s;
+      };
+
+      if (r.escalated) {
+        badges.appendChild(mk('trust-danger', 'Emergency: triggered'));
+        badges.appendChild(mk('trust-neutral', 'Bypassed generation'));
+      } else {
+        badges.appendChild(mk('trust-passed', 'Emergency: passed'));
+        badges.appendChild(mk('trust-passed', 'PHI redacted'));
+        if (r.safety_verdict === 'SAFE') {
+          badges.appendChild(mk('trust-passed', 'Safety: 2 layers passed'));
+        } else {
+          badges.appendChild(mk('trust-warn', 'Safety: replaced'));
         }
-        d.innerHTML=`<div style="background:#f8fafc;border:1px solid #e2e8f0;border-radius:16px 16px 16px 4px;padding:14px 16px;max-width:85%"><p style="color:#334155;font-size:14px;line-height:1.6;white-space:pre-wrap">${esc(r.response)}</p>${cites?`<div style="margin-top:8px;padding-top:8px;border-top:1px solid #e2e8f0"><p style="font-size:11px;color:#94a3b8;margin-bottom:4px">Sources:</p><div style="display:flex;flex-wrap:wrap;gap:4px">${cites}</div></div>`:''}</div>`;
-        showTrustStrip(r);
+        badges.appendChild(mk('trust-neutral', 'Not clinician-reviewed'));
       }
-      c.appendChild(d);c.scrollTop=c.scrollHeight;
+      strip.classList.remove('hidden');
+      strip.style.animation = 'none';
+      void strip.offsetWidth;
+      strip.style.animation = '';
     }
 
-    function showTrustStrip(r){
-      const s=document.getElementById('trust-strip');const b=document.getElementById('trust-badges');b.innerHTML='';
-      b.innerHTML+=`<span class="chip" style="background:#fef2f2;color:#e11d48">Emergency: ${r.escalated?'triggered':'passed'}</span>`;
-      if(!r.escalated){
-        b.innerHTML+=`<span class="chip" style="background:#f0fdfa;color:#0f766e">PHI redacted</span>`;
-        b.innerHTML+=`<span class="chip" style="background:#f0fdfa;color:#0f766e">Safety: ${r.safety_verdict==='SAFE'?'2 layers passed':'replaced'}</span>`;
-        b.innerHTML+=`<span class="chip" style="background:#f1f5f9;color:#64748b">Not clinician-reviewed</span>`;
-      }
-      s.classList.remove('hidden');
+    function addTyping() {
+      const c = document.getElementById('chat');
+      const d = document.createElement('div');
+      d.id = 'typing';
+      d.className = 'flex justify-start mb-4 animate-fade-up';
+      d.innerHTML = `
+        <div class="relative w-8 h-8 rounded-xl avatar-bot flex items-center justify-center flex-shrink-0 mt-0.5">
+          <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="#fff" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round"><path d="M21 15a2 2 0 0 1-2 2H7l-4 4V5a2 2 0 0 1 2-2h14a2 2 0 0 1 2 2z"/></svg>
+        </div>
+        <div class="bubble-bot rounded-2xl rounded-tl-md px-4 py-3.5 flex items-center gap-1.5">
+          <span class="typing-orb"></span><span class="typing-orb"></span><span class="typing-orb"></span>
+          <span class="sr-only">Assistant is typing</span>
+        </div>`;
+      c.appendChild(d);
+      c.scrollTop = c.scrollHeight;
     }
 
-    function addTyping(){const c=document.getElementById('chat');const d=document.createElement('div');d.id='typing';d.className='flex justify-start mb-3';d.innerHTML='<div style="background:#f8fafc;border:1px solid #e2e8f0;border-radius:16px 16px 16px 4px;padding:12px 16px"><span class="typing-dot"></span><span class="typing-dot"></span><span class="typing-dot"></span></div>';c.appendChild(d);c.scrollTop=c.scrollHeight;}
-    function removeTyping(){const e=document.getElementById('typing');if(e)e.remove();}
+    function removeTyping() {
+      const e = document.getElementById('typing');
+      if (e) e.remove();
+    }
 
-    let lastQuestion='';
-    function retryLast(){if(lastQuestion){document.getElementById('question-input').value=lastQuestion;askQuestion(new Event('submit'));}}
+    function retryLast() {
+      if (lastQuestion) {
+        document.getElementById('question-input').value = lastQuestion;
+        askQuestion(new Event('submit'));
+      }
+    }
 
-    async function askQuestion(e){
-      e.preventDefault();if(waiting)return;
-      const input=document.getElementById('question-input');const q=input.value.trim();if(!q)return;
-      lastQuestion=q;
-      const w=document.getElementById('welcome-msg');if(w)w.remove();
+    async function askQuestion(e) {
+      e.preventDefault();
+      if (waiting) return;
+      const input = document.getElementById('question-input');
+      const q = input.value.trim();
+      if (!q) return;
+      lastQuestion = q;
+
+      const w = document.getElementById('welcome-msg');
+      if (w) w.remove();
       document.getElementById('trust-strip').classList.add('hidden');
-      addUserMessage(q);input.value='';waiting=true;document.getElementById('send-btn').disabled=true;
+
+      addUserMessage(q);
+      input.value = '';
+      waiting = true;
+      document.getElementById('send-btn').disabled = true;
       addTyping();
-      try{
-        const resp=await fetch('/scaffold',{method:'POST',headers:{'Content-Type':'application/json'},body:JSON.stringify({question:q,persona:persona})});
-        if(!resp.ok){const t=await resp.text();throw new Error(`HTTP ${resp.status}`);}
-        const data=await resp.json();removeTyping();addBotMessage(data);
-        // Only save to history if NOT an error
-        if(data.safety_layer!=='error'){
-          history.unshift({question:q,response:data.response,citations:data.citations||[],safety_verdict:data.safety_verdict,safety_layer:data.safety_layer,escalated:data.escalated,persona:persona,timestamp:new Date().toISOString()});
-          if(history.length>100)history=history.slice(0,100);localStorage.setItem('qa_history',JSON.stringify(history));renderHistory();
-        }
-      }catch(err){
+
+      try {
+        const resp = await fetch('/scaffold', {
+          method: 'POST',
+          headers: { 'Content-Type': 'application/json' },
+          body: JSON.stringify({ question: q, persona })
+        });
+        if (!resp.ok) throw new Error('HTTP ' + resp.status);
+        const data = await resp.json();
         removeTyping();
-        // Pass a clearly-marked error object — only renders once, with retry button
-        addBotMessage({response:'',escalated:false,citations:[],safety_verdict:'SAFE',safety_layer:'error'});
-      }finally{waiting=false;document.getElementById('send-btn').disabled=false;document.getElementById('question-input').focus();}
+        addBotMessage(data);
+        // Only save to history if NOT an error
+        if (data.safety_layer !== 'error') {
+          history.unshift({
+            question: q,
+            response: data.response,
+            citations: data.citations || [],
+            safety_verdict: data.safety_verdict,
+            safety_layer: data.safety_layer,
+            escalated: data.escalated,
+            persona,
+            timestamp: new Date().toISOString()
+          });
+          if (history.length > 100) history = history.slice(0, 100);
+          localStorage.setItem('qa_history', JSON.stringify(history));
+          renderHistory();
+        }
+      } catch (err) {
+        removeTyping();
+        // Render exactly one amber error bubble with retry — no technical detail
+        addBotMessage({ response: '', escalated: false, citations: [], safety_verdict: 'SAFE', safety_layer: 'error' });
+      } finally {
+        waiting = false;
+        document.getElementById('send-btn').disabled = false;
+        document.getElementById('question-input').focus();
+      }
     }
 
-    function renderModules(){const g=document.getElementById('module-grid');if(!g)return;g.innerHTML=MODULES.map(m=>{const read=localStorage.getItem('read_'+m.id);return`<div class="card p-4 cursor-pointer hover:border-ink-300 transition" onclick="openModule('${m.id}')"><h3 class="font-semibold text-ink-800 text-sm">${m.title}</h3><p class="text-xs text-ink-400 mt-1">${m.desc}</p><div class="flex items-center gap-2 mt-2"><span class="text-[11px] text-ink-300">${m.time}</span>${read?'<span class="text-[11px] text-brand-600">Read</span>':''}</div></div>`;}).join('');}
+    /* ════════════════════════════════════════════════════════════
+       Library
+       ════════════════════════════════════════════════════════════ */
+    function renderModules() {
+      const g = document.getElementById('module-grid');
+      if (!g) return;
+      g.innerHTML = MODULES.map((m, i) => {
+        const read = localStorage.getItem('read_' + m.id);
+        const num = String(i + 1).padStart(2, '0');
+        return `
+          <div class="module-card glass rounded-2xl p-4 no-tap" onclick="openModule('${m.id}')" role="button" tabindex="0" onkeydown="if(event.key==='Enter'||event.key===' '){event.preventDefault();openModule('${m.id}')}">
+            <span class="mod-num">${num}</span>
+            <div class="mod-icon mb-3">
+              <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="${m.icon}"/></svg>
+            </div>
+            <h3 class="font-display font-semibold text-brand-900 text-[15px] leading-snug">${m.title}</h3>
+            <p class="text-xs text-ink-400 mt-1 leading-relaxed">${m.desc}</p>
+            <div class="flex items-center gap-2 mt-3">
+              <span class="text-[11px] text-ink-400 flex items-center gap-1">
+                <svg width="10" height="10" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><circle cx="12" cy="12" r="10"/><path d="M12 6v6l4 2"/></svg>
+                ${m.time}
+              </span>
+              ${read ? '<span class="text-[11px] text-brand-600 font-semibold flex items-center gap-1"><svg width="10" height="10" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="3"><path d="M20 6L9 17l-5-5"/></svg>Read</span>' : ''}
+            </div>
+          </div>`;
+      }).join('');
+    }
 
-    async function openModule(id){try{const r=await fetch(`/content/education_module/${id}.md`);if(!r.ok)throw 0;const t=await r.text();const h=t.replace(/^# (.+)$/gm,'<h1 class="text-lg font-bold text-ink-800 mt-3 mb-2">$1</h1>').replace(/^## (.+)$/gm,'<h2 class="font-semibold text-ink-700 text-sm mt-2 mb-1">$1</h2>').replace(/\*\*(.+?)\*\*/g,'<strong>$1</strong>').replace(/\*(.+?)\*/g,'<em>$1</em>').replace(/\n\n/g,'</p><p class="text-ink-600 text-sm leading-relaxed mb-3">');showModal(`<p class="text-ink-600 text-sm leading-relaxed mb-3">${h}</p>`,MODULES.find(m=>m.id===id)?.title||'');localStorage.setItem('read_'+id,'true');renderModules();}catch(e){showModal('<p class="text-ink-400 text-sm">Could not load this module.</p>','Error');}}
+    async function openModule(id) {
+      try {
+        const r = await fetch(`/content/education_module/${id}.md`);
+        if (!r.ok) throw new Error();
+        const t = await r.text();
+        const h = mdToHtml(t);
+        const meta = MODULES.find(m => m.id === id);
+        showModal(`
+          <div class="prose-content text-[14px] leading-relaxed text-ink-700">${h}</div>
+        `, meta ? meta.title : '');
+        localStorage.setItem('read_' + id, 'true');
+        renderModules();
+      } catch (e) {
+        showModal('<p class="text-ink-400 text-sm">Could not load this module. Please try again.</p>', 'Error');
+      }
+    }
 
-    function renderHistory(){const l=document.getElementById('history-list');if(!l)return;if(history.length===0){l.innerHTML='<div class="text-center py-8"><p class="text-sm text-ink-300">No questions yet. Ask from the Home tab.</p></div>';return;}l.innerHTML=history.map(h=>{const dt=new Date(h.timestamp).toLocaleDateString('en-US',{month:'short',day:'numeric',hour:'numeric',minute:'2-digit'});const si=h.escalated?'!':(h.safety_verdict==='SAFE'?'✓':'~');return`<div class="card p-3 cursor-pointer hover:border-ink-300 transition" onclick="reopenHistory('${h.timestamp}')"><div class="text-[11px] text-ink-300 mb-1">${dt} · ${si}</div><p class="font-medium text-ink-800 text-sm">${esc(h.question)}</p><p class="text-xs text-ink-400 mt-1" style="display:-webkit-box;-webkit-line-clamp:2;-webkit-box-orient:vertical;overflow:hidden">${esc((h.response||'').substring(0,100))}…</p></div>`;}).join('');}
-    function filterHistory(){const q=(document.getElementById('history-search').value||'').toLowerCase();document.querySelectorAll('#history-list>div').forEach(d=>{d.style.display=d.textContent.toLowerCase().includes(q)?'':'none';});}
-    function reopenHistory(ts){const h=history.find(x=>x.timestamp===ts);if(!h)return;showScreen('home');document.getElementById('chat').innerHTML='';addUserMessage(h.question);addBotMessage({response:h.response,citations:h.citations||[],safety_verdict:h.safety_verdict,safety_layer:h.safety_layer,escalated:h.escalated});}
+    function mdToHtml(t) {
+      return esc(t)
+        .replace(/^# (.+)$/gm, '<h1 class="font-display text-xl font-bold text-brand-900 mt-4 mb-3">$1</h1>')
+        .replace(/^## (.+)$/gm, '<h2 class="font-display font-semibold text-brand-900 text-base mt-4 mb-2">$1</h2>')
+        .replace(/^### (.+)$/gm, '<h3 class="font-display font-semibold text-ink-700 text-sm mt-3 mb-1.5">$1</h3>')
+        .replace(/\*\*(.+?)\*\*/g, '<strong class="font-semibold text-brand-800">$1</strong>')
+        .replace(/\*(.+?)\*/g, '<em>$1</em>')
+        .replace(/^- (.+)$/gm, '<li class="ml-4 list-disc">$1</li>')
+        .replace(/\n\n/g, '</p><p class="mb-3">');
+    }
 
-    async function loadFhirContext(){try{const r=await fetch('/fhir/Patient');const b=await r.json();if(!b.entry||b.entry.length===0){document.getElementById('context-chips').innerHTML='<span class="text-sm text-ink-300">No patients loaded</span>';return;}const pid=b.entry[0].resource.id;const or=await fetch(`/fhir/Observation?patient=${pid}`);const ob=await or.json();a1cReadings=(ob.entry||[]).map(e=>{const o=e.resource;return{date:(o.effectiveDateTime||'?').substring(0,10),value:o.valueQuantity?.value||0,unit:o.valueQuantity?.unit||'%'};}).sort((a,b)=>a.date.localeCompare(b.date));const latest=a1cReadings[a1cReadings.length-1];const chips=[];if(latest){const c=latest.value<7?'background:#f0fdfa;color:#0f766e':latest.value<8?'background:#fef3c7;color:#92400e':'background:#fef2f2;color:#e11d48';chips.push(`<span class="chip" style="${c}">A1C ${latest.value}${latest.unit} (${latest.date})</span>`);}chips.push(`<span class="chip" style="background:#f1f5f9;color:#64748b">${a1cReadings.length} readings</span>`);document.getElementById('context-chips').innerHTML=chips.join('');renderA1cChart();document.getElementById('fhir-load-btn').classList.add('hidden');}catch(e){document.getElementById('context-chips').innerHTML='<span class="text-sm text-ink-300">Could not load FHIR data</span>';}}
-    function renderA1cChart(){if(a1cReadings.length===0)return;const c=document.getElementById('a1c-content');if(!c)return;const latest=a1cReadings[a1cReadings.length-1];const vals=a1cReadings.map(r=>r.value);const mn=Math.min(...vals),mx=Math.max(...vals);const W=320,H=200,P=40;const xs=(W-2*P)/Math.max(a1cReadings.length-1,1);const ys=v=>H-P-((v-4)/(mx-4+1))*(H-2*P);const pts=a1cReadings.map((r,i)=>`${P+i*xs},${ys(r.value)}`).join(' ');const tc=latest.value<7?'#0f766e':latest.value<8?'#92400e':'#e11d48';c.innerHTML=`<div class="card p-5 mb-3"><div class="flex justify-between mb-4"><div><p class="text-xs text-ink-400">Latest A1C</p><p class="text-3xl font-bold" style="color:${tc}">${latest.value}${latest.unit}</p><p class="text-xs text-ink-400">${latest.date}</p></div><div class="text-right"><p class="text-xs text-ink-400">Readings</p><p class="text-2xl font-bold text-ink-600">${a1cReadings.length}</p><p class="text-xs text-ink-400">${mn}-${mx}%</p></div></div><svg viewBox="0 0 ${W} ${H}" class="w-full"><rect x="${P}" y="${ys(7)}" width="${W-2*P}" height="${ys(4)-ys(7)}" fill="#f0fdfa"/><rect x="${P}" y="${ys(8)}" width="${W-2*P}" height="${ys(7)-ys(8)}" fill="#fef3c7" opacity=".5"/><line x1="${P}" y1="${ys(7)}" x2="${W-P}" y2="${ys(7)}" stroke="#0d9488" stroke-width="1" stroke-dasharray="4,4"/><polyline points="${pts}" fill="none" stroke="#0d9488" stroke-width="2"/>${a1cReadings.map((r,i)=>`<circle cx="${P+i*xs}" cy="${ys(r.value)}" r="4" fill="#0d9488" style="cursor:pointer" onclick="askSuggested('My A1C was ${r.value}% on ${r.date}. What does this mean?')"><title>${r.date}: ${r.value}${r.unit}</title></circle>`).join('')}</svg></div><div class="card p-4"><div class="space-y-1">${a1cReadings.slice().reverse().map(r=>`<div class="flex justify-between text-sm py-1.5 border-b border-ink-50 last:border-0"><span class="text-ink-400">${r.date}</span><span class="font-medium" style="color:${r.value<7?'#0f766e':r.value<8?'#92400e':'#e11d48'}">${r.value}${r.unit}</span></div>`).join('')}</div></div>`;}
+    /* ════════════════════════════════════════════════════════════
+       History
+       ════════════════════════════════════════════════════════════ */
+    function renderHistory() {
+      const l = document.getElementById('history-list');
+      if (!l) return;
+      if (history.length === 0) {
+        l.innerHTML = `
+          <div class="glass rounded-3xl p-10 text-center animate-fade-in">
+            <div class="relative w-14 h-14 mx-auto mb-4 avatar-bot rounded-2xl flex items-center justify-center">
+              <svg width="26" height="26" viewBox="0 0 24 24" fill="none" stroke="#fff" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M3 12a9 9 0 1 0 9-9 9.75 9.75 0 0 0-6.74 2.74L3 8"/><path d="M3 3v5h5"/><path d="M12 7v5l4 2"/></svg>
+            </div>
+            <p class="font-display text-lg font-semibold text-brand-900 mb-1">No questions yet</p>
+            <p class="text-sm text-ink-400 mb-5">Ask your first question from the Home tab.</p>
+            <button onclick="showScreen('home')" class="btn-primary px-5 py-2.5 rounded-xl text-sm font-semibold no-tap">Go to chat</button>
+          </div>`;
+        return;
+      }
+      l.innerHTML = history.map(h => {
+        const dt = new Date(h.timestamp).toLocaleString('en-US', { month: 'short', day: 'numeric', hour: 'numeric', minute: '2-digit' });
+        let badge;
+        if (h.escalated) {
+          badge = '<span class="w-2 h-2 rounded-full bg-coral-500 flex-shrink-0" style="box-shadow:0 0 0 3px rgba(232,75,60,0.18)"></span>';
+        } else if (h.safety_verdict === 'SAFE') {
+          badge = '<span class="w-2 h-2 rounded-full bg-brand-500 flex-shrink-0" style="box-shadow:0 0 0 3px rgba(34,168,148,0.18)"></span>';
+        } else {
+          badge = '<span class="w-2 h-2 rounded-full bg-amber2-500 flex-shrink-0" style="box-shadow:0 0 0 3px rgba(245,158,11,0.18)"></span>';
+        }
+        const preview = (h.response || '').substring(0, 130);
+        return `
+          <div class="history-item glass rounded-2xl p-3.5 no-tap" onclick="reopenHistory('${h.timestamp}')" role="button" tabindex="0" onkeydown="if(event.key==='Enter'||event.key===' '){event.preventDefault();reopenHistory('${h.timestamp}')}">
+            <div class="flex items-center gap-2 mb-1.5">
+              ${badge}
+              <span class="text-[10px] text-ink-400 font-medium">${dt}</span>
+              <span class="text-[10px] text-ink-300">·</span>
+              <span class="text-[10px] text-ink-400">${h.persona === 'higher' ? 'Detailed' : 'Simple'}</span>
+            </div>
+            <p class="font-semibold text-brand-900 text-[13px] leading-snug">${esc(h.question)}</p>
+            <p class="text-xs text-ink-400 mt-1.5 leading-relaxed" style="display:-webkit-box;-webkit-line-clamp:2;-webkit-box-orient:vertical;overflow:hidden">${esc(preview)}${h.response && h.response.length > 130 ? '…' : ''}</p>
+          </div>`;
+      }).join('');
+    }
 
-    function showEmergency(){showModal(`<div><div class="space-y-2"><div style="background:#fef2f2;border:1px solid #fecaca;border-radius:12px;padding:14px"><p class="font-semibold text-red-700 text-sm">Medical Emergency</p><p class="text-red-500 text-xs mt-1">Chest pain, trouble breathing → call <strong>911</strong></p></div><div style="background:#fef2f2;border:1px solid #fecaca;border-radius:12px;padding:14px"><p class="font-semibold text-red-700 text-sm">Severe Low Blood Sugar</p><p class="text-red-500 text-xs mt-1">Sugar below 54 + confusion → call <strong>911</strong></p></div><div style="background:#fef2f2;border:1px solid #fecaca;border-radius:12px;padding:14px"><p class="font-semibold text-red-700 text-sm">Mental Health Crisis</p><p class="text-red-500 text-xs mt-1">Call or text <strong>988</strong> (24/7)</p></div></div></div>`,'Emergency Resources');}
-    function showModal(html,title){const m=document.createElement('div');m.className='fixed inset-0 z-[60] bg-ink-900/30 flex items-center justify-center p-4';m.innerHTML=`<div class="card max-w-lg w-full max-h-[80vh] overflow-y-auto animate-in"><div class="sticky top-0 bg-white border-b border-ink-100 px-5 py-3 flex justify-between items-center"><h2 class="font-bold text-ink-800 text-base">${title||''}</h2><button onclick="this.closest('.fixed').remove()" class="text-ink-300 hover:text-ink-600 text-xl" aria-label="Close">&times;</button></div><div class="p-5">${html}</div></div>`;document.body.appendChild(m);}
+    function filterHistory() {
+      const q = (document.getElementById('history-search').value || '').toLowerCase();
+      const items = document.querySelectorAll('#history-list > .history-item');
+      items.forEach(d => {
+        d.style.display = d.textContent.toLowerCase().includes(q) ? '' : 'none';
+      });
+    }
 
-    if(role){document.getElementById('onboarding').classList.add('hidden');document.getElementById('app').classList.remove('hidden');updateGreeting();updateRole();setPersona(persona);renderModules();renderHistory();}
-    document.getElementById('question-input').focus();
+    function reopenHistory(ts) {
+      const h = history.find(x => x.timestamp === ts);
+      if (!h) return;
+      showScreen('home');
+      const chat = document.getElementById('chat');
+      chat.innerHTML = '';
+      addUserMessage(h.question);
+      addBotMessage({
+        response: h.response,
+        citations: h.citations || [],
+        safety_verdict: h.safety_verdict,
+        safety_layer: h.safety_layer,
+        escalated: h.escalated
+      });
+    }
+
+    function clearHistory() {
+      if (history.length === 0) { toast('History is already empty', 'info'); return; }
+      history = [];
+      localStorage.removeItem('qa_history');
+      renderHistory();
+      toast('History cleared', 'success');
+    }
+
+    /* ════════════════════════════════════════════════════════════
+       FHIR
+       ════════════════════════════════════════════════════════════ */
+    async function loadFhirContext() {
+      const chips = document.getElementById('context-chips');
+      const btn = document.getElementById('fhir-load-btn');
+      if (btn) { btn.disabled = true; btn.innerHTML = '<svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" class="animate-spin"><path d="M21 12a9 9 0 1 1-6.219-8.56"/></svg> Loading…'; }
+      chips.innerHTML = '<span class="text-xs text-ink-400 italic flex items-center gap-1.5"><span class="w-3 h-3 rounded-full border-2 border-brand-400 border-t-transparent animate-spin"></span> Fetching FHIR data…</span>';
+      try {
+        const r = await fetch('/fhir/Patient');
+        if (!r.ok) throw new Error('Patient fetch failed');
+        const b = await r.json();
+        if (!b.entry || b.entry.length === 0) {
+          chips.innerHTML = '<span class="text-xs text-ink-400 italic">No patients loaded</span>';
+          return;
+        }
+        // Find a patient with A1C observations (prefer rich data)
+        let bestPid = null, bestCount = -1;
+        for (const entry of b.entry) {
+          const pid = entry.resource.id;
+          try {
+            const or = await fetch(`/fhir/Observation?patient=${pid}`);
+            const ob = await or.json();
+            const cnt = (ob.entry || []).length;
+            if (cnt > bestCount) { bestCount = cnt; bestPid = pid; }
+          } catch (_) {}
+        }
+        const pid = bestPid || b.entry[0].resource.id;
+        const patientRes = b.entry.find(e => e.resource.id === pid).resource;
+        patientInfo = {
+          name: `${(patientRes.name?.[0]?.given || []).join(' ')} ${patientRes.name?.[0]?.family || ''}`.trim(),
+          gender: patientRes.gender,
+          birthDate: patientRes.birthDate
+        };
+
+        const or = await fetch(`/fhir/Observation?patient=${pid}`);
+        const ob = await or.json();
+        a1cReadings = (ob.entry || []).map(e => {
+          const o = e.resource;
+          return {
+            date: (o.effectiveDateTime || '?').substring(0, 10),
+            value: o.valueQuantity?.value || 0,
+            unit: o.valueQuantity?.unit || '%'
+          };
+        }).sort((a, b) => a.date.localeCompare(b.date));
+
+        if (a1cReadings.length === 0) {
+          chips.innerHTML = '<span class="text-xs text-ink-400 italic">No A1C readings for this patient</span>';
+          if (btn) { btn.disabled = false; btn.innerHTML = 'Load from FHIR'; }
+          return;
+        }
+
+        const latest = a1cReadings[a1cReadings.length - 1];
+        const vals = a1cReadings.map(r => r.value);
+        const mn = Math.min(...vals), mx = Math.max(...vals);
+
+        const ctx = [];
+        const latestClass = latest.value < 7 ? 'trust-passed' : latest.value < 8 ? 'trust-warn' : 'trust-danger';
+        const latestLabel = latest.value < 7 ? 'On target' : latest.value < 8 ? 'Slightly high' : 'Above target';
+        ctx.push(`<span class="trust-badge ${latestClass}"><span class="dot"></span>A1C ${latest.value}${latest.unit} · ${latestLabel}</span>`);
+        ctx.push(`<span class="trust-badge trust-neutral"><span class="dot"></span>${a1cReadings.length} readings</span>`);
+        ctx.push(`<span class="trust-badge trust-neutral"><span class="dot"></span>Range ${mn}–${mx}${latest.unit}</span>`);
+        chips.innerHTML = ctx.join('');
+        if (btn) { btn.style.display = 'none'; }
+
+        renderA1cChart();
+        toast('FHIR data loaded', 'success');
+      } catch (e) {
+        chips.innerHTML = '<span class="text-xs text-coral-600 italic flex items-center gap-1.5"><svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><circle cx="12" cy="12" r="10"/><path d="M12 8v4M12 16h.01"/></svg> Could not load FHIR data</span>';
+        if (btn) { btn.disabled = false; btn.innerHTML = 'Load from FHIR'; }
+      }
+    }
+
+    /* ─── A1C chart: Catmull-Rom → smooth bezier, gradient fill, animated draw ─ */
+    function catmullRomPath(points) {
+      if (points.length < 2) return '';
+      let d = `M ${points[0].x} ${points[0].y}`;
+      for (let i = 0; i < points.length - 1; i++) {
+        const p0 = points[i - 1] || points[i];
+        const p1 = points[i];
+        const p2 = points[i + 1];
+        const p3 = points[i + 2] || p2;
+        const cp1x = p1.x + (p2.x - p0.x) / 6;
+        const cp1y = p1.y + (p2.y - p0.y) / 6;
+        const cp2x = p2.x - (p3.x - p1.x) / 6;
+        const cp2y = p2.y - (p3.y - p1.y) / 6;
+        d += ` C ${cp1x.toFixed(2)} ${cp1y.toFixed(2)}, ${cp2x.toFixed(2)} ${cp2y.toFixed(2)}, ${p2.x.toFixed(2)} ${p2.y.toFixed(2)}`;
+      }
+      return d;
+    }
+
+    function renderA1cChart() {
+      if (a1cReadings.length === 0) return;
+      const c = document.getElementById('a1c-content');
+      if (!c) return;
+
+      const latest = a1cReadings[a1cReadings.length - 1];
+      const vals = a1cReadings.map(r => r.value);
+      const mn = Math.min(...vals), mx = Math.max(...vals);
+      const W = 340, H = 220, P = 44;
+
+      const yMin = 4;
+      const yMax = Math.max(mx + 0.5, 10);
+      const xs = (W - 2 * P) / Math.max(a1cReadings.length - 1, 1);
+      const ys = v => H - P - ((v - yMin) / (yMax - yMin)) * (H - 2 * P);
+
+      const pts = a1cReadings.map((r, i) => ({ x: P + i * xs, y: ys(r.value) }));
+      const linePath = catmullRomPath(pts);
+      const areaPath = linePath + ` L ${pts[pts.length - 1].x} ${H - P} L ${pts[0].x} ${H - P} Z`;
+
+      // Approximate path length for draw-in (rough: sum of segment distances)
+      let len = 0;
+      for (let i = 1; i < pts.length; i++) {
+        len += Math.hypot(pts[i].x - pts[i-1].x, pts[i].y - pts[i-1].y);
+      }
+      len = Math.max(len, 200);
+
+      const tc = latest.value < 7 ? '#0F6B63' : latest.value < 8 ? '#D97706' : '#C2382B';
+      const tLabel = latest.value < 7 ? 'On target' : latest.value < 8 ? 'Slightly above target' : 'Above target';
+      const tBadgeClass = latest.value < 7 ? 'trust-passed' : latest.value < 8 ? 'trust-warn' : 'trust-danger';
+
+      // Gradient id unique per render
+      const gradId = 'a1cGrad' + Date.now();
+
+      c.innerHTML = `
+        <div class="glass rounded-3xl p-5 mb-3 animate-fade-up">
+          <div class="flex items-start justify-between mb-5">
+            <div>
+              <p class="text-[10px] uppercase tracking-wider text-ink-400 font-semibold mb-1">Latest A1C</p>
+              <p class="font-display text-4xl font-bold leading-none" style="color:${tc}">${latest.value}<span class="text-2xl">${latest.unit}</span></p>
+              <p class="text-xs text-ink-400 mt-1.5">${latest.date}</p>
+              <span class="trust-badge ${tBadgeClass} mt-2 inline-flex"><span class="dot"></span>${tLabel}</span>
+            </div>
+            <div class="text-right">
+              <p class="text-[10px] uppercase tracking-wider text-ink-400 font-semibold mb-1">Readings</p>
+              <p class="font-display text-3xl font-bold text-ink-700 leading-none">${a1cReadings.length}</p>
+              <p class="text-xs text-ink-400 mt-1.5">${mn}–${mx}${latest.unit}</p>
+              ${patientInfo && patientInfo.name ? `<p class="text-[10px] text-ink-400 mt-2 max-w-[120px] truncate">${esc(patientInfo.name)}</p>` : ''}
+            </div>
+          </div>
+          <div class="relative">
+            <svg viewBox="0 0 ${W} ${H}" class="w-full h-auto" role="img" aria-label="A1C trend chart showing ${a1cReadings.length} readings from ${a1cReadings[0].date} to ${latest.date}, latest value ${latest.value}${latest.unit}">
+              <defs>
+                <linearGradient id="${gradId}" x1="0" y1="0" x2="0" y2="1">
+                  <stop offset="0%"  stop-color="#48C4B0" stop-opacity="0.35"/>
+                  <stop offset="100%" stop-color="#48C4B0" stop-opacity="0.02"/>
+                </linearGradient>
+                <linearGradient id="${gradId}Line" x1="0" y1="0" x2="1" y2="0">
+                  <stop offset="0%"  stop-color="#22A894"/>
+                  <stop offset="100%" stop-color="#0F6B63"/>
+                </linearGradient>
+              </defs>
+              <!-- Target bands -->
+              <rect x="${P}" y="${ys(7)}"  width="${W-2*P}" height="${ys(yMin) - ys(7)}"  fill="#48C4B0" opacity="0.08" rx="4"/>
+              <rect x="${P}" y="${ys(8)}"  width="${W-2*P}" height="${ys(7) - ys(8)}"  fill="#F59E0B" opacity="0.06" rx="4"/>
+              <rect x="${P}" y="${ys(yMax)}" width="${W-2*P}" height="${ys(8) - ys(yMax)}" fill="#FF6B5B" opacity="0.06" rx="4"/>
+              <!-- Target line at 7% -->
+              <line x1="${P}" y1="${ys(7)}" x2="${W-P}" y2="${ys(7)}" stroke="#22A894" stroke-width="1" stroke-dasharray="4 4" opacity="0.5"/>
+              <text x="${P-6}" y="${ys(7)+3}" text-anchor="end" font-size="9" fill="#0F6B63" font-weight="600" font-family="Inter">7%</text>
+              <!-- Y axis labels -->
+              ${[4,6,8,10].filter(v => v <= yMax).map(v => `<text x="${P-6}" y="${ys(v)+3}" text-anchor="end" font-size="9" fill="#9AAFA9" font-family="Inter">${v}</text>`).join('')}
+              <!-- Area fill -->
+              <path d="${areaPath}" fill="url(#${gradId})" class="a1c-area"/>
+              <!-- Line -->
+              <path d="${linePath}" fill="none" stroke="url(#${gradId}Line)" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round" class="a1c-stroke" style="--len:${Math.ceil(len)}"/>
+              <!-- Dots -->
+              ${pts.map((p, i) => {
+                const r = a1cReadings[i];
+                const dotColor = r.value < 7 ? '#0F6B63' : r.value < 8 ? '#D97706' : '#C2382B';
+                return `<circle cx="${p.x}" cy="${p.y}" r="4.5" fill="#fff" stroke="${dotColor}" stroke-width="2.5" class="a1c-dot" style="animation-delay:${0.9 + i*0.07}s;cursor:pointer" onclick="askSuggested('My A1C was ${r.value}% on ${r.date}. What does this mean for me?')" role="button" aria-label="${r.date}: ${r.value}${r.unit}, tap to ask about this reading"><title>${r.date}: ${r.value}${r.unit}</title></circle>`;
+              }).join('')}
+            </svg>
+          </div>
+          <div class="flex items-center gap-4 mt-4 pt-3 border-t border-brand-200/30 text-[10px] text-ink-400">
+            <span class="flex items-center gap-1.5"><span class="w-2 h-2 rounded-full bg-brand-500"></span>On target (&lt;7%)</span>
+            <span class="flex items-center gap-1.5"><span class="w-2 h-2 rounded-full bg-amber2-500"></span>7–8%</span>
+            <span class="flex items-center gap-1.5"><span class="w-2 h-2 rounded-full bg-coral-500"></span>Above (&gt;8%)</span>
+          </div>
+        </div>
+        <div class="glass rounded-2xl p-4">
+          <p class="text-[10px] uppercase tracking-wider text-ink-400 font-semibold mb-3">All readings</p>
+          <div class="space-y-0">
+            ${a1cReadings.slice().reverse().map(r => {
+              const dc = r.value < 7 ? 'bg-brand-500' : r.value < 8 ? 'bg-amber2-500' : 'bg-coral-500';
+              const tc2 = r.value < 7 ? 'text-brand-700' : r.value < 8 ? 'text-amber2-600' : 'text-coral-600';
+              return `<div class="flex items-center justify-between text-sm py-2.5 border-b border-brand-100/60 last:border-0">
+                <span class="flex items-center gap-2.5 text-ink-500">
+                  <span class="w-2 h-2 rounded-full ${dc}"></span>${r.date}
+                </span>
+                <span class="font-display font-semibold ${tc2}">${r.value}${r.unit}</span>
+              </div>`;
+            }).join('')}
+          </div>
+        </div>`;
+    }
+
+    /* ════════════════════════════════════════════════════════════
+       Emergency modal
+       ════════════════════════════════════════════════════════════ */
+    function showEmergency() {
+      const cards = [
+        { title: 'Medical Emergency', body: 'Chest pain, trouble breathing, severe symptoms → call <strong>911</strong>', action: '911', color: 'coral' },
+        { title: 'Severe Low Blood Sugar', body: 'Sugar below 54 + confusion or unresponsiveness → call <strong>911</strong>', action: '911', color: 'coral' },
+        { title: 'Mental Health Crisis', body: 'Call or text <strong>988</strong> — Suicide & Crisis Lifeline, 24/7', action: '988', color: 'amber' },
+      ];
+      const html = `
+        <div class="space-y-2.5">
+          ${cards.map(c => `
+            <div class="rounded-2xl p-4 border ${c.color === 'coral' ? 'border-coral-500/30 bg-coral-500/8' : 'border-amber2-500/30 bg-amber2-500/8'}">
+              <p class="font-display font-bold ${c.color === 'coral' ? 'text-coral-700' : 'text-amber2-600'} text-sm">${c.title}</p>
+              <p class="${c.color === 'coral' ? 'text-coral-600/90' : 'text-amber2-600/90'} text-xs mt-1 leading-relaxed">${c.body}</p>
+              <a href="tel:${c.action}" class="mt-3 inline-flex items-center gap-1.5 px-3 py-1.5 rounded-lg ${c.color === 'coral' ? 'bg-coral-600 hover:bg-coral-700' : 'bg-amber2-500 hover:bg-amber2-600'} text-white text-xs font-semibold transition-colors no-tap">
+                <svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><path d="M22 16.92v3a2 2 0 0 1-2.18 2 19.79 19.79 0 0 1-8.63-3.07 19.5 19.5 0 0 1-6-6 19.79 19.79 0 0 1-3.07-8.67A2 2 0 0 1 4.11 2h3a2 2 0 0 1 2 1.72c.127.96.361 1.903.7 2.81a2 2 0 0 1-.45 2.11L8.09 9.91a16 16 0 0 0 6 6l1.27-1.27a2 2 0 0 1 2.11-.45c.907.339 1.85.573 2.81.7A2 2 0 0 1 22 16.92z"/></svg>
+                Call ${c.action}
+              </a>
+            </div>
+          `).join('')}
+          <p class="text-[11px] text-ink-400 text-center pt-2 leading-relaxed">If you're outside the US, contact your local emergency number.</p>
+        </div>`;
+      showModal(html, 'Emergency Resources');
+    }
+
+    function showModal(html, title) {
+      const m = document.createElement('div');
+      m.className = 'fixed inset-0 z-[90] flex items-center justify-center p-4';
+      m.setAttribute('role', 'dialog');
+      m.setAttribute('aria-modal', 'true');
+      m.setAttribute('aria-labelledby', 'modal-title');
+      m.innerHTML = `
+        <div class="modal-backdrop absolute inset-0" onclick="this.parentElement.remove()"></div>
+        <div class="modal-panel glass relative w-full max-w-lg max-h-[82vh] overflow-y-auto chat-scroll rounded-3xl">
+          <div class="sticky top-0 glass-soft px-5 py-3.5 flex justify-between items-center border-b border-brand-100/60 z-10 rounded-t-3xl">
+            <h2 id="modal-title" class="font-display font-bold text-brand-900 text-base">${title || ''}</h2>
+            <button onclick="this.closest('.fixed').remove()" class="w-8 h-8 rounded-full flex items-center justify-center text-ink-400 hover:text-brand-900 hover:bg-brand-100/50 transition-all no-tap" aria-label="Close dialog">
+              <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round"><path d="M18 6L6 18M6 6l12 12"/></svg>
+            </button>
+          </div>
+          <div class="p-5">${html}</div>
+        </div>`;
+      document.body.appendChild(m);
+      // Focus close button
+      setTimeout(() => {
+        const closeBtn = m.querySelector('button[aria-label="Close dialog"]');
+        if (closeBtn) closeBtn.focus();
+      }, 100);
+      // Esc to close
+      const escHandler = (e) => {
+        if (e.key === 'Escape') { m.remove(); document.removeEventListener('keydown', escHandler); }
+      };
+      document.addEventListener('keydown', escHandler);
+      m._escHandler = escHandler;
+    }
+
+    /* ════════════════════════════════════════════════════════════
+       Init
+       ════════════════════════════════════════════════════════════ */
+    function init() {
+      setPersona(persona);
+      if (role) {
+        // Skip onboarding
+        const ob = document.getElementById('onboarding');
+        if (ob) ob.remove();
+        document.getElementById('app').classList.remove('hidden');
+        updateGreeting();
+        updateRole();
+        renderModules();
+        renderHistory();
+      }
+      // Keep input focusable but don't force focus if reduced motion
+      const input = document.getElementById('question-input');
+      if (input && !REDUCED_MOTION) {
+        setTimeout(() => input.focus({ preventScroll: true }), 400);
+      }
+    }
+
+    init();
   </script>
 </body>
 </html>
