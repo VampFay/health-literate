@@ -247,18 +247,23 @@
       const c=document.getElementById('chat');const d=document.createElement('div');d.className='flex justify-start mb-3 animate-in';
       if(r.escalated){
         d.innerHTML=`<div style="background:#fef2f2;border:2px solid #f43f5e;border-radius:16px 16px 16px 4px;padding:14px 16px;max-width:85%"><p style="color:#be123c;font-weight:600;font-size:14px;margin-bottom:4px">This may need immediate attention</p><p style="color:#e11d48;font-size:14px;line-height:1.5">${esc(r.response)}</p></div>`;
+        showTrustStrip(r);
+      }else if(r.safety_layer==='error'){
+        // Error state — amber background, retry button, NO citations, NO trust strip
+        d.innerHTML=`<div style="background:#fffbeb;border:1px solid #fde68a;border-radius:16px 16px 16px 4px;padding:14px 16px;max-width:85%"><p style="color:#92400e;font-size:14px;line-height:1.5">I'm having trouble connecting right now. Please try again in a moment.</p><button onclick="retryLast()" style="margin-top:8px;padding:6px 14px;background:#92400e;color:#fff;border:none;border-radius:8px;font-size:12px;cursor:pointer">Retry</button></div>`;
+        document.getElementById('trust-strip').classList.add('hidden');
       }else if(r.safety_verdict&&r.safety_verdict!=='SAFE'){
         d.innerHTML=`<div style="background:#fef3c7;border:1px solid #fcd34d;border-radius:16px 16px 16px 4px;padding:12px 14px;max-width:85%"><p style="color:#92400e;font-size:14px;line-height:1.5">${esc(r.response)}</p></div>`;
-      }else if(r.safety_layer==='error'||(r.response&&r.response.includes('trouble connecting'))){
-        d.innerHTML=`<div style="background:#f8fafc;border:1px solid #e2e8f0;border-radius:16px 16px 16px 4px;padding:12px 14px;max-width:85%"><p style="color:#64748b;font-size:14px">I'm having trouble connecting right now. Please try again in a moment.</p></div>`;
+        showTrustStrip(r);
       }else{
         let cites='';
         if(r.citations&&Array.isArray(r.citations)&&r.citations.length>0){
           cites=r.citations.map(c=>{const n=c.replace(/\.md$/,'').replace(/^\d+_/,'').replace(/_/g,' ');return `<button class="cite" onclick="openModule('${c.replace(/\.md$/,'')}')">${esc(n)}</button>`;}).join('');
         }
         d.innerHTML=`<div style="background:#f8fafc;border:1px solid #e2e8f0;border-radius:16px 16px 16px 4px;padding:14px 16px;max-width:85%"><p style="color:#334155;font-size:14px;line-height:1.6;white-space:pre-wrap">${esc(r.response)}</p>${cites?`<div style="margin-top:8px;padding-top:8px;border-top:1px solid #e2e8f0"><p style="font-size:11px;color:#94a3b8;margin-bottom:4px">Sources:</p><div style="display:flex;flex-wrap:wrap;gap:4px">${cites}</div></div>`:''}</div>`;
+        showTrustStrip(r);
       }
-      c.appendChild(d);c.scrollTop=c.scrollHeight;showTrustStrip(r);
+      c.appendChild(d);c.scrollTop=c.scrollHeight;
     }
 
     function showTrustStrip(r){
@@ -275,9 +280,13 @@
     function addTyping(){const c=document.getElementById('chat');const d=document.createElement('div');d.id='typing';d.className='flex justify-start mb-3';d.innerHTML='<div style="background:#f8fafc;border:1px solid #e2e8f0;border-radius:16px 16px 16px 4px;padding:12px 16px"><span class="typing-dot"></span><span class="typing-dot"></span><span class="typing-dot"></span></div>';c.appendChild(d);c.scrollTop=c.scrollHeight;}
     function removeTyping(){const e=document.getElementById('typing');if(e)e.remove();}
 
+    let lastQuestion='';
+    function retryLast(){if(lastQuestion){document.getElementById('question-input').value=lastQuestion;askQuestion(new Event('submit'));}}
+
     async function askQuestion(e){
       e.preventDefault();if(waiting)return;
       const input=document.getElementById('question-input');const q=input.value.trim();if(!q)return;
+      lastQuestion=q;
       const w=document.getElementById('welcome-msg');if(w)w.remove();
       document.getElementById('trust-strip').classList.add('hidden');
       addUserMessage(q);input.value='';waiting=true;document.getElementById('send-btn').disabled=true;
@@ -286,10 +295,15 @@
         const resp=await fetch('/scaffold',{method:'POST',headers:{'Content-Type':'application/json'},body:JSON.stringify({question:q,persona:persona})});
         if(!resp.ok){const t=await resp.text();throw new Error(`HTTP ${resp.status}`);}
         const data=await resp.json();removeTyping();addBotMessage(data);
-        history.unshift({question:q,response:data.response,citations:data.citations||[],safety_verdict:data.safety_verdict,safety_layer:data.safety_layer,escalated:data.escalated,persona:persona,timestamp:new Date().toISOString()});
-        if(history.length>100)history=history.slice(0,100);localStorage.setItem('qa_history',JSON.stringify(history));renderHistory();
+        // Only save to history if NOT an error
+        if(data.safety_layer!=='error'){
+          history.unshift({question:q,response:data.response,citations:data.citations||[],safety_verdict:data.safety_verdict,safety_layer:data.safety_layer,escalated:data.escalated,persona:persona,timestamp:new Date().toISOString()});
+          if(history.length>100)history=history.slice(0,100);localStorage.setItem('qa_history',JSON.stringify(history));renderHistory();
+        }
       }catch(err){
-        removeTyping();addBotMessage({response:'I had trouble connecting right now. Please try again in a moment.',escalated:false,citations:[],safety_verdict:'SAFE',safety_layer:'error'});
+        removeTyping();
+        // Pass a clearly-marked error object — only renders once, with retry button
+        addBotMessage({response:'',escalated:false,citations:[],safety_verdict:'SAFE',safety_layer:'error'});
       }finally{waiting=false;document.getElementById('send-btn').disabled=false;document.getElementById('question-input').focus();}
     }
 
