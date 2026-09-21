@@ -246,28 +246,72 @@ and editing one config file.
 
 ## Quick start
 
+> **Python 3.11+ required** (spec §2). macOS system Python is 3.9 and will
+> fail with `uvicorn 0.44+` (requires 3.10+). Use Homebrew or pyenv to
+> install Python 3.11 — see the platform-specific setup below.
+
+### macOS setup (Apple Silicon or Intel)
+
 ```bash
-# 1. Clone + install
+# 0. Install Python 3.11 via Homebrew (skip if you already have it)
+brew install python@3.11
+
+# 1. Clone + cd
 git clone https://github.com/VampFay/health-literate.git
 cd health-literate/carescaffold
+
+# 2. Create a virtual env using Python 3.11 (don't use the system 3.9)
+python3.11 -m venv .venv
+source .venv/bin/activate
+
+# 3. Install deps
 pip install -r requirements.txt
 
-# 2. Configure env (no API keys needed for the GLM + TF-IDF demo)
+# 4. Configure env (no API keys needed for the GLM + TF-IDF demo)
 cp .env.example .env
-# Populate ANTHROPIC_API_KEY + VOYAGEAI_API_KEY ONLY if reverting to
-# the spec's original Claude + Voyage AI providers
 
-# 3. Regenerate Synthea patients (optional — 305MB, gitignored)
-# Download Synthea jar: https://github.com/synthetichealth/synthea/releases
-# Then: python3 scripts/generate_synthea_patients.py
+# 5. Regenerate Synthea patients (optional — 305MB, gitignored)
+#    The script will offer to auto-download the Synthea jar (~197MB)
+python3 scripts/generate_synthea_patients.py
 
-# 4. Run
-uvicorn app:app --reload --port 8000
+# 6. Run the dev server (checks Python version, starts uvicorn, opens /docs)
+python3 scripts/run_dev.py
+# Server: http://127.0.0.1:8000  •  Swagger UI: http://127.0.0.1:8000/docs
 
-# 5. Verify
+# 7. Verify (in another terminal)
 curl http://localhost:8000/health
 curl http://localhost:8000/fhir/metadata
 curl http://localhost:8000/fhir/Patient
+```
+
+### Linux setup (Ubuntu/Debian)
+
+```bash
+# 0. Install Python 3.11+ (skip if you already have it)
+sudo apt install python3.11 python3.11-venv
+
+# 1-6. Same as macOS above, but use `python3.11` everywhere instead of `python3.11`
+```
+
+### Common error: "Could not find a version that satisfies uvicorn"
+
+You're using Python 3.9 (the macOS system Python) instead of 3.11+. Fix:
+
+```bash
+brew install python@3.11
+python3.11 -m venv .venv
+source .venv/bin/activate
+pip install -r requirements.txt
+```
+
+### Common error: "Defaulting to user installation because normal site-packages is not writeable"
+
+You ran `pip install` outside a virtualenv. Always activate a venv first:
+
+```bash
+python3.11 -m venv .venv
+source .venv/bin/activate   # do this in every new terminal
+pip install -r requirements.txt
 ```
 
 ---
