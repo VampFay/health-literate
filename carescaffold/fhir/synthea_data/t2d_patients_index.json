@@ -80,6 +80,11 @@
     "a1c_count": 14
   },
   {
+    "patient_id": "462ae57a-9cb6-1791-070d-456ca2793107",
+    "file": "Mirna233_Cleta89_Zboncak558_462ae57a-9cb6-1791-070d-456ca2793107.json",
+    "a1c_count": 10
+  },
+  {
     "patient_id": "aa0a3123-3c0a-d074-46bc-6a313c09515f",
     "file": "Piedad413_Cathie710_Graham902_aa0a3123-3c0a-d074-46bc-6a313c09515f.json",
     "a1c_count": 11
@@ -93,10 +98,5 @@
     "patient_id": "2f87a783-4955-9487-9a8f-2295e32594ef",
     "file": "Roger751_Little434_2f87a783-4955-9487-9a8f-2295e32594ef.json",
     "a1c_count": 15
-  },
-  {
-    "patient_id": "31a39821-36d2-6eed-63b0-ab481a1ca8c2",
-    "file": "Rubin812_Toy286_31a39821-36d2-6eed-63b0-ab481a1ca8c2.json",
-    "a1c_count": 34
   }
 ]
