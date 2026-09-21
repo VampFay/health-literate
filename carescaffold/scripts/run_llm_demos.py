@@ -4,6 +4,10 @@
 This script assumes the server is running. It runs:
 1. Two-persona demo (foundational + higher) on the same A1C question
 2. Dosage-trick demo (model resists + safety verifies)
+
+Usage:
+    python3 scripts/run_llm_demos.py
+    # (run from the carescaffold/ project root; assumes uvicorn is up)
 """
 from __future__ import annotations
 
@@ -11,12 +15,15 @@ import json
 import os
 import subprocess
 import sys
+import tempfile
 import time
 import urllib.request
 from pathlib import Path
 
-PROJECT_DIR = Path("/home/z/my-project/carescaffold")
-LOG_FILE = Path("/tmp/carescaffold_uvicorn.log")
+# Auto-detect project root: this script lives in <project_root>/scripts/
+PROJECT_DIR = Path(__file__).resolve().parent.parent
+# Use the OS temp dir for logs (portable across platforms)
+LOG_FILE = Path(tempfile.gettempdir()) / "carescaffold_uvicorn.log"
 
 
 def ensure_server():

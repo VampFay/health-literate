@@ -8,27 +8,50 @@ and are .gitignored. This script regenerates them locally.
 
 Usage:
     python3 scripts/generate_synthea_patients.py
+    # (run from the carescaffold/ project root)
 
 Prereqs:
-    - Java 21+ installed
-    - Synthea jar downloaded to /tmp/synthea.jar
-      (see https://github.com/synthetichealth/synthea/releases)
+    - Java 21+ installed (verify with `java -version`)
+    - Synthea jar (`synthea-with-dependencies.jar`) downloaded and either:
+        - placed in the project root (next to README.md), OR
+        - placed in any directory listed in $SYNTHEA_JAR_PATH, OR
+        - the SYNTHEA_JAR env var set to the absolute path, OR
+        - the script will offer to auto-download from
+          https://github.com/synthetichealth/synthea/releases (~197MB)
 
 Output:
-    - /fhir/synthea_data/output/fhir/*.json (20 T2D bundle files)
-    - /fhir/synthea_data/t2d_patients_index.json (index of 20 T2D patients)
+    - fhir/synthea_data/output/fhir/*.json (20 T2D bundle files)
+    - fhir/synthea_data/t2d_patients_index.json (index of 20 T2D patients)
 """
 from __future__ import annotations
 
 import json
+import os
 import shutil
 import subprocess
 import sys
+import tempfile
+import urllib.request
 from pathlib import Path
 
-SYNTHEA_JAR = "/tmp/synthea.jar"
-OUTPUT_DIR = Path(__file__).resolve().parent.parent / "fhir" / "synthea_data" / "output"
-INDEX_PATH = Path(__file__).resolve().parent.parent / "fhir" / "synthea_data" / "t2d_patients_index.json"
+# Project root (this script lives in <project_root>/scripts/)
+PROJECT_DIR = Path(__file__).resolve().parent.parent
+OUTPUT_DIR = PROJECT_DIR / "fhir" / "synthea_data" / "output"
+INDEX_PATH = PROJECT_DIR / "fhir" / "synthea_data" / "t2d_patients_index.json"
+
+# Synthea jar location: env var, then project root, then temp dir.
+# Set SYNTHEA_JAR=<absolute path> to override.
+SYNTHEA_JAR_DEFAULTS = [
+    Path(os.environ.get("SYNTHEA_JAR", "")),  # explicit env var
+    PROJECT_DIR / "synthea.jar",              # project root
+    PROJECT_DIR / "synthea-with-dependencies.jar",
+    Path(tempfile.gettempdir()) / "synthea.jar",  # OS temp dir
+]
+
+SYNTHEA_DOWNLOAD_URL = (
+    "https://github.com/synthetichealth/synthea/releases/latest/download/"
+    "synthea-with-dependencies.jar"
+)
 
 # SNOMED code for Type 2 diabetes mellitus
 T2D_SNOMED = "44054006"
@@ -36,11 +59,35 @@ T2D_SNOMED = "44054006"
 A1C_LOINC = "4548-4"
 
 
-def run_synthea(num_patients: int, seed: int) -> None:
-    """Run Synthea to generate FHIR bundles."""
+def find_synthea_jar() -> Path | None:
+    """Find the Synthea jar in the standard search locations."""
+    for candidate in SYNTHEA_JAR_DEFAULTS:
+        if candidate and candidate.exists() and candidate.stat().st_size > 1_000_000:
+            return candidate
+    return None
+
+
+def download_synthea_jar(target: Path | None = None) -> Path:
+    """Download the Synthea jar (~197MB) to the target location."""
+    target = target or (Path(tempfile.gettempdir()) / "synthea.jar")
+    print(f"  Downloading Synthea jar (~197MB) from {SYNTHEA_DOWNLOAD_URL}")
+    print(f"  Saving to: {target}")
+    urllib.request.urlretrieve(SYNTHEA_DOWNLOAD_URL, target)
+    print(f"  ✓ Downloaded ({target.stat().st_size // (1024*1024)} MB)")
+    return target
+
+
+def run_synthea(num_patients: int, seed: int, jar_path: Path) -> None:
+    """Run Synthea to generate FHIR bundles.
+
+    Args:
+        num_patients: how many patients to generate in this batch
+        seed: random seed for Synthea's RNG
+        jar_path: absolute path to the Synthea jar
+    """
     OUTPUT_DIR.parent.mkdir(parents=True, exist_ok=True)
     cmd = [
-        "java", "-jar", SYNTHEA_JAR,
+        "java", "-jar", str(jar_path),
         "-p", str(num_patients),
         "--exporter.fhir.export=true",
         "--exporter.fhir.use_us_core_ig=false",
@@ -101,23 +148,47 @@ def find_t2d_patients() -> list[dict]:
 
 
 def main() -> None:
-    if not Path(SYNTHEA_JAR).exists():
-        print(f"ERROR: Synthea jar not found at {SYNTHEA_JAR}")
-        print("Download from https://github.com/synthetichealth/synthea/releases")
-        sys.exit(1)
+    print("=== CareScaffold — Synthea T2D Patient Generator ===")
+    print(f"  Project root: {PROJECT_DIR}")
+    print(f"  Output dir:   {OUTPUT_DIR}")
+    print(f"  Index file:    {INDEX_PATH}")
+    print()
 
     if not shutil.which("java"):
         print("ERROR: java not found in PATH. Install Java 21+.")
+        print("  Verify with: java -version")
         sys.exit(1)
+    print(f"  ✓ Java available: {shutil.which('java')}")
 
+    # Find or download the Synthea jar
+    jar_path = find_synthea_jar()
+    if jar_path is None:
+        print()
+        print("Synthea jar not found in any of these locations:")
+        for cand in SYNTHEA_JAR_DEFAULTS:
+            if cand:
+                print(f"  - {cand}")
+        print()
+        answer = input("Auto-download Synthea jar (~197MB) to temp dir? [y/N] ").strip().lower()
+        if answer != "y":
+            print("Download manually from https://github.com/synthetichealth/synthea/releases")
+            print(f"Then either:")
+            print(f"  1. Save as {PROJECT_DIR / 'synthea.jar'}")
+            print(f"  2. Set $env:SYNTHEA_JAR = '<path-to-jar>'")
+            sys.exit(1)
+        jar_path = download_synthea_jar()
+    else:
+        print(f"  ✓ Synthea jar found: {jar_path} ({jar_path.stat().st_size // (1024*1024)} MB)")
+
+    print()
     print("=== Generating Synthea patients (will yield ~20 T2D after multiple batches) ===")
     # Strategy: generate in batches with different seeds until we have ≥ 20 T2D
-    seeds = [None, 42, 99, 123, 777, 2026]
+    seeds = [0, 42, 99, 123, 777, 2026]
     found = []
     for i, seed in enumerate(seeds):
         print(f"\nBatch {i + 1}/{len(seeds)}, seed={seed}")
         n = 60 if i > 0 else 20
-        run_synthea(n, seed or 0)
+        run_synthea(n, seed, jar_path)
         found = find_t2d_patients()
         print(f"  Cumulative T2D patients: {len(found)}")
         if len(found) >= 20:

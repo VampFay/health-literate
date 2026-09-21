@@ -5,7 +5,8 @@ Starts uvicorn in the background, runs all demo curl commands via Python
 requests, captures output, keeps server running.
 
 Usage:
-    python3 /home/z/my-project/scripts/run_carescaffold_demo.py
+    python3 scripts/run_carescaffold_demo.py
+    # (run from the carescaffold/ project root)
 """
 from __future__ import annotations
 
@@ -14,13 +15,17 @@ import os
 import signal
 import subprocess
 import sys
+import tempfile
 import time
 from pathlib import Path
 
-PROJECT_DIR = Path("/home/z/my-project/carescaffold")
-LOG_FILE = Path("/tmp/carescaffold_uvicorn.log")
-OUTPUT_FILE = Path("/tmp/carescaffold_demo_output.txt")
-PID_FILE = Path("/tmp/carescaffold_uvicorn.pid")
+# Auto-detect project root: this script lives in <project_root>/scripts/
+PROJECT_DIR = Path(__file__).resolve().parent.parent
+# Use the OS temp dir for logs/output (portable across platforms)
+TMP = Path(tempfile.gettempdir())
+LOG_FILE = TMP / "carescaffold_uvicorn.log"
+OUTPUT_FILE = TMP / "carescaffold_demo_output.txt"
+PID_FILE = TMP / "carescaffold_uvicorn.pid"
 
 
 def log(msg: str) -> None:

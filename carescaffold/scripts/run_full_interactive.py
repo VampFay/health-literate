@@ -6,7 +6,8 @@ persona + every FHIR endpoint, captures results, reports PASS/FAIL
 per item, leaves server running.
 
 Usage:
-    python3 /home/z/my-project/scripts/run_full_interactive.py
+    python3 scripts/run_full_interactive.py
+    # (run from the carescaffold/ project root)
 """
 from __future__ import annotations
 
@@ -14,15 +15,19 @@ import json
 import os
 import subprocess
 import sys
+import tempfile
 import time
 import urllib.error
 import urllib.request
 from pathlib import Path
 
-PROJECT_DIR = Path("/home/z/my-project/carescaffold")
-LOG_FILE = Path("/tmp/carescaffold_uvicorn.log")
-OUTPUT_FILE = Path("/tmp/carescaffold_full_test.txt")
-PID_FILE = Path("/tmp/carescaffold_uvicorn.pid")
+# Auto-detect project root: this script lives in <project_root>/scripts/
+PROJECT_DIR = Path(__file__).resolve().parent.parent
+# Use the OS temp dir for logs/output (portable across platforms)
+TMP = Path(tempfile.gettempdir())
+LOG_FILE = TMP / "carescaffold_uvicorn.log"
+OUTPUT_FILE = TMP / "carescaffold_full_test.txt"
+PID_FILE = TMP / "carescaffold_uvicorn.pid"
 
 # Test results accumulator
 RESULTS: list[tuple[str, str, str]] = []  # (name, status, details)

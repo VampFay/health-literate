@@ -4,6 +4,10 @@
 Assumes the server is already running on http://127.0.0.1:8000
 (or starts it if needed), then shows formatted live output for key
 endpoints.
+
+Usage:
+    python3 scripts/show_live_samples.py
+    # (run from the carescaffold/ project root)
 """
 from __future__ import annotations
 
@@ -11,13 +15,17 @@ import json
 import os
 import subprocess
 import sys
+import tempfile
 import time
 import urllib.request
 from pathlib import Path
 
-PROJECT_DIR = Path("/home/z/my-project/carescaffold")
-LOG_FILE = Path("/tmp/carescaffold_uvicorn.log")
-PID_FILE = Path("/tmp/carescaffold_uvicorn.pid")
+# Auto-detect project root: this script lives in <project_root>/scripts/
+PROJECT_DIR = Path(__file__).resolve().parent.parent
+# Use the OS temp dir for logs (portable across platforms)
+TMP = Path(tempfile.gettempdir())
+LOG_FILE = TMP / "carescaffold_uvicorn.log"
+PID_FILE = TMP / "carescaffold_uvicorn.pid"
 
 
 def http_get(url, timeout=15):

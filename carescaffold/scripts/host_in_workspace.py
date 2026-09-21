@@ -7,6 +7,10 @@ This script:
 2. Verifies http://127.0.0.1:81/health proxies through to uvicorn
 3. Verifies every endpoint via the Caddy-proxied URL
 4. Reports the public preview URL the user can click in the workspace panel
+
+Usage:
+    python3 scripts/host_in_workspace.py
+    # (run from the carescaffold/ project root; z.ai workspace only)
 """
 from __future__ import annotations
 
@@ -14,12 +18,15 @@ import json
 import os
 import subprocess
 import sys
+import tempfile
 import time
 import urllib.request
 from pathlib import Path
 
-PROJECT_DIR = Path("/home/z/my-project/carescaffold")
-LOG_FILE = Path("/tmp/carescaffold_3000.log")
+# Auto-detect project root: this script lives in <project_root>/scripts/
+PROJECT_DIR = Path(__file__).resolve().parent.parent
+# Use the OS temp dir for logs (portable across platforms)
+LOG_FILE = Path(tempfile.gettempdir()) / "carescaffold_3000.log"
 CADDY_PORT = 81
 UVICORN_PORT = 3000
 
