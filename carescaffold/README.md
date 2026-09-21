@@ -170,7 +170,7 @@ and editing one config file.
 | Phase | Status | Deliverables | Tag |
 |---|---|---|---|
 | 0 | ✅ Complete | Repo scaffold, model registry, DB schema, health endpoint, README skeleton | `v0.1-phase-0` |
-| 1 | ⏳ Deferred | 150+ case PHI corpus, Presidio+spaCy+custom redactor, hash-chained audit log (operator-directed defer; Phase 3 end-to-end pipeline currently pass-through) | — |
+| 1 | ✅ **Complete** | 152-case PHI corpus (all 18 HIPAA Safe Harbor categories), Presidio+spaCy+custom redactor, hash-chained audit log, 90.86% recall / 85.24% precision | `v0.6-phase-1` |
 | 2 | ✅ Complete | Tuning + held-out dosage-trick corpora (34 + 12 cases), emergency corpus (22), Layer 1 regex + Layer 2 GLM-4-Plus judge, 100% on both corpora (spec §9.2) | `v0.3-phase-2` |
 | 3 | ✅ Complete | 6 hand-authored .md education files, TF-IDF RAG (v2.6 swap from Voyage AI), two-persona scaffold endpoint (GLM-4-Plus), end-to-end safety re-test passed | `v0.4-phase-3` |
 | 4 | ✅ Complete | 20 Synthea T2D patients, FHIR R4 endpoint (Patient/Condition/Observation/CapabilityStatement), self-test against R4 spec (9/9), documented partial-result per §4.5 escape hatch (Docker unavailable) | `v0.5-phase-4` |

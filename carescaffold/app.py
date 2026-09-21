@@ -77,6 +77,10 @@ def create_app() -> FastAPI:
     from api.scaffold import router as scaffold_router
     app.include_router(scaffold_router, prefix="/scaffold", tags=["scaffold"])
 
+    # Phase 1: /api/phi/redact (PHI redaction pipeline, spec §4.1)
+    from api.phi import router as phi_router
+    app.include_router(phi_router, prefix="/phi", tags=["phi"])
+
     # Phase 4: /fhir/* (FHIR R4 endpoint, mounted at root per FHIR convention)
     from services.fhir.endpoint import router as fhir_router
     app.include_router(fhir_router)
