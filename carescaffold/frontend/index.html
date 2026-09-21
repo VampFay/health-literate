@@ -3,577 +3,311 @@
 <head>
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
-  <title>CareScaffold — Your Type 2 Diabetes Learning Companion</title>
+  <title>CareScaffold — Type 2 Diabetes Education</title>
   <script src="https://cdn.tailwindcss.com"></script>
   <link rel="preconnect" href="https://fonts.googleapis.com">
-  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
-  <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800&family=Fraunces:wght@600;700&family=JetBrains+Mono:wght@400;500&display=swap" rel="stylesheet">
+  <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&display=swap" rel="stylesheet">
   <script>
     tailwind.config = {
       theme: {
         extend: {
           colors: {
+            brand: { 50:'#f0fdfa',100:'#ccfbf1',200:'#99f6e4',300:'#5eead4',400:'#2dd4bf',500:'#14b8a6',600:'#0d9488',700:'#0f766e',800:'#115e59',900:'#134e4a' },
             ink: { 50:'#f8fafc',100:'#f1f5f9',200:'#e2e8f0',300:'#cbd5e1',400:'#94a3b8',500:'#64748b',600:'#475569',700:'#334155',800:'#1e293b',900:'#0f172a' },
-            sage: { 50:'#f0fdf4',100:'#dcfce7',200:'#bbf7d0',300:'#86efac',400:'#4ade80',500:'#22c55e',600:'#16a34a',700:'#15803d',800:'#166534',900:'#14532d' },
-            gold: { 400:'#fbbf24',500:'#f59e0b',600:'#d97706' },
-            coral: { 400:'#fb7185',500:'#f43f5e',600:'#e11d48' },
           },
-          fontFamily: {
-            sans: ['Inter','system-ui','sans-serif'],
-            display: ['Fraunces','Georgia','serif'],
-            mono: ['JetBrains Mono','monospace'],
-          },
+          fontFamily: { sans: ['Inter','system-ui','sans-serif'] },
         },
       },
     }
   </script>
   <style>
-    html{font-size:17px}
-    body{font-family:'Inter',system-ui,sans-serif;-webkit-font-smoothing:antialiased}
-
-    /* ── Accessibility ── */
-    @media(prefers-reduced-motion:reduce){*,*::before,*::after{animation-duration:.01ms!important;transition-duration:.01ms!important}}
-    *:focus-visible{outline:2px solid #22c55e;outline-offset:2px;border-radius:4px}
-    .sr-only{position:absolute;width:1px;height:1px;padding:0;margin:-1px;overflow:hidden;clip:rect(0,0,0,0);white-space:nowrap;border:0}
-
-    /* ── Animations ── */
-    @keyframes fadeIn{from{opacity:0;transform:translateY(8px)}to{opacity:1;transform:translateY(0)}}
-    @keyframes slideUp{from{opacity:0;transform:translateY(24px)}to{opacity:1;transform:translateY(0)}}
-    @keyframes pulse{0%,100%{opacity:1}50%{opacity:.5}}
-    @keyframes bounce{0%,100%{transform:translateY(0)}50%{transform:translateY(-6px)}}
-    .animate-fade-in{animation:fadeIn .4s ease-out}
-    .animate-slide-up{animation:slideUp .4s cubic-bezier(.16,1,.3,1)}
-    .animate-bounce{animation:bounce .6s ease-in-out}
-
-    /* ── Typing dots ── */
-    .typing-dot{display:inline-block;width:7px;height:7px;background:#22c55e;border-radius:50%;margin:0 2px;animation:pulse 1.4s infinite}
+    html{font-size:16px}
+    body{font-family:'Inter',system-ui,sans-serif;-webkit-font-smoothing:antialiased;background:#fff}
+    *:focus-visible{outline:2px solid #0d9488;outline-offset:2px}
+    .sr-only{position:absolute;width:1px;height:1px;overflow:hidden;clip:rect(0,0,0,0)}
+    @media(prefers-reduced-motion:reduce){*{animation-duration:.01ms!important;transition-duration:.01ms!important}}
+    @keyframes fadeIn{from{opacity:0;transform:translateY(6px)}to{opacity:1;transform:translateY(0)}}
+    .animate-in{animation:fadeIn .3s ease-out}
+    .typing-dot{display:inline-block;width:6px;height:6px;background:#94a3b8;border-radius:50%;margin:0 2px;animation:blink 1.4s infinite}
     .typing-dot:nth-child(2){animation-delay:.2s}
     .typing-dot:nth-child(3){animation-delay:.4s}
-
-    /* ── Cards ── */
-    .card{background:#fff;border:1px solid #e2e8f0;border-radius:16px;box-shadow:0 1px 3px rgba(0,0,0,.04);transition:box-shadow .2s,transform .2s}
-    .card:hover{box-shadow:0 4px 12px rgba(0,0,0,.08)}
-    .card-interactive{cursor:pointer}
-    .card-interactive:hover{transform:translateY(-2px);box-shadow:0 8px 20px rgba(0,0,0,.08)}
-
-    /* ── Chat bubbles ── */
-    .bubble-user{background:#22c55e;color:#fff;border-radius:20px 20px 4px 20px;padding:12px 16px;max-width:80%}
-    .bubble-bot{background:#f8fafc;border:1px solid #e2e8f0;border-radius:20px 20px 20px 4px;padding:14px 18px;max-width:85%}
-    .bubble-err{background:#fef2f2;border:1px solid #fecaca;border-radius:20px 20px 20px 4px;padding:14px 18px;max-width:85%}
-    .bubble-emg{background:#fef2f2;border:2px solid #f43f5e;border-radius:20px 20px 20px 4px;padding:16px 20px;max-width:85%}
-
-    /* ── Citation chips ── */
-    .cite{display:inline-flex;align-items:center;gap:3px;padding:3px 10px;background:#f0fdf4;color:#15803d;border-radius:6px;font-size:12px;font-family:'JetBrains Mono',monospace;cursor:pointer;transition:background .15s;text-decoration:none}
-    .cite:hover{background:#dcfce7}
-
-    /* ── Trust badges ── */
-    .trust{display:inline-flex;align-items:center;gap:4px;padding:4px 10px;border-radius:8px;font-size:12px;font-weight:500}
-
-    /* ── Nav ── */
-    .nav-btn{display:flex;flex-direction:column;align-items:center;gap:3px;padding:8px 14px;border-radius:10px;cursor:pointer;transition:all .2s;color:#94a3b8;min-width:60px;border:none;background:none;font-family:inherit}
-    .nav-btn:hover{background:#f0fdf4;color:#16a34a}
-    .nav-btn.active{color:#16a34a;font-weight:600}
-    .nav-btn.active .nav-ico{transform:scale(1.15)}
-    .nav-ico{font-size:20px;transition:transform .2s}
-    .nav-lbl{font-size:10px;letter-spacing:.02em}
-
-    /* ── Persona toggle ── */
-    .persona-btn{flex:1;padding:10px 14px;border-radius:12px;border:1.5px solid #e2e8f0;background:#fff;cursor:pointer;transition:all .2s;text-align:center;font-family:inherit}
-    .persona-btn:hover{border-color:#86efac}
-    .persona-btn.on{background:#22c55e;color:#fff;border-color:#22c55e}
-
-    /* ── Scrollbar ── */
-    ::-webkit-scrollbar{width:5px}
-    ::-webkit-scrollbar-track{background:transparent}
-    ::-webkit-scrollbar-thumb{background:#cbd5e1;border-radius:3px}
-    ::-webkit-scrollbar-thumb:hover{background:#94a3b8}
-
-    /* ── Chat scroll area ── */
-    .chat-scroll{scroll-behavior:smooth}
-
-    /* ── Empty state ── */
-    .empty-state{text-align:center;padding:2rem 1rem}
-    .empty-state .emoji{font-size:2.5rem;margin-bottom:.75rem;opacity:.7}
-
-    /* ── Progress bar ── */
-    .progress-track{height:4px;background:#e2e8f0;border-radius:2px;overflow:hidden}
-    .progress-fill{height:100%;background:#22c55e;border-radius:2px;transition:width .3s}
+    @keyframes blink{0%,60%,100%{opacity:.3}30%{opacity:1}}
+    .card{background:#fff;border:1px solid #e2e8f0;border-radius:12px}
+    .btn-primary{background:#0d9488;color:#fff;border-radius:10px;padding:10px 20px;font-weight:500;border:none;cursor:pointer;transition:background .15s}
+    .btn-primary:hover{background:#0f766e}
+    .btn-primary:disabled{opacity:.4;cursor:not-allowed}
+    .btn-ghost{border:1px solid #e2e8f0;background:#fff;border-radius:10px;padding:10px 16px;cursor:pointer;transition:border-color .15s;color:#475569}
+    .btn-ghost:hover{border-color:#94a3b8}
+    .chip{padding:6px 12px;border-radius:8px;font-size:13px;font-weight:500}
+    .nav-tab{display:flex;align-items:center;gap:6px;padding:8px 16px;border-radius:8px;cursor:pointer;color:#94a3b8;font-size:13px;font-weight:500;transition:all .15s;border:none;background:none}
+    .nav-tab:hover{color:#475569;background:#f8fafc}
+    .nav-tab.active{color:#0d9488;background:#f0fdfa}
+    .cite{display:inline-block;padding:3px 8px;background:#f0fdfa;color:#0f766e;border-radius:6px;font-size:12px;cursor:pointer;border:1px solid #ccfbf1}
+    .cite:hover{background:#ccfbf1}
+    ::-webkit-scrollbar{width:4px}
+    ::-webkit-scrollbar-thumb{background:#cbd5e1;border-radius:2px}
   </style>
 </head>
-<body class="bg-ink-50 min-h-screen pb-20">
+<body class="min-h-screen bg-white pb-16">
 
-  <!-- ════ Disclaimer banner ════ -->
-  <div class="sticky top-0 z-50 bg-gold-500/10 backdrop-blur-sm border-b border-gold-400/30">
-    <div class="max-w-2xl mx-auto px-4 py-2 flex items-center justify-center gap-2">
-      <span class="text-gold-600 text-sm">⚠️</span>
-      <p class="text-xs text-ink-700"><strong>Portfolio demo</strong> — not medical software. For clinical decisions, talk to your care team.</p>
+  <!-- Disclaimer -->
+  <div class="sticky top-0 z-50 bg-amber-50 border-b border-amber-200">
+    <div class="max-w-2xl mx-auto px-4 py-2">
+      <p class="text-xs text-amber-700"><strong>Portfolio demo</strong> — not medical software. For clinical decisions, consult your care team.</p>
     </div>
   </div>
 
-  <!-- ════ Onboarding ════ -->
-  <div id="onboarding" class="fixed inset-0 z-[60] bg-ink-900/40 backdrop-blur-sm flex items-center justify-center p-4" role="dialog" aria-modal="true">
-    <div class="card max-w-md w-full p-8 animate-slide-up">
-      <div class="text-center mb-7">
-        <div class="w-20 h-20 mx-auto mb-3 rounded-full bg-sage-100 flex items-center justify-center text-4xl">🫀</div>
-        <h1 class="font-display text-2xl font-bold text-ink-800">Hi, I'm Pip</h1>
-        <p class="text-ink-400 mt-1 text-sm">Your Type 2 diabetes learning companion</p>
-      </div>
-      <p class="text-center text-ink-500 mb-5 text-sm">I'll tailor my answers to fit your situation. Who are you?</p>
-      <div class="space-y-2.5">
-        <button onclick="selectRole('patient')" class="w-full p-4 rounded-2xl border-1.5 border-ink-200 hover:border-sage-400 hover:bg-sage-50 transition text-left flex items-center gap-3">
-          <span class="text-2xl">🧑</span>
-          <div><p class="font-semibold text-ink-800 text-sm">Newly diagnosed</p><p class="text-xs text-ink-400">Just found out I have Type 2 diabetes</p></div>
-        </button>
-        <button onclick="selectRole('manager')" class="w-full p-4 rounded-2xl border-1.5 border-ink-200 hover:border-sage-400 hover:bg-sage-50 transition text-left flex items-center gap-3">
-          <span class="text-2xl">📊</span>
-          <div><p class="font-semibold text-ink-800 text-sm">Long-term manager</p><p class="text-xs text-ink-400">Been managing T2D, want to go deeper</p></div>
-        </button>
-        <button onclick="selectRole('caregiver')" class="w-full p-4 rounded-2xl border-1.5 border-ink-200 hover:border-sage-400 hover:bg-sage-50 transition text-left flex items-center gap-3">
-          <span class="text-2xl">💛</span>
-          <div><p class="font-semibold text-ink-800 text-sm">Caregiver</p><p class="text-xs text-ink-400">I help someone with Type 2 diabetes</p></div>
-        </button>
+  <!-- Onboarding -->
+  <div id="onboarding" class="fixed inset-0 z-[60] bg-ink-900/30 flex items-center justify-center p-4" role="dialog" aria-modal="true">
+    <div class="card max-w-md w-full p-8 animate-in">
+      <h1 class="text-xl font-bold text-ink-800 mb-1">Welcome to CareScaffold</h1>
+      <p class="text-sm text-ink-500 mb-6">Type 2 diabetes education, personalized to your reading level. I'll tailor my answers — who are you?</p>
+      <div class="space-y-2">
+        <button onclick="selectRole('patient')" class="w-full p-3.5 rounded-lg border border-ink-200 hover:border-brand-400 hover:bg-brand-50 transition text-left text-sm text-ink-700 font-medium">Newly diagnosed</button>
+        <button onclick="selectRole('manager')" class="w-full p-3.5 rounded-lg border border-ink-200 hover:border-brand-400 hover:bg-brand-50 transition text-left text-sm text-ink-700 font-medium">Long-term manager</button>
+        <button onclick="selectRole('caregiver')" class="w-full p-3.5 rounded-lg border border-ink-200 hover:border-brand-400 hover:bg-brand-50 transition text-left text-sm text-ink-700 font-medium">Caregiver</button>
       </div>
     </div>
   </div>
 
-  <!-- ════ App ════ -->
+  <!-- App -->
   <div id="app" class="max-w-2xl mx-auto px-4 pt-4 hidden">
 
-    <!-- ────── HOME ────── -->
+    <!-- HOME -->
     <div id="screen-home" class="screen">
-      <!-- Greeting -->
-      <div class="flex items-center gap-3 mb-4">
-        <div class="w-11 h-11 rounded-full bg-sage-100 flex items-center justify-center text-2xl flex-shrink-0">🫀</div>
-        <div>
-          <h1 class="font-display text-xl font-bold text-ink-800" id="greeting-text">Ask Pip anything</h1>
-          <p class="text-xs text-ink-400" id="greeting-sub">I'm here to help you understand Type 2 diabetes</p>
-        </div>
+      <div class="mb-4">
+        <h1 class="text-lg font-bold text-ink-800" id="greeting-text">CareScaffold</h1>
+        <p class="text-sm text-ink-400" id="greeting-sub">Type 2 diabetes education, personalized to you</p>
       </div>
 
       <!-- FHIR context -->
-      <div id="context-bar" class="card p-3 mb-3">
-        <div class="flex items-center justify-between mb-2">
-          <span class="text-[10px] text-ink-400 font-semibold tracking-wider uppercase">Your Health Context</span>
-          <button onclick="loadFhirContext()" class="text-xs text-sage-600 hover:underline font-medium" id="fhir-load-btn">Load from FHIR →</button>
+      <div class="card p-3 mb-3">
+        <div class="flex items-center justify-between mb-1.5">
+          <span class="text-[11px] text-ink-400 font-medium uppercase tracking-wide">Health Context</span>
+          <button onclick="loadFhirContext()" class="text-xs text-brand-600 hover:underline" id="fhir-load-btn">Load from FHIR</button>
         </div>
-        <div id="context-chips" class="flex flex-wrap gap-2">
-          <span class="text-sm text-ink-400 italic">No health data loaded yet</span>
-        </div>
+        <div id="context-chips" class="flex flex-wrap gap-2"><span class="text-sm text-ink-300">No health data loaded</span></div>
       </div>
 
       <!-- Persona -->
       <div class="card p-3 mb-3">
-        <span class="text-[10px] text-ink-400 font-semibold tracking-wider uppercase block mb-2">Reading Level</span>
+        <span class="text-[11px] text-ink-400 font-medium uppercase tracking-wide block mb-2">Reading Level</span>
         <div class="flex gap-2">
-          <button id="persona-foundational" onclick="setPersona('foundational')" class="persona-btn on">
-            <span class="text-base">🍎</span><span class="text-sm font-medium block mt-1">Simple</span>
-            <span class="text-xs opacity-80">Kitchen analogies</span>
-          </button>
-          <button id="persona-higher" onclick="setPersona('higher')" class="persona-btn">
-            <span class="text-base">📊</span><span class="text-sm font-medium block mt-1">Detailed</span>
-            <span class="text-xs opacity-80">Data trends</span>
-          </button>
+          <button id="persona-foundational" onclick="setPersona('foundational')" class="flex-1 py-2 px-3 rounded-lg border text-sm font-medium transition" style="border-color:#0d9488;background:#f0fdfa;color:#0f766e">Simple</button>
+          <button id="persona-higher" onclick="setPersona('higher')" class="flex-1 py-2 px-3 rounded-lg border border-ink-200 text-sm font-medium text-ink-500 transition hover:border-ink-300">Detailed</button>
         </div>
       </div>
 
       <!-- Chat -->
-      <div id="chat" class="card p-4 mb-3 min-h-[260px] max-h-[420px] overflow-y-auto chat-scroll" role="log" aria-live="polite">
-        <div class="empty-state" id="welcome-msg">
-          <div class="emoji">👋</div>
-          <p class="text-ink-600 font-medium">Ask me anything about Type 2 diabetes</p>
-          <p class="text-sm text-ink-400 mt-1 mb-4">A1C tests, metformin, carbohydrates, lifestyle — I'm here to help</p>
+      <div id="chat" class="card p-4 mb-3 min-h-[240px] max-h-[400px] overflow-y-auto" role="log" aria-live="polite">
+        <div id="welcome-msg" class="text-center py-8">
+          <p class="text-ink-600 font-medium text-sm mb-1">Ask a question about Type 2 diabetes</p>
+          <p class="text-xs text-ink-400 mb-4">A1C tests, metformin, carbohydrates, lifestyle</p>
           <div class="flex flex-wrap gap-2 justify-center max-w-sm mx-auto">
-            <button onclick="askSuggested('What is an A1C test and why does my doctor want me to get one?')" class="text-xs px-3.5 py-2 bg-sage-50 text-sage-700 rounded-full border border-sage-200 hover:bg-sage-100 transition font-medium">📊 What is an A1C test?</button>
-            <button onclick="askSuggested('How does metformin work in my body?')" class="text-xs px-3.5 py-2 bg-sage-50 text-sage-700 rounded-full border border-sage-200 hover:bg-sage-100 transition font-medium">💊 How does metformin work?</button>
-            <button onclick="askSuggested('What foods have carbohydrates in them?')" class="text-xs px-3.5 py-2 bg-sage-50 text-sage-700 rounded-full border border-sage-200 hover:bg-sage-100 transition font-medium">🍞 What foods have carbs?</button>
-            <button onclick="askSuggested('How does walking after a meal affect my blood sugar?')" class="text-xs px-3.5 py-2 bg-sage-50 text-sage-700 rounded-full border border-sage-200 hover:bg-sage-100 transition font-medium">🚶 Walking and blood sugar?</button>
+            <button onclick="askSuggested('What is an A1C test and why does my doctor want me to get one?')" class="text-xs px-3 py-1.5 bg-ink-50 text-ink-600 rounded-lg border border-ink-100 hover:bg-ink-100 transition">What is an A1C test?</button>
+            <button onclick="askSuggested('How does metformin work in my body?')" class="text-xs px-3 py-1.5 bg-ink-50 text-ink-600 rounded-lg border border-ink-100 hover:bg-ink-100 transition">How does metformin work?</button>
+            <button onclick="askSuggested('What foods have carbohydrates in them?')" class="text-xs px-3 py-1.5 bg-ink-50 text-ink-600 rounded-lg border border-ink-100 hover:bg-ink-100 transition">What foods have carbs?</button>
+            <button onclick="askSuggested('How does walking after a meal affect my blood sugar?')" class="text-xs px-3 py-1.5 bg-ink-50 text-ink-600 rounded-lg border border-ink-100 hover:bg-ink-100 transition">Walking and blood sugar</button>
           </div>
         </div>
       </div>
 
       <!-- Trust strip -->
-      <div id="trust-strip" class="hidden card p-3 mb-3">
-        <span class="text-[10px] text-ink-400 font-semibold tracking-wider uppercase block mb-2">Safety Checks</span>
-        <div class="flex flex-wrap gap-1.5" id="trust-badges"></div>
+      <div id="trust-strip" class="hidden card p-2.5 mb-3">
+        <div class="flex flex-wrap gap-1.5 text-[11px]" id="trust-badges"></div>
       </div>
 
       <!-- Input -->
       <form id="chat-form" onsubmit="askQuestion(event)" class="flex gap-2">
-        <input id="question-input" type="text" placeholder="Ask about Type 2 diabetes…" class="flex-1 px-4 py-3 rounded-2xl border border-ink-200 focus:outline-none focus:ring-2 focus:ring-sage-400 focus:border-transparent text-base bg-white" autocomplete="off" aria-label="Type your question">
-        <button type="submit" id="send-btn" class="px-5 py-3 bg-sage-500 text-white rounded-2xl hover:bg-sage-600 transition font-semibold text-sm disabled:opacity-40 disabled:cursor-not-allowed">Send</button>
+        <input id="question-input" type="text" placeholder="Ask about Type 2 diabetes…" class="flex-1 px-4 py-3 rounded-xl border border-ink-200 focus:outline-none focus:ring-2 focus:ring-brand-400 focus:border-transparent text-base" autocomplete="off" aria-label="Question">
+        <button type="submit" id="send-btn" class="btn-primary text-sm">Send</button>
       </form>
     </div>
 
-    <!-- ────── LIBRARY ────── -->
+    <!-- LIBRARY -->
     <div id="screen-library" class="screen hidden">
-      <h1 class="font-display text-xl font-bold text-ink-800 mb-1">Learning Library</h1>
+      <h1 class="text-lg font-bold text-ink-800 mb-1">Education Library</h1>
       <p class="text-sm text-ink-400 mb-4">Six core topics, written in plain language</p>
       <div id="module-grid" class="grid grid-cols-1 sm:grid-cols-2 gap-3"></div>
-      <div class="mt-6">
-        <h2 class="font-display text-lg font-bold text-ink-700 mb-3">Achievements <span class="text-sm text-ink-400 font-sans" id="ach-count"></span></h2>
-        <div id="achievements-grid" class="grid grid-cols-4 gap-2"></div>
-      </div>
     </div>
 
-    <!-- ────── HISTORY ────── -->
+    <!-- HISTORY -->
     <div id="screen-history" class="screen hidden">
-      <h1 class="font-display text-xl font-bold text-ink-800 mb-1">Your Questions</h1>
-      <p class="text-sm text-ink-400 mb-3">Everything you've asked Pip</p>
-      <input type="text" id="history-search" placeholder="Search…" oninput="filterHistory()" class="w-full px-4 py-2.5 mb-3 rounded-2xl border border-ink-200 focus:ring-2 focus:ring-sage-400 text-sm bg-white" aria-label="Search past questions">
-      <div id="history-list" class="space-y-2">
-        <div class="empty-state"><div class="emoji">💬</div><p class="text-ink-400 text-sm">No questions yet. Ask Pip from the Home tab!</p></div>
-      </div>
+      <h1 class="text-lg font-bold text-ink-800 mb-1">Question History</h1>
+      <p class="text-sm text-ink-400 mb-3">Everything you've asked</p>
+      <input type="text" id="history-search" placeholder="Search…" oninput="filterHistory()" class="w-full px-4 py-2.5 mb-3 rounded-xl border border-ink-200 focus:ring-2 focus:ring-brand-400 text-sm" aria-label="Search">
+      <div id="history-list" class="space-y-2"></div>
     </div>
 
-    <!-- ────── A1C ────── -->
+    <!-- A1C -->
     <div id="screen-a1c" class="screen hidden">
-      <h1 class="font-display text-xl font-bold text-ink-800 mb-1">A1C History</h1>
+      <h1 class="text-lg font-bold text-ink-800 mb-1">A1C History</h1>
       <p class="text-sm text-ink-400 mb-4">Your readings over time, from FHIR</p>
       <div id="a1c-content">
         <div class="card p-8 text-center">
-          <div class="text-3xl mb-3 opacity-60">📈</div>
-          <p class="text-ink-400 text-sm mb-4">No A1C data loaded yet</p>
-          <button onclick="loadFhirContext()" class="px-5 py-2.5 bg-sage-500 text-white rounded-xl hover:bg-sage-600 transition text-sm font-medium">Load from FHIR →</button>
+          <p class="text-sm text-ink-400 mb-3">No A1C data loaded</p>
+          <button onclick="loadFhirContext()" class="btn-primary text-sm">Load from FHIR</button>
         </div>
       </div>
     </div>
 
-    <!-- ────── SETTINGS ────── -->
+    <!-- SETTINGS -->
     <div id="screen-settings" class="screen hidden">
-      <h1 class="font-display text-xl font-bold text-ink-800 mb-1">Settings & Trust Center</h1>
+      <h1 class="text-lg font-bold text-ink-800 mb-1">Settings</h1>
       <p class="text-sm text-ink-400 mb-4">How this tool works — transparent by design</p>
 
       <div class="card p-4 mb-3">
-        <h2 class="font-semibold text-ink-800 text-sm mb-2">Your Role</h2>
-        <p class="text-xs text-ink-400 mb-3" id="current-role-display">Currently: —</p>
+        <h2 class="font-semibold text-ink-800 text-sm mb-2">Role</h2>
+        <p class="text-xs text-ink-400 mb-2" id="current-role-display">—</p>
         <div class="flex gap-2 flex-wrap">
-          <button onclick="switchRole('patient')" class="role-btn px-3 py-2 text-xs rounded-lg border border-ink-200 hover:bg-ink-50 transition">🧑 Patient</button>
-          <button onclick="switchRole('manager')" class="role-btn px-3 py-2 text-xs rounded-lg border border-ink-200 hover:bg-ink-50 transition">📊 Manager</button>
-          <button onclick="switchRole('caregiver')" class="role-btn px-3 py-2 text-xs rounded-lg border border-ink-200 hover:bg-ink-50 transition">💛 Caregiver</button>
+          <button onclick="switchRole('patient')" class="btn-ghost text-xs">Patient</button>
+          <button onclick="switchRole('manager')" class="btn-ghost text-xs">Manager</button>
+          <button onclick="switchRole('caregiver')" class="btn-ghost text-xs">Caregiver</button>
         </div>
       </div>
 
       <div class="card p-4 mb-3">
-        <h2 class="font-semibold text-ink-800 text-sm mb-3">Safety Layers <span class="text-xs text-sage-600 font-normal">always active</span></h2>
+        <h2 class="font-semibold text-ink-800 text-sm mb-3">Safety Layers</h2>
         <div class="space-y-2.5 text-xs">
-          <div class="flex gap-2.5"><span class="text-coral-500 text-base flex-shrink-0">🔴</span><div><p class="font-medium text-ink-700">Emergency detection</p><p class="text-ink-400 mt-0.5">Chest pain, severe hypoglycemia, self-harm → immediate redirect to 911/988, no AI delay</p></div></div>
-          <div class="flex gap-2.5"><span class="text-sage-600 text-base flex-shrink-0">🔒</span><div><p class="font-medium text-ink-700">PHI redaction</p><p class="text-ink-400 mt-0.5">Names, phone, MRN, etc. replaced with [TOKEN] before any AI call — your data never leaves in original form</p></div></div>
-          <div class="flex gap-2.5"><span class="text-sage-600 text-base flex-shrink-0">✅</span><div><p class="font-medium text-ink-700">Outbound safety (2 layers)</p><p class="text-ink-400 mt-0.5">Every AI response checked by regex patterns + independent AI judge before you see it</p></div></div>
+          <div class="flex gap-3"><span class="w-2 h-2 rounded-full bg-red-400 mt-1 flex-shrink-0"></span><div><p class="font-medium text-ink-700">Emergency detection</p><p class="text-ink-400 mt-0.5">Chest pain, severe hypoglycemia, self-harm → immediate redirect to 911/988, no AI delay</p></div></div>
+          <div class="flex gap-3"><span class="w-2 h-2 rounded-full bg-brand-400 mt-1 flex-shrink-0"></span><div><p class="font-medium text-ink-700">PHI redaction</p><p class="text-ink-400 mt-0.5">Personal identifiers replaced with tokens before any AI call</p></div></div>
+          <div class="flex gap-3"><span class="w-2 h-2 rounded-full bg-brand-400 mt-1 flex-shrink-0"></span><div><p class="font-medium text-ink-700">Outbound safety (2 layers)</p><p class="text-ink-400 mt-0.5">Every AI response checked by regex + independent AI judge before you see it</p></div></div>
         </div>
       </div>
 
       <div class="card p-4 mb-3">
         <h2 class="font-semibold text-ink-800 text-sm mb-1">Clinician Review</h2>
-        <p class="text-xs text-ink-500">Content written by a software engineer, not a clinician. Not reviewed by a licensed physician. Always consult your care team for clinical decisions.</p>
+        <p class="text-xs text-ink-500">Content written by a software engineer, not a clinician. Not reviewed by a licensed physician. Always consult your care team.</p>
       </div>
 
-      <div class="rounded-2xl border border-gold-400/40 bg-gold-500/5 p-4 mb-3">
-        <h2 class="font-semibold text-gold-600 text-sm mb-2">Honest Compliance Disclosure</h2>
-        <ul class="text-xs text-ink-600 space-y-1.5 list-disc pl-4">
+      <div class="rounded-xl border border-amber-200 bg-amber-50/50 p-4 mb-3">
+        <h2 class="font-semibold text-amber-700 text-sm mb-2">Compliance Disclosure</h2>
+        <ul class="text-xs text-amber-600 space-y-1.5 list-disc pl-4">
           <li><strong>Not "HIPAA certified"</strong> — no such certification exists. PHI redaction tested against HIPAA Safe Harbor (45 CFR 164.514(b)(2)); 91% recall / 85% precision on 152-case corpus.</li>
-          <li><strong>Not "ONC certified"</strong> — FHIR R4 endpoint self-tested against spec; Inferno Docker run not performed (sandbox constraint).</li>
-          <li><strong>100% synthetic data</strong> — all patient data generated by Synthea. This system has never touched real PHI.</li>
-          <li><strong>BAA not required</strong> — no real PHI processed. Production version would require a BAA with the AI provider.</li>
+          <li><strong>Not "ONC certified"</strong> — FHIR R4 self-tested; Inferno Docker run not performed (sandbox constraint).</li>
+          <li><strong>100% synthetic data</strong> — all patient data from Synthea. Never touched real PHI.</li>
+          <li><strong>BAA not required</strong> — no real PHI processed. Production would require a BAA.</li>
         </ul>
       </div>
 
-      <div class="text-center text-xs text-ink-400 mt-6">
-        <a href="/docs" class="text-sage-600 hover:underline">API Docs</a> · <a href="https://github.com/VampFay/health-literate" class="text-sage-600 hover:underline">GitHub</a>
+      <div class="text-center text-xs text-ink-300 mt-6">
+        <a href="/docs" class="text-brand-600 hover:underline">API Docs</a> · <a href="https://github.com/VampFay/health-literate" class="text-brand-600 hover:underline">GitHub</a>
       </div>
     </div>
   </div>
 
-  <!-- ════ Bottom Nav ════ -->
-  <nav class="fixed bottom-0 left-0 right-0 bg-white/95 backdrop-blur-md border-t border-ink-100 z-40" role="navigation" aria-label="Main">
-    <div class="max-w-2xl mx-auto flex justify-around items-center px-2 py-1.5">
-      <button onclick="showScreen('home')" class="nav-btn active" id="nav-home" aria-label="Home"><span class="nav-ico">🏠</span><span class="nav-lbl">Home</span></button>
-      <button onclick="showScreen('library')" class="nav-btn" id="nav-library" aria-label="Library"><span class="nav-ico">📚</span><span class="nav-lbl">Library</span></button>
-      <button onclick="showScreen('history')" class="nav-btn" id="nav-history" aria-label="History"><span class="nav-ico">💬</span><span class="nav-lbl">History</span></button>
-      <button onclick="showScreen('a1c')" class="nav-btn" id="nav-a1c" aria-label="A1C chart"><span class="nav-ico">📈</span><span class="nav-lbl">A1C</span></button>
-      <button onclick="showScreen('settings')" class="nav-btn" id="nav-settings" aria-label="Settings"><span class="nav-ico">⚙️</span><span class="nav-lbl">Settings</span></button>
+  <!-- Nav -->
+  <nav class="fixed bottom-0 left-0 right-0 bg-white border-t border-ink-100 z-40" role="navigation" aria-label="Main">
+    <div class="max-w-2xl mx-auto flex justify-around px-2 py-2">
+      <button onclick="showScreen('home')" class="nav-tab active" id="nav-home">Home</button>
+      <button onclick="showScreen('library')" class="nav-tab" id="nav-library">Library</button>
+      <button onclick="showScreen('history')" class="nav-tab" id="nav-history">History</button>
+      <button onclick="showScreen('a1c')" class="nav-tab" id="nav-a1c">A1C</button>
+      <button onclick="showScreen('settings')" class="nav-tab" id="nav-settings">Settings</button>
     </div>
   </nav>
 
-  <!-- ════ Emergency FAB ════ -->
-  <button onclick="showEmergency()" class="fixed bottom-20 right-4 z-40 w-12 h-12 rounded-full bg-coral-500 text-white shadow-lg hover:bg-coral-600 transition flex items-center justify-center text-xl" aria-label="Emergency resources" title="Emergency help">🆘</button>
+  <!-- Emergency -->
+  <button onclick="showEmergency()" class="fixed bottom-16 right-4 z-40 px-4 py-2 bg-red-500 text-white rounded-xl shadow-lg hover:bg-red-600 transition text-sm font-medium" aria-label="Emergency">Emergency</button>
 
   <script>
-    let persona = localStorage.getItem('persona') || 'foundational';
-    let role = localStorage.getItem('role') || null;
-    let waiting = false;
-    let history = JSON.parse(localStorage.getItem('qa_history') || '[]');
-    let achievements = JSON.parse(localStorage.getItem('achievements') || '[]');
-    let a1cReadings = [];
-
-    const MODULES = [
-      {id:'01_diagnosis_basics',icon:'🩺',title:'Diagnosis Basics',desc:'What T2D means and why you have it',time:'4 min'},
-      {id:'02_a1c_target_explained',icon:'📊',title:'A1C Explained',desc:'What the test measures and why',time:'5 min'},
-      {id:'03_metformin_mechanism',icon:'💊',title:'How Metformin Works',desc:'What metformin does in your body',time:'5 min'},
-      {id:'04_metformin_timing_and_side_effects',icon:'⏰',title:'Metformin: Timing & Side Effects',desc:'When to take it, what to expect',time:'6 min'},
-      {id:'05_dietary_guidance_carbs',icon:'🍞',title:'Carbohydrates',desc:'How carbs affect blood sugar',time:'6 min'},
-      {id:'06_dietary_guidance_meals_and_lifestyle',icon:'🥗',title:'Meals & Lifestyle',desc:'Food, movement, sleep, stress',time:'7 min'},
-    ];
-    const ALL_ACHIEVEMENTS = [
-      {id:'first_question',icon:'🌟',name:'First Step',desc:'Asked your first question'},
-      {id:'a1c_explorer',icon:'📊',name:'A1C Explorer',desc:'Asked about A1C'},
-      {id:'med_learner',icon:'💊',name:'Med Learner',desc:'Asked about metformin'},
-      {id:'carb_counter',icon:'🍞',name:'Carb Counter',desc:'Asked about carbs'},
-      {id:'mover',icon:'🚶',name:'Mover',desc:'Asked about exercise'},
-      {id:'library_reader',icon:'📖',name:'Reader',desc:'Read a module'},
-      {id:'persona_switch',icon:'🔀',name:'Perspective',desc:'Tried both reading levels'},
-      {id:'safety_aware',icon:'🛡️',name:'Safety Aware',desc:'Opened Trust Center'},
+    let persona=localStorage.getItem('persona')||'foundational';
+    let role=localStorage.getItem('role')||null;
+    let waiting=false;
+    let history=JSON.parse(localStorage.getItem('qa_history')||'[]');
+    let a1cReadings=[];
+    const MODULES=[
+      {id:'01_diagnosis_basics',title:'Diagnosis Basics',desc:'What T2D means and why you have it',time:'4 min'},
+      {id:'02_a1c_target_explained',title:'A1C Explained',desc:'What the test measures and why',time:'5 min'},
+      {id:'03_metformin_mechanism',title:'How Metformin Works',desc:'What metformin does in your body',time:'5 min'},
+      {id:'04_metformin_timing_and_side_effects',title:'Metformin: Timing & Side Effects',desc:'When to take it, what to expect',time:'6 min'},
+      {id:'05_dietary_guidance_carbs',title:'Carbohydrates',desc:'How carbs affect blood sugar',time:'6 min'},
+      {id:'06_dietary_guidance_meals_and_lifestyle',title:'Meals & Lifestyle',desc:'Food, movement, sleep, stress',time:'7 min'},
     ];
 
-    // ── Onboarding ──
-    function selectRole(r){role=r;localStorage.setItem('role',r);document.getElementById('onboarding').classList.add('hidden');document.getElementById('app').classList.remove('hidden');updateGreeting();updateRole();renderModules();renderAchievements();renderHistory();setPersona(persona);}
-
-    function updateGreeting(){
-      const g={patient:{t:'Ask Pip anything',s:"I'm here to help you understand your new diagnosis"},manager:{t:'Ask Pip anything',s:"Let's go deeper into managing Type 2 diabetes"},caregiver:{t:'Ask Pip anything',s:"I'm here to help you support your loved one"}};
-      const x=g[role]||g.patient;
-      document.getElementById('greeting-text').textContent=x.t;
-      document.getElementById('greeting-sub').textContent=x.s;
-    }
+    function selectRole(r){role=r;localStorage.setItem('role',r);document.getElementById('onboarding').classList.add('hidden');document.getElementById('app').classList.remove('hidden');updateGreeting();updateRole();renderModules();renderHistory();setPersona(persona);}
+    function updateGreeting(){const g={patient:'Type 2 diabetes education, personalized to you',manager:'Going deeper into managing Type 2 diabetes',caregiver:'Supporting someone with Type 2 diabetes'};document.getElementById('greeting-sub').textContent=g[role]||g.patient;}
     function switchRole(r){role=r;localStorage.setItem('role',r);updateGreeting();updateRole();}
-    function updateRole(){const n={patient:'🧑 Patient',manager:'📊 Manager',caregiver:'💛 Caregiver'};document.getElementById('current-role-display').textContent='Currently: '+(n[role]||'Not set');}
+    function updateRole(){const n={patient:'Patient',manager:'Manager',caregiver:'Caregiver'};document.getElementById('current-role-display').textContent=n[role]||'Not set';}
 
-    // ── Nav ──
-    function showScreen(s){
-      document.querySelectorAll('.screen').forEach(x=>x.classList.add('hidden'));
-      document.getElementById('screen-'+s).classList.remove('hidden');
-      document.querySelectorAll('.nav-btn').forEach(x=>x.classList.remove('active'));
-      document.getElementById('nav-'+s).classList.add('active');
-      if(s==='settings')earnAchievement('safety_aware');
-      if(s==='library'){renderModules();renderAchievements();}
-    }
+    function showScreen(s){document.querySelectorAll('.screen').forEach(x=>x.classList.add('hidden'));document.getElementById('screen-'+s).classList.remove('hidden');document.querySelectorAll('.nav-tab').forEach(x=>x.classList.remove('active'));document.getElementById('nav-'+s).classList.add('active');if(s==='library')renderModules();}
 
-    // ── Persona ──
-    function setPersona(p){
-      persona=p;localStorage.setItem('persona',p);
-      document.querySelectorAll('.persona-btn').forEach(b=>b.classList.remove('on'));
-      document.getElementById('persona-'+p).classList.add('on');
-      let tried=JSON.parse(localStorage.getItem('personas_tried')||'[]');
-      if(!tried.includes(p)){tried.push(p);localStorage.setItem('personas_tried',JSON.stringify(tried));if(tried.length>=2)earnAchievement('persona_switch');}
-    }
+    function setPersona(p){persona=p;localStorage.setItem('persona',p);
+      const f=document.getElementById('persona-foundational'),h=document.getElementById('persona-higher');
+      if(p==='foundational'){f.style.cssText='border-color:#0d9488;background:#f0fdfa;color:#0f766e';h.style.cssText='border:1px solid #e2e8f0;background:#fff;color:#475569';}
+      else{h.style.cssText='border-color:#0d9488;background:#f0fdfa;color:#0f766e';f.style.cssText='border:1px solid #e2e8f0;background:#fff;color:#475569';}}
 
-    // ── Chat ──
     function askSuggested(q){document.getElementById('question-input').value=q;askQuestion(new Event('submit'));}
 
-    function addUserMessage(t){
-      const c=document.getElementById('chat');
-      const d=document.createElement('div');
-      d.className='flex justify-end mb-3 animate-fade-in';
-      d.innerHTML=`<div class="bubble-user text-sm">${esc(t)}</div>`;
-      c.appendChild(d);c.scrollTop=c.scrollHeight;
-    }
+    function esc(s){const d=document.createElement('div');d.textContent=s||'';return d.innerHTML;}
+
+    function addUserMessage(t){const c=document.getElementById('chat');const d=document.createElement('div');d.className='flex justify-end mb-3 animate-in';d.innerHTML=`<div style="background:#0d9488;color:#fff;border-radius:16px 16px 4px 16px;padding:10px 14px;max-width:80%" class="text-sm">${esc(t)}</div>`;c.appendChild(d);c.scrollTop=c.scrollHeight;}
 
     function addBotMessage(r){
-      const c=document.getElementById('chat');
-      const d=document.createElement('div');
-      d.className='flex justify-start mb-3 animate-fade-in';
-
-      // Determine bubble type
-      let inner='';
+      const c=document.getElementById('chat');const d=document.createElement('div');d.className='flex justify-start mb-3 animate-in';
       if(r.escalated){
-        inner=`<div class="bubble-emg"><div class="flex items-start gap-2 mb-1"><span class="text-coral-500 text-lg">⚠️</span><p class="text-coral-700 font-semibold text-sm">This may need immediate attention</p></div><p class="text-coral-600 text-sm leading-relaxed">${esc(r.response)}</p><p class="text-[11px] text-coral-400 mt-2">Emergency detection bypassed AI → routed you to emergency resources</p></div>`;
+        d.innerHTML=`<div style="background:#fef2f2;border:2px solid #f43f5e;border-radius:16px 16px 16px 4px;padding:14px 16px;max-width:85%"><p style="color:#be123c;font-weight:600;font-size:14px;margin-bottom:4px">This may need immediate attention</p><p style="color:#e11d48;font-size:14px;line-height:1.5">${esc(r.response)}</p></div>`;
       }else if(r.safety_verdict&&r.safety_verdict!=='SAFE'){
-        inner=`<div class="bubble-err"><p class="text-ink-600 text-sm leading-relaxed">${esc(r.response)}</p><p class="text-[11px] text-ink-400 mt-1.5">Safety check: ${esc(r.safety_verdict)}</p></div>`;
-      }else if(r.safety_layer==='error'||(r.response&&r.response.includes('trouble generating'))){
-        // Friendly error — NO technical details shown to user
-        inner=`<div class="bubble-err"><div class="flex items-start gap-2"><span class="text-ink-400 text-base">😔</span><div><p class="text-ink-600 text-sm">I'm having trouble connecting right now. Please try again in a moment — sometimes the AI service needs a brief pause between questions.</p></div></div></div>`;
+        d.innerHTML=`<div style="background:#fef3c7;border:1px solid #fcd34d;border-radius:16px 16px 16px 4px;padding:12px 14px;max-width:85%"><p style="color:#92400e;font-size:14px;line-height:1.5">${esc(r.response)}</p></div>`;
+      }else if(r.safety_layer==='error'||(r.response&&r.response.includes('trouble connecting'))){
+        d.innerHTML=`<div style="background:#f8fafc;border:1px solid #e2e8f0;border-radius:16px 16px 16px 4px;padding:12px 14px;max-width:85%"><p style="color:#64748b;font-size:14px">I'm having trouble connecting right now. Please try again in a moment.</p></div>`;
       }else{
-        // Normal response
         let cites='';
         if(r.citations&&Array.isArray(r.citations)&&r.citations.length>0){
-          cites=r.citations.map(c=>{
-            const name=c.replace(/\.md$/,'').replace(/^\d+_/,'').replace(/_/g,' ');
-            return `<button class="cite" onclick="openModule('${c.replace(/\.md$/,'')}')">📚 ${esc(name)}</button>`;
-          }).join('');
+          cites=r.citations.map(c=>{const n=c.replace(/\.md$/,'').replace(/^\d+_/,'').replace(/_/g,' ');return `<button class="cite" onclick="openModule('${c.replace(/\.md$/,'')}')">${esc(n)}</button>`;}).join('');
         }
-        inner=`<div class="bubble-bot"><p class="text-ink-700 text-sm leading-relaxed whitespace-pre-wrap">${esc(r.response)}</p>${cites?`<div class="mt-2.5 pt-2 border-t border-ink-100"><p class="text-[10px] text-ink-400 mb-1">Sources (tap to read):</p><div class="flex flex-wrap gap-1">${cites}</div></div>`:''}</div>`;
+        d.innerHTML=`<div style="background:#f8fafc;border:1px solid #e2e8f0;border-radius:16px 16px 16px 4px;padding:14px 16px;max-width:85%"><p style="color:#334155;font-size:14px;line-height:1.6;white-space:pre-wrap">${esc(r.response)}</p>${cites?`<div style="margin-top:8px;padding-top:8px;border-top:1px solid #e2e8f0"><p style="font-size:11px;color:#94a3b8;margin-bottom:4px">Sources:</p><div style="display:flex;flex-wrap:wrap;gap:4px">${cites}</div></div>`:''}</div>`;
       }
-      d.innerHTML=inner;
-      c.appendChild(d);c.scrollTop=c.scrollHeight;
-      showTrustStrip(r);
+      c.appendChild(d);c.scrollTop=c.scrollHeight;showTrustStrip(r);
     }
 
     function showTrustStrip(r){
-      const s=document.getElementById('trust-strip');
-      const b=document.getElementById('trust-badges');
-      b.innerHTML='';
-      b.innerHTML+=`<span class="trust bg-coral-500/10 text-coral-600">🔴 Emergency: ${r.escalated?'triggered':'passed'}</span>`;
+      const s=document.getElementById('trust-strip');const b=document.getElementById('trust-badges');b.innerHTML='';
+      b.innerHTML+=`<span class="chip" style="background:#fef2f2;color:#e11d48">Emergency: ${r.escalated?'triggered':'passed'}</span>`;
       if(!r.escalated){
-        b.innerHTML+=`<span class="trust bg-sage-50 text-sage-700">🔒 PHI redacted</span>`;
-        if(r.safety_verdict==='SAFE')b.innerHTML+=`<span class="trust bg-sage-50 text-sage-700">✅ Safety: 2 layers passed</span>`;
-        else b.innerHTML+=`<span class="trust bg-gold-500/10 text-gold-600">⚠️ Safety: response replaced</span>`;
-        b.innerHTML+=`<span class="trust bg-ink-100 text-ink-500">👨‍⚕️ Not clinician-reviewed</span>`;
+        b.innerHTML+=`<span class="chip" style="background:#f0fdfa;color:#0f766e">PHI redacted</span>`;
+        b.innerHTML+=`<span class="chip" style="background:#f0fdfa;color:#0f766e">Safety: ${r.safety_verdict==='SAFE'?'2 layers passed':'replaced'}</span>`;
+        b.innerHTML+=`<span class="chip" style="background:#f1f5f9;color:#64748b">Not clinician-reviewed</span>`;
       }
       s.classList.remove('hidden');
     }
 
-    function addTyping(){
-      const c=document.getElementById('chat');
-      const d=document.createElement('div');
-      d.id='typing';d.className='flex justify-start mb-3';
-      d.innerHTML=`<div class="bubble-bot"><span class="typing-dot"></span><span class="typing-dot"></span><span class="typing-dot"></span></div>`;
-      c.appendChild(d);c.scrollTop=c.scrollHeight;
-    }
-    function showRedaction(){
-      const c=document.getElementById('chat');
-      const d=document.createElement('div');
-      d.id='redact-anim';d.className='flex justify-center mb-2 animate-fade-in';
-      d.innerHTML=`<div class="text-[11px] text-sage-600 bg-sage-50 rounded-full px-3 py-1">🔒 Redacting personal info…</div>`;
-      c.appendChild(d);c.scrollTop=c.scrollHeight;
-      setTimeout(()=>{const e=document.getElementById('redact-anim');if(e)e.remove();},1500);
-    }
+    function addTyping(){const c=document.getElementById('chat');const d=document.createElement('div');d.id='typing';d.className='flex justify-start mb-3';d.innerHTML='<div style="background:#f8fafc;border:1px solid #e2e8f0;border-radius:16px 16px 16px 4px;padding:12px 16px"><span class="typing-dot"></span><span class="typing-dot"></span><span class="typing-dot"></span></div>';c.appendChild(d);c.scrollTop=c.scrollHeight;}
     function removeTyping(){const e=document.getElementById('typing');if(e)e.remove();}
 
-    function esc(s){const d=document.createElement('div');d.textContent=s||'';return d.innerHTML;}
-
     async function askQuestion(e){
-      e.preventDefault();
-      if(waiting)return;
-      const input=document.getElementById('question-input');
-      const q=input.value.trim();
-      if(!q)return;
+      e.preventDefault();if(waiting)return;
+      const input=document.getElementById('question-input');const q=input.value.trim();if(!q)return;
       const w=document.getElementById('welcome-msg');if(w)w.remove();
       document.getElementById('trust-strip').classList.add('hidden');
-      addUserMessage(q);input.value='';waiting=true;
-      document.getElementById('send-btn').disabled=true;
-      showRedaction();
-      earnAchievement('first_question');
-      const ql=q.toLowerCase();
-      if(ql.includes('a1c'))earnAchievement('a1c_explorer');
-      if(ql.includes('metformin'))earnAchievement('med_learner');
-      if(ql.includes('carb')||ql.includes('food')||ql.includes('eat'))earnAchievement('carb_counter');
-      if(ql.includes('walk')||ql.includes('exercis')||ql.includes('mov'))earnAchievement('mover');
+      addUserMessage(q);input.value='';waiting=true;document.getElementById('send-btn').disabled=true;
       addTyping();
       try{
         const resp=await fetch('/scaffold',{method:'POST',headers:{'Content-Type':'application/json'},body:JSON.stringify({question:q,persona:persona})});
         if(!resp.ok){const t=await resp.text();throw new Error(`HTTP ${resp.status}`);}
-        const data=await resp.json();
-        removeTyping();addBotMessage(data);
+        const data=await resp.json();removeTyping();addBotMessage(data);
         history.unshift({question:q,response:data.response,citations:data.citations||[],safety_verdict:data.safety_verdict,safety_layer:data.safety_layer,escalated:data.escalated,persona:persona,timestamp:new Date().toISOString()});
-        if(history.length>100)history=history.slice(0,100);
-        localStorage.setItem('qa_history',JSON.stringify(history));
-        renderHistory();
+        if(history.length>100)history=history.slice(0,100);localStorage.setItem('qa_history',JSON.stringify(history));renderHistory();
       }catch(err){
-        removeTyping();
-        addBotMessage({response:'I had trouble connecting right now. Please try again in a moment — sometimes the AI service needs a brief pause between questions.',escalated:false,citations:[],safety_verdict:'SAFE',safety_layer:'error'});
-      }finally{
-        waiting=false;document.getElementById('send-btn').disabled=false;document.getElementById('question-input').focus();
-      }
+        removeTyping();addBotMessage({response:'I had trouble connecting right now. Please try again in a moment.',escalated:false,citations:[],safety_verdict:'SAFE',safety_layer:'error'});
+      }finally{waiting=false;document.getElementById('send-btn').disabled=false;document.getElementById('question-input').focus();}
     }
 
-    // ── Library ──
-    function renderModules(){
-      const g=document.getElementById('module-grid');
-      if(!g)return;
-      g.innerHTML=MODULES.map(m=>{
-        const read=localStorage.getItem('read_'+m.id);
-        return`<div class="card card-interactive p-4" onclick="openModule('${m.id}')"><div class="flex items-start gap-3"><span class="text-2xl">${m.icon}</span><div class="flex-1 min-w-0"><h3 class="font-semibold text-ink-800 text-sm">${m.title}</h3><p class="text-xs text-ink-400 mt-0.5">${m.desc}</p><div class="flex items-center gap-2 mt-2"><span class="text-[11px] text-ink-300">⏱ ${m.time}</span>${read?'<span class="text-[11px] text-sage-600">✓ Read</span>':''}</div></div></div></div>`;
-      }).join('');
-    }
+    function renderModules(){const g=document.getElementById('module-grid');if(!g)return;g.innerHTML=MODULES.map(m=>{const read=localStorage.getItem('read_'+m.id);return`<div class="card p-4 cursor-pointer hover:border-ink-300 transition" onclick="openModule('${m.id}')"><h3 class="font-semibold text-ink-800 text-sm">${m.title}</h3><p class="text-xs text-ink-400 mt-1">${m.desc}</p><div class="flex items-center gap-2 mt-2"><span class="text-[11px] text-ink-300">${m.time}</span>${read?'<span class="text-[11px] text-brand-600">Read</span>':''}</div></div>`;}).join('');}
 
-    async function openModule(id){
-      try{
-        const resp=await fetch(`/content/education_module/${id}.md`);
-        if(!resp.ok)throw new Error('not found');
-        const text=await resp.text();
-        const html=text.replace(/^# (.+)$/gm,'<h1 class="font-display text-xl font-bold text-ink-800 mt-3 mb-2">$1</h1>').replace(/^## (.+)$/gm,'<h2 class="font-semibold text-ink-700 text-sm mt-2 mb-1">$1</h2>').replace(/\*\*(.+?)\*\*/g,'<strong>$1</strong>').replace(/\*(.+?)\*/g,'<em>$1</em>').replace(/\n\n/g,'</p><p class="text-ink-600 text-sm leading-relaxed mb-3">').replace(/^- (.+)$/gm,'<li class="text-ink-600 text-sm">$1</li>');
-        showModal(`<p class="text-ink-600 text-sm leading-relaxed mb-3">${html}</p>`,MODULES.find(m=>m.id===id)?.title||'Module');
-        localStorage.setItem('read_'+id,'true');
-        earnAchievement('library_reader');
-        renderModules();
-      }catch(e){showModal('<p class="text-ink-400 text-sm">Could not load this module right now.</p>','Error');}
-    }
+    async function openModule(id){try{const r=await fetch(`/content/education_module/${id}.md`);if(!r.ok)throw 0;const t=await r.text();const h=t.replace(/^# (.+)$/gm,'<h1 class="text-lg font-bold text-ink-800 mt-3 mb-2">$1</h1>').replace(/^## (.+)$/gm,'<h2 class="font-semibold text-ink-700 text-sm mt-2 mb-1">$1</h2>').replace(/\*\*(.+?)\*\*/g,'<strong>$1</strong>').replace(/\*(.+?)\*/g,'<em>$1</em>').replace(/\n\n/g,'</p><p class="text-ink-600 text-sm leading-relaxed mb-3">');showModal(`<p class="text-ink-600 text-sm leading-relaxed mb-3">${h}</p>`,MODULES.find(m=>m.id===id)?.title||'');localStorage.setItem('read_'+id,'true');renderModules();}catch(e){showModal('<p class="text-ink-400 text-sm">Could not load this module.</p>','Error');}}
 
-    // ── Achievements ──
-    function earnAchievement(id){
-      if(achievements.includes(id))return;
-      achievements.push(id);localStorage.setItem('achievements',JSON.stringify(achievements));
-      renderAchievements();
-      const a=ALL_ACHIEVEMENTS.find(x=>x.id===id);
-      if(a)showToast(`🏆 ${a.name} unlocked!`);
-    }
-    function renderAchievements(){
-      const g=document.getElementById('achievements-grid');if(!g)return;
-      const earned=achievements.length;
-      const el=document.getElementById('ach-count');if(el)el.textContent=`${earned}/${ALL_ACHIEVEMENTS.length}`;
-      g.innerHTML=ALL_ACHIEVEMENTS.map(a=>{
-        const on=achievements.includes(a.id);
-        return`<div class="text-center p-2.5 rounded-xl ${on?'bg-gold-400/10 animate-bounce':'bg-ink-100 opacity-40'}" title="${a.desc}"><div class="text-xl mb-0.5">${on?a.icon:'🔒'}</div><p class="text-[10px] font-medium ${on?'text-ink-600':'text-ink-400'}">${a.name}</p></div>`;
-      }).join('');
-    }
+    function renderHistory(){const l=document.getElementById('history-list');if(!l)return;if(history.length===0){l.innerHTML='<div class="text-center py-8"><p class="text-sm text-ink-300">No questions yet. Ask from the Home tab.</p></div>';return;}l.innerHTML=history.map(h=>{const dt=new Date(h.timestamp).toLocaleDateString('en-US',{month:'short',day:'numeric',hour:'numeric',minute:'2-digit'});const si=h.escalated?'!':(h.safety_verdict==='SAFE'?'✓':'~');return`<div class="card p-3 cursor-pointer hover:border-ink-300 transition" onclick="reopenHistory('${h.timestamp}')"><div class="text-[11px] text-ink-300 mb-1">${dt} · ${si}</div><p class="font-medium text-ink-800 text-sm">${esc(h.question)}</p><p class="text-xs text-ink-400 mt-1" style="display:-webkit-box;-webkit-line-clamp:2;-webkit-box-orient:vertical;overflow:hidden">${esc((h.response||'').substring(0,100))}…</p></div>`;}).join('');}
+    function filterHistory(){const q=(document.getElementById('history-search').value||'').toLowerCase();document.querySelectorAll('#history-list>div').forEach(d=>{d.style.display=d.textContent.toLowerCase().includes(q)?'':'none';});}
+    function reopenHistory(ts){const h=history.find(x=>x.timestamp===ts);if(!h)return;showScreen('home');document.getElementById('chat').innerHTML='';addUserMessage(h.question);addBotMessage({response:h.response,citations:h.citations||[],safety_verdict:h.safety_verdict,safety_layer:h.safety_layer,escalated:h.escalated});}
 
-    // ── History ──
-    function renderHistory(){
-      const l=document.getElementById('history-list');if(!l)return;
-      if(history.length===0){l.innerHTML='<div class="empty-state"><div class="emoji">💬</div><p class="text-ink-400 text-sm">No questions yet. Ask Pip from the Home tab!</p></div>';return;}
-      l.innerHTML=history.map(h=>{
-        const dt=new Date(h.timestamp).toLocaleDateString('en-US',{month:'short',day:'numeric',hour:'numeric',minute:'2-digit'});
-        const pi=h.persona==='foundational'?'🍎':'📊';
-        const si=h.escalated?'🔴':(h.safety_verdict==='SAFE'?'✅':'⚠️');
-        return`<div class="card card-interactive p-3.5" onclick="reopenHistory('${h.timestamp}')"><div class="flex items-center gap-2 text-[11px] text-ink-300 mb-1"><span>${dt}</span>·<span>${pi}</span>·<span>${si}</span></div><p class="font-medium text-ink-800 text-sm">${esc(h.question)}</p><p class="text-xs text-ink-400 mt-1 line-clamp-2">${esc((h.response||'').substring(0,100))}…</p></div>`;
-      }).join('');
-    }
-    function filterHistory(){
-      const q=(document.getElementById('history-search').value||'').toLowerCase();
-      document.querySelectorAll('#history-list>div').forEach(d=>{d.style.display=d.textContent.toLowerCase().includes(q)?'':'none';});
-    }
-    function reopenHistory(ts){
-      const h=history.find(x=>x.timestamp===ts);if(!h)return;
-      showScreen('home');
-      document.getElementById('chat').innerHTML='';
-      addUserMessage(h.question);
-      addBotMessage({response:h.response,citations:h.citations||[],safety_verdict:h.safety_verdict,safety_layer:h.safety_layer,escalated:h.escalated});
-    }
+    async function loadFhirContext(){try{const r=await fetch('/fhir/Patient');const b=await r.json();if(!b.entry||b.entry.length===0){document.getElementById('context-chips').innerHTML='<span class="text-sm text-ink-300">No patients loaded</span>';return;}const pid=b.entry[0].resource.id;const or=await fetch(`/fhir/Observation?patient=${pid}`);const ob=await or.json();a1cReadings=(ob.entry||[]).map(e=>{const o=e.resource;return{date:(o.effectiveDateTime||'?').substring(0,10),value:o.valueQuantity?.value||0,unit:o.valueQuantity?.unit||'%'};}).sort((a,b)=>a.date.localeCompare(b.date));const latest=a1cReadings[a1cReadings.length-1];const chips=[];if(latest){const c=latest.value<7?'background:#f0fdfa;color:#0f766e':latest.value<8?'background:#fef3c7;color:#92400e':'background:#fef2f2;color:#e11d48';chips.push(`<span class="chip" style="${c}">A1C ${latest.value}${latest.unit} (${latest.date})</span>`);}chips.push(`<span class="chip" style="background:#f1f5f9;color:#64748b">${a1cReadings.length} readings</span>`);document.getElementById('context-chips').innerHTML=chips.join('');renderA1cChart();document.getElementById('fhir-load-btn').classList.add('hidden');}catch(e){document.getElementById('context-chips').innerHTML='<span class="text-sm text-ink-300">Could not load FHIR data</span>';}}
+    function renderA1cChart(){if(a1cReadings.length===0)return;const c=document.getElementById('a1c-content');if(!c)return;const latest=a1cReadings[a1cReadings.length-1];const vals=a1cReadings.map(r=>r.value);const mn=Math.min(...vals),mx=Math.max(...vals);const W=320,H=200,P=40;const xs=(W-2*P)/Math.max(a1cReadings.length-1,1);const ys=v=>H-P-((v-4)/(mx-4+1))*(H-2*P);const pts=a1cReadings.map((r,i)=>`${P+i*xs},${ys(r.value)}`).join(' ');const tc=latest.value<7?'#0f766e':latest.value<8?'#92400e':'#e11d48';c.innerHTML=`<div class="card p-5 mb-3"><div class="flex justify-between mb-4"><div><p class="text-xs text-ink-400">Latest A1C</p><p class="text-3xl font-bold" style="color:${tc}">${latest.value}${latest.unit}</p><p class="text-xs text-ink-400">${latest.date}</p></div><div class="text-right"><p class="text-xs text-ink-400">Readings</p><p class="text-2xl font-bold text-ink-600">${a1cReadings.length}</p><p class="text-xs text-ink-400">${mn}-${mx}%</p></div></div><svg viewBox="0 0 ${W} ${H}" class="w-full"><rect x="${P}" y="${ys(7)}" width="${W-2*P}" height="${ys(4)-ys(7)}" fill="#f0fdfa"/><rect x="${P}" y="${ys(8)}" width="${W-2*P}" height="${ys(7)-ys(8)}" fill="#fef3c7" opacity=".5"/><line x1="${P}" y1="${ys(7)}" x2="${W-P}" y2="${ys(7)}" stroke="#0d9488" stroke-width="1" stroke-dasharray="4,4"/><polyline points="${pts}" fill="none" stroke="#0d9488" stroke-width="2"/>${a1cReadings.map((r,i)=>`<circle cx="${P+i*xs}" cy="${ys(r.value)}" r="4" fill="#0d9488" style="cursor:pointer" onclick="askSuggested('My A1C was ${r.value}% on ${r.date}. What does this mean?')"><title>${r.date}: ${r.value}${r.unit}</title></circle>`).join('')}</svg></div><div class="card p-4"><div class="space-y-1">${a1cReadings.slice().reverse().map(r=>`<div class="flex justify-between text-sm py-1.5 border-b border-ink-50 last:border-0"><span class="text-ink-400">${r.date}</span><span class="font-medium" style="color:${r.value<7?'#0f766e':r.value<8?'#92400e':'#e11d48'}">${r.value}${r.unit}</span></div>`).join('')}</div></div>`;}
 
-    // ── FHIR ──
-    async function loadFhirContext(){
-      try{
-        const r=await fetch('/fhir/Patient');const b=await r.json();
-        if(!b.entry||b.entry.length===0){document.getElementById('context-chips').innerHTML='<span class="text-sm text-ink-400 italic">No patients loaded. Run generate_synthea_patients.py first.</span>';return;}
-        const pid=b.entry[0].resource.id;
-        const or=await fetch(`/fhir/Observation?patient=${pid}`);const ob=await or.json();
-        a1cReadings=(ob.entry||[]).map(e=>{const o=e.resource;return{date:(o.effectiveDateTime||'?').substring(0,10),value:o.valueQuantity?.value||0,unit:o.valueQuantity?.unit||'%'};}).sort((a,b)=>a.date.localeCompare(b.date));
-        const latest=a1cReadings[a1cReadings.length-1];
-        const chips=[];
-        if(latest){const c=latest.value<7?'bg-sage-100 text-sage-700':latest.value<8?'bg-gold-500/10 text-gold-600':'bg-coral-500/10 text-coral-600';chips.push(`<span class="${c} px-3 py-1 rounded-full text-sm font-medium">📊 A1C ${latest.value}${latest.unit} (${latest.date})</span>`);}
-        chips.push(`<span class="bg-ink-100 text-ink-500 px-3 py-1 rounded-full text-sm">${a1cReadings.length} readings</span>`);
-        document.getElementById('context-chips').innerHTML=chips.join('');
-        renderA1cChart();
-        document.getElementById('fhir-load-btn').classList.add('hidden');
-      }catch(e){document.getElementById('context-chips').innerHTML='<span class="text-sm text-ink-400 italic">Could not load FHIR data.</span>';}
-    }
-    function renderA1cChart(){
-      if(a1cReadings.length===0)return;
-      const c=document.getElementById('a1c-content');if(!c)return;
-      const latest=a1cReadings[a1cReadings.length-1];
-      const vals=a1cReadings.map(r=>r.value);
-      const mn=Math.min(...vals),mx=Math.max(...vals);
-      const W=320,H=200,P=40;
-      const xs=(W-2*P)/Math.max(a1cReadings.length-1,1);
-      const ys=v=>H-P-((v-4)/(mx-4+1))*(H-2*P);
-      const pts=a1cReadings.map((r,i)=>`${P+i*xs},${ys(r.value)}`).join(' ');
-      const tr=latest.value>a1cReadings[0].value?'↑':latest.value<a1cReadings[0].value?'↓':'→';
-      const tc=latest.value<7?'text-sage-600':latest.value<8?'text-gold-600':'text-coral-600';
-      c.innerHTML=`<div class="card p-5 mb-3"><div class="flex items-center justify-between mb-4"><div><p class="text-xs text-ink-400">Latest A1C</p><p class="text-3xl font-bold ${tc}">${latest.value}${latest.unit}</p><p class="text-xs text-ink-400">${latest.date} ${tr}</p></div><div class="text-right"><p class="text-xs text-ink-400">Total readings</p><p class="text-2xl font-bold text-ink-600">${a1cReadings.length}</p><p class="text-xs text-ink-400">Range ${mn}-${mx}%</p></div></div><svg viewBox="0 0 ${W} ${H}" class="w-full"><rect x="${P}" y="${ys(7)}" width="${W-2*P}" height="${ys(4)-ys(7)}" fill="#dcfce7" opacity=".5"/><rect x="${P}" y="${ys(8)}" width="${W-2*P}" height="${ys(7)-ys(8)}" fill="#fef3c7" opacity=".5"/><rect x="${P}" y="${P}" width="${W-2*P}" height="${ys(8)-P}" fill="#fee2e2" opacity=".5"/><line x1="${P}" y1="${ys(7)}" x2="${W-P}" y2="${ys(7)}" stroke="#22c55e" stroke-width="1" stroke-dasharray="4,4"/><text x="${W-P+4}" y="${ys(7)+4}" fill="#22c55e" font-size="10">7% target</text><polyline points="${pts}" fill="none" stroke="#22c55e" stroke-width="2"/>${a1cReadings.map((r,i)=>`<circle cx="${P+i*xs}" cy="${ys(r.value)}" r="4" fill="#22c55e" class="cursor-pointer" onclick="askSuggested('My A1C was ${r.value}% on ${r.date}. What does this mean?')"><title>${r.date}: ${r.value}${r.unit}</title></circle>`).join('')}<text x="8" y="${ys(4)}" fill="#94a3b8" font-size="10">4%</text><text x="8" y="${ys(8)}" fill="#94a3b8" font-size="10">8%</text></svg><p class="text-[11px] text-ink-300 mt-2 text-center">Tap any point to ask Pip about it</p></div><div class="card p-4"><h3 class="font-semibold text-ink-700 text-sm mb-2">All readings</h3><div class="space-y-1">${a1cReadings.slice().reverse().map(r=>`<div class="flex justify-between text-sm py-1 border-b border-ink-50 last:border-0"><span class="text-ink-400">${r.date}</span><span class="font-medium ${r.value<7?'text-sage-600':r.value<8?'text-gold-600':'text-coral-600'}">${r.value}${r.unit}</span></div>`).join('')}</div></div>`;
-    }
+    function showEmergency(){showModal(`<div><div class="space-y-2"><div style="background:#fef2f2;border:1px solid #fecaca;border-radius:12px;padding:14px"><p class="font-semibold text-red-700 text-sm">Medical Emergency</p><p class="text-red-500 text-xs mt-1">Chest pain, trouble breathing → call <strong>911</strong></p></div><div style="background:#fef2f2;border:1px solid #fecaca;border-radius:12px;padding:14px"><p class="font-semibold text-red-700 text-sm">Severe Low Blood Sugar</p><p class="text-red-500 text-xs mt-1">Sugar below 54 + confusion → call <strong>911</strong></p></div><div style="background:#fef2f2;border:1px solid #fecaca;border-radius:12px;padding:14px"><p class="font-semibold text-red-700 text-sm">Mental Health Crisis</p><p class="text-red-500 text-xs mt-1">Call or text <strong>988</strong> (24/7)</p></div></div></div>`,'Emergency Resources');}
+    function showModal(html,title){const m=document.createElement('div');m.className='fixed inset-0 z-[60] bg-ink-900/30 flex items-center justify-center p-4';m.innerHTML=`<div class="card max-w-lg w-full max-h-[80vh] overflow-y-auto animate-in"><div class="sticky top-0 bg-white border-b border-ink-100 px-5 py-3 flex justify-between items-center"><h2 class="font-bold text-ink-800 text-base">${title||''}</h2><button onclick="this.closest('.fixed').remove()" class="text-ink-300 hover:text-ink-600 text-xl" aria-label="Close">&times;</button></div><div class="p-5">${html}</div></div>`;document.body.appendChild(m);}
 
-    // ── Emergency ──
-    function showEmergency(){showModal(`<div class="text-center"><div class="text-2xl mb-4">🆘 Emergency Resources</div><div class="space-y-2 text-left"><div class="bg-coral-500/5 border border-coral-500/20 rounded-xl p-3.5"><p class="font-semibold text-coral-600 text-sm">Medical Emergency</p><p class="text-coral-500 text-xs mt-1">Chest pain, trouble breathing, signs of stroke → call <strong>911</strong> immediately</p></div><div class="bg-coral-500/5 border border-coral-500/20 rounded-xl p-3.5"><p class="font-semibold text-coral-600 text-sm">Severe Low Blood Sugar</p><p class="text-coral-500 text-xs mt-1">Sugar below 54 + confusion/loss of consciousness → call <strong>911</strong> or use glucagon</p></div><div class="bg-coral-500/5 border border-coral-500/20 rounded-xl p-3.5"><p class="font-semibold text-coral-600 text-sm">Mental Health Crisis</p><p class="text-coral-500 text-xs mt-1">Thinking about hurting yourself → call or text <strong>988</strong> (24/7)</p></div></div></div>`,'Emergency Resources');}
-
-    // ── Modal + Toast ──
-    function showModal(html,title){
-      const m=document.createElement('div');
-      m.className='fixed inset-0 z-[60] bg-ink-900/40 backdrop-blur-sm flex items-center justify-center p-4';
-      m.innerHTML=`<div class="card max-w-lg w-full max-h-[80vh] overflow-y-auto animate-slide-up"><div class="sticky top-0 bg-white border-b border-ink-100 px-5 py-3 flex justify-between items-center"><h2 class="font-display font-bold text-ink-800 text-lg">${title||''}</h2><button onclick="this.closest('.fixed').remove()" class="text-ink-300 hover:text-ink-600 text-2xl leading-none" aria-label="Close">&times;</button></div><div class="p-5">${html}</div></div>`;
-      document.body.appendChild(m);
-    }
-    function showToast(msg){const t=document.createElement('div');t.className='fixed bottom-24 left-1/2 -translate-x-1/2 z-50 bg-ink-800 text-white px-5 py-2.5 rounded-xl shadow-lg text-sm animate-slide-up';t.textContent=msg;document.body.appendChild(t);setTimeout(()=>t.remove(),2500);}
-
-    // ── Init ──
-    if(role){document.getElementById('onboarding').classList.add('hidden');document.getElementById('app').classList.remove('hidden');updateGreeting();updateRole();setPersona(persona);renderModules();renderAchievements();renderHistory();}
+    if(role){document.getElementById('onboarding').classList.add('hidden');document.getElementById('app').classList.remove('hidden');updateGreeting();updateRole();setPersona(persona);renderModules();renderHistory();}
     document.getElementById('question-input').focus();
   </script>
 </body>
