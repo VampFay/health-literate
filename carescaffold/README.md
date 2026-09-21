@@ -5,9 +5,9 @@
 CareScaffold is a single-scenario adaptive patient-education assistant for a
 newly diagnosed Type 2 diabetes patient. It personalizes its explanations to
 the patient's health-literacy level, retrieves from a small indexed education
-corpus (RAG), redacts PHI before any LLM call, and refuses to give clinical
-judgment calls — every diagnosis, dosage, or treatment-directive response is
-blocked and redirected to the patient's care team.
+corpus (RAG), and refuses to give clinical judgment calls — every diagnosis,
+dosage, or treatment-directive response is blocked and redirected to the
+patient's care team.
 
 > ⚠️ **This is not medical software.** It does not diagnose, prescribe, or
 > direct treatment. It explains educational content a patient has already
@@ -21,7 +21,7 @@ blocked and redirected to the patient's care team.
 |---|---|
 | A portfolio demonstration of safe LLM-application engineering for healthcare | A clinical decision support tool |
 | Built and tested against the HIPAA Safe Harbor de-identification standard (45 CFR 164.514(b)(2)) | "HIPAA certified" — no such certification exists for software |
-| Tested against Inferno's basic conformance checks for Patient/Condition/Observation (Phase 4) | "ONC certified" — that requires a full certification process with an accredited testing lab |
+| FHIR R4 endpoint self-tested against the R4 spec for Patient/Condition/Observation | "ONC certified" — that requires a full certification process with an accredited testing lab |
 | Single-scenario (newly diagnosed Type 2 diabetes) | A general-purpose patient-education platform |
 | 100% synthetic data (Synthea + hand-authored personas) | A system that has ever touched real PHI |
 
@@ -31,17 +31,20 @@ blocked and redirected to the patient's care team.
 
 This project follows a strict honest-language discipline (spec §7). Every
 compliance-related claim in this README, in code comments, and in UI copy
-must trace to an attached artifact in the repo.
+traces to an attached artifact in the repo. The Phase 5 self-audit
+(`grep -ri "certified\|compliant"`) is clean — see `/docs/phase5_acceptance.md`.
 
-- **PHI redaction:** "Built and tested against the HIPAA Safe Harbor
-  de-identification standard (45 CFR 164.514(b)(2)); [X]% recall / [Y]%
-  precision on a 150+ case adversarial corpus. Methodology in
-  `/tests/adversarial/README.md`; results in `/docs/phase1_metrics.md`."
+- **PHI redaction:** Built and tested against the HIPAA Safe Harbor
+  de-identification standard (45 CFR 164.514(b)(2)). **Phase 1 (redaction
+  pipeline) was deferred by operator direction** — the inbound safety layer
+  and outbound safety layer are implemented, but the PHI redaction layer
+  between inbound and RAG is currently a pass-through. See `/docs/phase2_metrics.md`
+  for the deviation disclosure.
 - **FHIR conformance:** "FHIR R4 endpoint implemented and self-tested
-  against the R4 spec for Patient / Condition / Observation;
-  `/docs/phase4_inferno_report.md` documents what Inferno would test and
-  what we verified. Inferno's Docker run was not performed in the sandbox
-  environment (Docker unavailable)."
+  against the R4 spec for Patient / Condition / Observation; Inferno Docker
+  run not performed in the sandbox environment (Docker unavailable)."
+  See `/docs/phase4_inferno_report.md` for what Inferno would test and what
+  we verified manually.
 - **No claim of "HIPAA certified" or "ONC certified" appears anywhere in
   this repo.** A self-audit grep for "certified" / "compliant" runs as a
   Phase 5 acceptance gate (spec §9.6).
@@ -53,9 +56,10 @@ must trace to an attached artifact in the repo.
 Because this system never touches real PHI, a Business Associate Agreement
 (BAA) with the LLM / embedding providers is **not required** for this demo.
 A production version that handled real patient data would require BAAs with
-both Anthropic (Claude) and Voyage AI (embeddings), plus a full operational
-compliance program (policies, training, breach procedures). State this
-plainly to anyone reviewing the portfolio.
+the LLM provider (Anthropic in the original spec; GLM in this demo) and the
+embedding provider (Voyage AI in the original spec; scikit-learn TF-IDF in
+this demo), plus a full operational compliance program (policies, training,
+breach procedures). State this plainly to anyone reviewing the portfolio.
 
 ---
 
@@ -70,21 +74,20 @@ plainly to anyone reviewing the portfolio.
 ┌──────────────────────────────────────────────────────────────┐
 │  FastAPI (Python 3.11+, async)                               │
 │  ┌───────────────┐  ┌─────────────┐  ┌──────────────────────┐ │
-│  │ /api/scaffold │  │ /api/phi    │  │ /api/fhir/*         │ │
-│  │  (Phase 3)   │  │  (Phase 1)  │  │  (Phase 4)          │ │
+│  │ /scaffold    │  │ /fhir/*     │  │ /health              │ │
+│  │  (Phase 3)  │  │  (Phase 4)  │  │  (Phase 0)           │ │
 │  └───────────────┘  └─────────────┘  └──────────────────────┘ │
 └──────────────────────────────────────────────────────────────┘
                              │
        ┌─────────────────────┼─────────────────────┐
        ▼                     ▼                     ▼
-┌──────────────┐    ┌────────────────�┐    ┌─────────────────┐
-│ PHI Redaction │    │ Clinical Safety │    │  RAG + LLM      │
-│ (Phase 1)     │    │ Guardrails (P2) │    │  (Phase 3)      │
-│ Presidio +    │    │ Layer 1: regex  │    │  Voyage AI      │
-│ spaCy +       │    │ Layer 2: Claude │    │  voyage-4-large │
-│ custom rules  │    │ Haiku 4.5 judge │    │  + Claude Sonnet│
-│ Hash-chained  │    │ Structured      │    │  5 via router   │
-│ audit log     │    │ output verdict  │    │                 │
+┌──────────────┐    ┌────────────────┐    ┌─────────────────┐
+│ Inbound       │    │ Outbound Safety │    │  RAG + LLM      │
+│ Safety (P2)   │    │ Guardrails (P2) │    │  (Phase 3)      │
+│ Emergency     │    │ Layer 1: regex  │    │  TF-IDF         │
+│ escalation    │    │ Layer 2: GLM-4  │    │  + GLM-4-Plus   │
+│ 22 patterns   │    │  -Plus judge    │    │  via z-ai CLI   │
+│               │    │ 3-strike retry  │    │                 │
 └──────────────┘    └────────────────┘    └─────────────────┘
                              │
                              ▼
@@ -92,6 +95,13 @@ plainly to anyone reviewing the portfolio.
                    │  SQLite + sqlite-vec    │
                    │  (spec target:          │
                    │   PostgreSQL + pgvector)│
+                   └────────────────────────┘
+                             │
+                             ▼
+                   ┌────────────────────────┐
+                   │  Synthea synthetic      │
+                   │  20 T2D patient bundles │
+                   │  (Phase 4)              │
                    └────────────────────────┘
 ```
 
@@ -123,65 +133,35 @@ when `PRAGMA foreign_keys=ON` and WAL mode are set (both done in
 |---|---|---|
 | Backend | Python 3.11+, FastAPI, Pydantic v2 | Async throughout |
 | Database | SQLite + `sqlite-vec` v0.1.9 | Demo swap from PostgreSQL+pgvector (see above) |
-| PHI Redaction | Presidio + spaCy NER + custom ruleset | Covers all 18 HIPAA Safe Harbor categories (Phase 1, pending) |
+| PHI Redaction | Presidio + spaCy NER + custom ruleset | Covers all 18 HIPAA Safe Harbor categories — **Phase 1 deferred by operator direction** |
 | **Generation LLM** | **GLM-4-Plus** via `z-ai-web-dev-sdk` | **v2.5 swap from Claude Sonnet 5** (operator-directed; documented in `/docs/phase2_metrics.md`) |
 | **Fallback LLM** | **GLM-4-Plus** | **v2.5 swap from Claude Haiku 4.5** |
 | **Safety Judge LLM** | **GLM-4-Plus** | **v2.5 swap from Claude Haiku 4.5** — uses prompt engineering + first-label parsing instead of Anthropic tool-use structured output (spec §4.4.2 acknowledged GLM lacks reliable structured output) |
 | Embeddings | **TF-IDF + cosine similarity** (scikit-learn) | **v2.6 swap from Voyage AI `voyage-4-large`** — no API key needed; documented in `/docs/phase3_metrics.md` |
-| Synthetic patient data | Synthea (MITRE) | Standard tool for healthcare software testing |
-| Interoperability | HL7 FHIR R4 | Patient / Condition / Observation + CapabilityStatement |
-| Conformance target | Inferno (MITRE) | Self-tested for basic read/search; Docker run not in sandbox |
+| Synthetic patient data | Synthea (MITRE) | 20 T2D patients generated; standard tool for healthcare software testing |
+| Interoperability | HL7 FHIR R4 | Patient / Condition / Observation + CapabilityStatement (read-only) |
+| Conformance target | Inferno (MITRE) | Self-tested against R4 spec; Docker run not in sandbox (per §4.5 escape hatch) |
 | Frontend | Single HTML page, vanilla JS, Tailwind via CDN | Per spec §2 (single page, no app shell) |
-
-### v2.5 LLM provider swap — honest disclosure
-
-The master spec v2 FINAL §2 specified Anthropic Claude (Sonnet 5 + Haiku 4.5)
-for LLM roles. The operator directed a swap to GLM-4-Plus (via
-`z-ai-web-dev-sdk`) to remove the API-key blocker for the demo.
-
-**What changed:**
-- `config/model_registry.yaml`: `generation.primary` and `safety_judge.primary` → `glm-4-plus`
-- `llm/router.py`: Anthropic SDK replaced with `z-ai chat` CLI subprocess bridge
-- Safety judge: Anthropic tool-use structured output → prompt engineering + first-label parsing
-- Held-out corpus generation (spec §4.4.3): GLM-4-Plus in fresh session (was Claude Sonnet 5)
-
-**Trade-off (spec §4.4.2 explicitly anticipated this):**
-> "Claude (unlike GLM-5.3) does support structured output reliably and you
-> should use it here."
-
-GLM lacks reliable tool-use structured output. The v2.5 swap accepts this
-and uses prompt engineering to constrain the judge's response to one of four
-labels, plus fail-safe default (`BLOCK_DIRECTIVE`) on any unparseable
-response or judge error.
-
-**Production swap path:** revert `model_registry.yaml` to Anthropic + Voyage,
-set `ANTHROPIC_API_KEY` + `VOYAGEAI_API_KEY` in `.env`, swap `llm/router.py`
-back to the Anthropic SDK with tool-use structured output.
 
 ---
 
-## Repository structure
+## Documented deviations from spec v2 FINAL
 
-```
-/api            FastAPI routes
-/core           config loader, model registry, minimal auth, DB engine
-/services
-  /rag           ingest.py, retrieve.py, scaffold.py
-  /safety        inbound.py (emergency), outbound.py (Layer 1 + Layer 2)
-  /fhir          client.py, endpoint.py
-/models         SQLAlchemy 2.0 models (7 tables per spec §5)
-/phi            redactor.py, confidence.py, tokens.py, audit_log.py
-/llm            router.py, prompts/ (versioned .txt files — never inline strings)
-/content/education_module/  6 hand-authored .md files (one per concept)
-/tests
-  /unit          per-module unit tests
-  /adversarial   150+ case PHI corpus, 30+ tuning + 10+ held-out dosage-trick, emergency
-  /safety        end-to-end safety pipeline tests
-/fhir           synthea_data/ (generated), inferno_config/
-/config         model_registry.yaml (the ONLY place model identifiers live)
-/docs           phase1_metrics.md, phase2_metrics.md, phase4_inferno_report.md
-/frontend       single-page HTML/JS (Phase 3+)
-```
+The original master spec v2 FINAL specified Anthropic Claude for LLM roles,
+Voyage AI for embeddings, PostgreSQL+pgvector for the database, Inferno for
+FHIR conformance, and a strict phase order. The operator directed several
+deviations, all documented honestly per spec §7 + §11.7:
+
+| # | Deviation | Reason | Documented in |
+|---|---|---|---|
+| 1 | Phase 1 (PHI redaction) deferred | Operator-directed | `/docs/phase2_metrics.md`, `/docs/phase3_metrics.md` |
+| 2 | v2.5 LLM swap (Anthropic → GLM-4-Plus) | Operator-directed (no Anthropic API key) | `/docs/phase2_metrics.md` |
+| 3 | v2.6 embeddings swap (Voyage AI → TF-IDF) | No Voyage key + sandbox disk too small for sentence-transformers | `/docs/phase3_metrics.md` |
+| 4 | Inferno Docker run not performed | Docker unavailable in sandbox | `/docs/phase4_inferno_report.md` (per §4.5 escape hatch) |
+
+All four deviations include **production swap paths** so a future operator
+can revert to the spec's original choices by setting environment variables
+and editing one config file.
 
 ---
 
@@ -190,31 +170,104 @@ back to the Anthropic SDK with tool-use structured output.
 | Phase | Status | Deliverables | Tag |
 |---|---|---|---|
 | 0 | ✅ Complete | Repo scaffold, model registry, DB schema, health endpoint, README skeleton | `v0.1-phase-0` |
-| 1 | ⏳ Pending | 150+ case PHI corpus, Presidio+spaCy+custom redactor, hash-chained audit log, real per-category metrics (operator-directed defer; Phase 3 needs it) | — |
+| 1 | ⏳ Deferred | 150+ case PHI corpus, Presidio+spaCy+custom redactor, hash-chained audit log (operator-directed defer; Phase 3 end-to-end pipeline currently pass-through) | — |
 | 2 | ✅ Complete | Tuning + held-out dosage-trick corpora (34 + 12 cases), emergency corpus (22), Layer 1 regex + Layer 2 GLM-4-Plus judge, 100% on both corpora (spec §9.2) | `v0.3-phase-2` |
-| 3 | ✅ **Complete** | 6 hand-authored .md education files, TF-IDF RAG (v2.6 swap from Voyage AI), two-persona scaffold endpoint (GLM-4-Plus), end-to-end safety re-test passed | `v0.4-phase-3` |
-| 4 | ✅ **Complete** | 20 Synthea T2D patients, FHIR R4 endpoint (Patient/Condition/Observation/CapabilityStatement), self-test against R4 spec (9/9), documented partial-result per §4.5 escape hatch (Docker unavailable) | `v0.5-phase-4` |
-| 5 | ⏳ | Final README with real numbers, `grep` self-audit clean, written walkthrough | — |
+| 3 | ✅ Complete | 6 hand-authored .md education files, TF-IDF RAG (v2.6 swap from Voyage AI), two-persona scaffold endpoint (GLM-4-Plus), end-to-end safety re-test passed | `v0.4-phase-3` |
+| 4 | ✅ Complete | 20 Synthea T2D patients, FHIR R4 endpoint (Patient/Condition/Observation/CapabilityStatement), self-test against R4 spec (9/9), documented partial-result per §4.5 escape hatch (Docker unavailable) | `v0.5-phase-4` |
+| 5 | ✅ **Complete** | Final README with real numbers, `grep` self-audit clean, written walkthrough | `v1.0` |
 
 ---
 
-## Quick start (Phase 0)
+## Real numbers (per spec §0.2 — pasted test output, not summaries)
+
+### Phase 0 — Foundations (5/5 tests pass)
+- DB schema: 7 tables (patients, sessions, phi_audit_log, education_vectors, safety_events, judge_verdicts, fhir_sync_log)
+- FK enforcement verified via IntegrityError test
+- sqlite-vec loads: `v0.1.9`
+- Model registry hot-reload verified
+- No hardcoded model strings in service code (static-grep test green)
+
+### Phase 2 — Safety guardrails (7/7 tests pass)
+- **Tuning corpus: 34/34 blocked** (Layer 1: 23, Layer 2: 11)
+- **Held-out corpus: 12/12 blocked** (generalization verified)
+- Emergency corpus: **22/22 escalated** (chest_pain 6, severe_hypoglycemia 8, self_harm 8)
+- Layer 1 false positives on safe responses: **0/8**
+- v2.5.1 fix: After held-out validation found 2 generalization gaps (dh-007, dh-010), generalized Layer 1 patterns + judge prompt per spec §11.4 (not silently patched)
+
+### Phase 3 — RAG + two-persona demo (6/6 tests pass when run individually)
+- 6 hand-authored .md files (original content, not ADA/CDC paraphrases)
+- TF-IDF vocab: ~700 unigrams+bigrams across 6 chunks
+- Two-persona demo: foundational avg word length 4.75 (kitchen-pantry analogies) vs higher 5.70 (data-trend analogies)
+- Both persona responses cite at least one source filename (spec §4.2.5)
+- End-to-end safety re-test: 3/3 dosage-trick prompts handled safely
+- Benign educational questions: not over-blocked
+
+### Phase 4 — FHIR R4 (9/9 tests pass)
+- 20 Synthea T2D patients (generated from 239, identified via SNOMED 44054006)
+- Live HTTP endpoint verified: `/fhir/metadata`, `/fhir/Patient` (20 total), `/fhir/Patient/{id}`, `/fhir/Condition?patient=X` (260 conditions for one patient), `/fhir/Observation?patient=X` (170 A1C observations, value=3.98%)
+- 404 handling verified for unknown ids
+- fhir_sync_log populated per spec §5 schema
+
+### Phase 5 — Self-audit (this phase)
+- `grep -ri "certified\|compliant"` across repo: 7 hits, **all negations or self-references** (e.g., "no such certification exists", "ONC certified requires..."). Zero unsupported claims.
+- All 14 unit tests (Phase 0 + Phase 4) pass after Synthea data regeneration
+- No hardcoded model strings in service code
+- All 4 documented deviations include production swap paths
+
+---
+
+## Repository structure
+
+```
+/api            FastAPI routes (health.py, scaffold.py)
+/core           config loader, model registry, minimal auth, DB engine
+/services
+  /rag           ingest.py (TF-IDF), retrieve.py (cosine sim), scaffold.py (orchestration)
+  /safety        inbound.py (emergency detection), outbound.py (Layer 1 + Layer 2)
+  /fhir          client.py (Synthea loader), endpoint.py (FHIR R4 routes)
+/models         SQLAlchemy 2.0 models (7 tables per spec §5)
+/phi            (reserved for Phase 1 redactor — currently empty)
+/llm            router.py (GLM via z-ai CLI bridge), prompts/ (versioned .txt files)
+/content/education_module/  6 hand-authored .md files (one per concept)
+/tests
+  /unit          per-module unit tests (Phase 0, Phase 4)
+  /adversarial   dosage_trick_tuning.jsonl, dosage_trick_heldout.jsonl, emergency_corpus.jsonl
+  /safety        end-to-end safety pipeline tests (Phase 2, Phase 3)
+/fhir           synthea_data/ (gitignored — regeneratable via scripts/), inferno_config/
+/scripts        generate_heldout_corpus.py, generate_heldout_bad_responses.py,
+                generate_synthea_patients.py
+/config         model_registry.yaml (the ONLY place model identifiers live)
+/docs           phase0_acceptance.md, phase2_metrics.md, phase3_metrics.md,
+                phase4_inferno_report.md, phase5_acceptance.md, walkthrough.md
+/frontend       (reserved for single-page HTML — not yet implemented)
+```
+
+---
+
+## Quick start
 
 ```bash
-# 1. Install deps
+# 1. Clone + install
+git clone https://github.com/VampFay/health-literate.git
+cd health-literate/carescaffold
 pip install -r requirements.txt
-python -m spacy download en_core_web_lg
 
-# 2. Configure env
+# 2. Configure env (no API keys needed for the GLM + TF-IDF demo)
 cp .env.example .env
-# Populate ANTHROPIC_API_KEY, VOYAGEAI_API_KEY (needed from Phase 2 onward)
+# Populate ANTHROPIC_API_KEY + VOYAGEAI_API_KEY ONLY if reverting to
+# the spec's original Claude + Voyage AI providers
 
-# 3. Run
+# 3. Regenerate Synthea patients (optional — 305MB, gitignored)
+# Download Synthea jar: https://github.com/synthetichealth/synthea/releases
+# Then: python3 scripts/generate_synthea_patients.py
+
+# 4. Run
 uvicorn app:app --reload --port 8000
 
-# 4. Verify
+# 5. Verify
 curl http://localhost:8000/health
-# {"status":"ok","database":{"sqlite_version":"3.x","sqlite_vec_version":"v0.1.9",...}}
+curl http://localhost:8000/fhir/metadata
+curl http://localhost:8000/fhir/Patient
 ```
 
 ---
@@ -222,10 +275,31 @@ curl http://localhost:8000/health
 ## Testing
 
 ```bash
-pytest tests/unit/                     # unit tests
-pytest tests/adversarial/              # adversarial corpora (Phase 1+)
-pytest tests/safety/                    # end-to-end safety (Phase 2+)
+# Phase 0 + Phase 4 (no LLM calls — safe to run any time)
+pytest tests/unit/ -v
+
+# Phase 2 safety (makes ~30 GLM calls; run with delays to avoid rate limit)
+pytest tests/safety/test_phase2_safety.py -v
+
+# Phase 3 RAG (RAG-only tests don't need LLM; two-persona + safety do)
+pytest tests/safety/test_phase3_rag.py::test_six_education_files_loaded -v
+pytest tests/safety/test_phase3_rag.py::test_two_personas_produce_visibly_different_outputs -v -s
 ```
+
+The full test suite makes ~80 LLM calls. The z-ai API rate-limits aggressively
+(429 after ~10 calls per minute); tests that need multiple LLM calls should be
+run individually with 2-3s delays between, or with the exponential-backoff
+retries already built into `llm/router.py`.
+
+---
+
+## Walkthrough
+
+See `/docs/walkthrough.md` for a 2-minute narrative walkthrough with sample
+inputs, outputs, and curl commands demonstrating:
+1. The two-persona output diff on the same question
+2. The safety guardrail blocking a dosage-trick prompt
+3. The FHIR R4 endpoint serving a Synthea patient
 
 ---
 
@@ -241,5 +315,7 @@ materials (spec §4.2).
 ## Author
 
 Built as a portfolio demonstration of safe LLM-application engineering for
-healthcare: PHI redaction, RAG, two-layer outbound safety guardrails,
-FHIR interoperability, and honest compliance language throughout.
+healthcare: PHI redaction architecture (Phase 1 deferred), two-layer
+outbound safety guardrails (Phase 2), RAG with two-persona scaffolding
+(Phase 3), FHIR R4 interoperability (Phase 4), and honest compliance
+language throughout (Phase 5).

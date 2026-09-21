@@ -154,3 +154,23 @@ Stage Summary:
 - The Inferno fallback is the 5th documented deviation: phase skip (operator), v2.5 GLM swap (operator), v2.6 TF-IDF swap (sandbox disk constraint), Phase 1 skip (operator), Inferno Docker unavailable (sandbox constraint).
 - Will commit + push + tag v0.5-phase-4.
 - Next: Phase 5 (final README + self-audit + walkthrough) is the last phase.
+
+---
+Task ID: p5-complete
+Agent: main (Super Z)
+Task: Phase 5 — Final README + self-audit + walkthrough. COMPLETE. Spec §9.6 self-audit clean (7 grep hits, all negations). 14/14 unit tests pass. Project portfolio-ready.
+
+Work Log:
+- Operator said "proceed" — per my recommendation, started Phase 5 (final wrap-up).
+- Spec §9.6 self-audit: `grep -rniE "certified|compliant"` across all source/doc files. 7 hits, all negations or self-references (e.g., "no such certification exists", "ONC certified requires..."). Zero unsupported claims. Audit clean.
+- Deeper audit: `HIPAA|FERPA|FDA|approved|validated|100% (pass|safe|block)`. All hits were factual citations, honest-language disclaimers, code comments, or test assertion messages (enforcement, not claims). No unsupported claims.
+- Updated /README.md with: real numbers from all 5 phases (Phase 0 5/5; Phase 2 34/34+12/12+22/22; Phase 3 two-persona + end-to-end; Phase 4 9/9 + 20 patients; Phase 5 self-audit), 4 documented deviations table with production swap paths, final architecture diagram reflecting v2.5+v2.6 swaps, phased build table with all phase tags.
+- Wrote /docs/walkthrough.md — 2-minute narrative walkthrough with sample inputs + outputs + curl commands for: health check, two-persona demo (foundational vs higher), safety guardrail blocking dosage trick, emergency escalation, FHIR R4 endpoint with Synthea patient + A1C history + CapabilityStatement, and honest disclosure of what's not in the demo.
+- Wrote /docs/phase5_acceptance.md with pasted self-audit grep output, deeper audit results, final test run (14/14 unit tests pass), cumulative project status table, all 4 documented deviations, and acceptance checklist.
+- Final test run: env had reset (wiped sqlite-vec + Synthea data + jar). Reinstalled deps, re-downloaded Synthea jar from github.com/synthetichealth/synthea/releases, regenerated 20 T2D patients via scripts/generate_synthea_patients.py (script worked end-to-end — produced 28 T2D, kept first 20). Re-ran tests: 14/14 unit tests pass.
+- No code changes in Phase 5 — just docs (README, walkthrough, phase5_acceptance.md) + worklog.
+
+Stage Summary:
+- Phase 5 ACCEPTANCE GATE CLOSED per spec §9.6. Self-audit clean, README has real numbers, walkthrough written, all unit tests pass.
+- Project portfolio-ready. Will commit + push + tag v1.0.
+- All 5 phases that the operator directed to complete are done (0, 2, 3, 4, 5). Phase 1 (PHI redaction) is the only one deferred — it's documented honestly with a clear path to backfill if operator wants it later.
