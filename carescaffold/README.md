@@ -141,7 +141,7 @@ when `PRAGMA foreign_keys=ON` and WAL mode are set (both done in
 | Synthetic patient data | Synthea (MITRE) | 20 T2D patients generated; standard tool for healthcare software testing |
 | Interoperability | HL7 FHIR R4 | Patient / Condition / Observation + CapabilityStatement (read-only) |
 | Conformance target | Inferno (MITRE) | Self-tested against R4 spec; Docker run not in sandbox (per §4.5 escape hatch) |
-| Frontend | Single HTML page, vanilla JS, Tailwind via CDN | Per spec §2 (single page, no app shell) |
+| Frontend | **Single-page HTML chat UI** at `/` + Swagger UI at `/docs` | Vanilla JS + Tailwind via CDN per spec §2 (no build step) |
 
 ---
 
