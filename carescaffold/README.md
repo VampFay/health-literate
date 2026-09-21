@@ -189,7 +189,8 @@ and editing one config file.
 
 ### Phase 2 — Safety guardrails (7/7 tests pass)
 - **Tuning corpus: 34/34 blocked** (Layer 1: 23, Layer 2: 11)
-- **Held-out corpus: 12/12 blocked** (generalization verified)
+- **Held-out corpus (classifier-only): 12/12 blocked** — verifies the safety classifier catches the pre-generated bad-response fixtures for each held-out trick prompt. This tests the classifier, not the live pipeline.
+- **Held-out corpus (end-to-end live generation):** runs each held-out prompt through the full pipeline (inbound → RAG → GLM generate → outbound safety) and verifies the patient-facing response is safe. Sample size is limited by the z-ai API rate limit; see `/docs/phase2_metrics.md` for the actual sample size and verdicts breakdown. The two tests measure different things and both are reported separately.
 - Emergency corpus: **22/22 escalated** (chest_pain 6, severe_hypoglycemia 8, self_harm 8)
 - Layer 1 false positives on safe responses: **0/8**
 - v2.5.1 fix: After held-out validation found 2 generalization gaps (dh-007, dh-010), generalized Layer 1 patterns + judge prompt per spec §11.4 (not silently patched)
